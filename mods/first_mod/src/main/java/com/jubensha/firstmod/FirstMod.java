@@ -7,6 +7,7 @@ import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.StaminaPayload;
+import com.jubensha.firstmod.network.TransitionPayload;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
@@ -46,6 +47,7 @@ public class FirstMod implements ModInitializer {
     public static final String MOD_ID = "first_mod";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static final String PROTAGONIST_TELEPORT_ROLE_ID = "protagonist";
+    private static final int PHASE_TRANSITION_BLACKOUT_TICKS = 30;
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
 
     @Override
@@ -154,6 +156,10 @@ public class FirstMod implements ModInitializer {
         } catch (IllegalArgumentException ignored) {
         }
         try {
+            PayloadTypeRegistry.playS2C().register(TransitionPayload.ID, TransitionPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
             PayloadTypeRegistry.playC2S().register(SaveDialogPayload.ID, SaveDialogPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
@@ -220,6 +226,7 @@ public class FirstMod implements ModInitializer {
         closeAllDialogs(server);
         DialogStore.setCurrentPhase(targetPhase);
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            sendTransition(player, PHASE_TRANSITION_BLACKOUT_TICKS);
             teleportForCurrentRole(server, player, targetPhase);
             DialogStore.resetStamina(player.getUuid());
             syncStamina(player);
@@ -250,6 +257,12 @@ public class FirstMod implements ModInitializer {
     private static void sendDialog(ServerPlayerEntity player, DialogPayload payload) {
         if (ServerPlayNetworking.canSend(player, DialogPayload.ID)) {
             ServerPlayNetworking.send(player, payload);
+        }
+    }
+
+    private static void sendTransition(ServerPlayerEntity player, int durationTicks) {
+        if (ServerPlayNetworking.canSend(player, TransitionPayload.ID)) {
+            ServerPlayNetworking.send(player, new TransitionPayload(durationTicks));
         }
     }
 
