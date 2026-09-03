@@ -1,0 +1,38 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "旅行者，你终于来了。",
+      "nextNodeId": "ask",
+      "choices": []
+    },
+    {
+      "id": "ask",
+      "text": "你想先调查哪条线索？",
+      "nextNodeId": "",
+      "choices": [
+        {
+          "text": "调查书桌",
+          "nextNodeId": "desk"
+        },
+        {
+          "text": "询问昨晚发生了什么",
+          "nextNodeId": "night"
+        }
+      ]
+    },
+    {
+      "id": "desk",
+      "text": "书桌上有一封没有署名的信。",
+      "nextNodeId": "",
+      "choices": []
+    },
+    {
+      "id": "night",
+      "text": "昨晚钟声响起后，没有人再见过他。",
+      "nextNodeId": "",
+      "choices": []
+    }
+  ]
+}

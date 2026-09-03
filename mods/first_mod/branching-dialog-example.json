@@ -1,0 +1,153 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "夜色很深，宅邸里的灯却还亮着。管家压低声音说道：你来得正好，我有些事必须告诉你。",
+      "nextNodeId": "first_choice",
+      "choices": []
+    },
+    {
+      "id": "first_choice",
+      "text": "管家看向走廊尽头：在钟声响起之前，有三个人靠近过书房。你想先问什么？",
+      "nextNodeId": "",
+      "choices": [
+        {
+          "text": "谁最后见过死者？",
+          "nextNodeId": "last_seen"
+        },
+        {
+          "text": "书房里少了什么？",
+          "nextNodeId": "missing_item"
+        },
+        {
+          "text": "你为什么这么紧张？",
+          "nextNodeId": "nervous"
+        }
+      ]
+    },
+    {
+      "id": "last_seen",
+      "text": "管家说：女主人最后进过书房，但她出来时很平静，手里还拿着一封没有署名的信。",
+      "nextNodeId": "last_seen_follow",
+      "choices": []
+    },
+    {
+      "id": "last_seen_follow",
+      "text": "你注意到管家说到那封信时，视线闪躲了一下。",
+      "nextNodeId": "",
+      "choices": [
+        {
+          "text": "追问那封信的内容",
+          "nextNodeId": "letter"
+        },
+        {
+          "text": "暂时不问，转而调查书房",
+          "nextNodeId": "missing_item"
+        }
+      ]
+    },
+    {
+      "id": "missing_item",
+      "text": "管家皱眉：书桌上的银色怀表不见了。那是死者从不离身的东西。",
+      "nextNodeId": "watch_choice",
+      "choices": []
+    },
+    {
+      "id": "watch_choice",
+      "text": "怀表可能代表时间，也可能代表某个人的身份。你准备怎么做？",
+      "nextNodeId": "",
+      "choices": [
+        {
+          "text": "检查书桌抽屉",
+          "nextNodeId": "drawer"
+        },
+        {
+          "text": "询问谁知道怀表的秘密",
+          "nextNodeId": "watch_secret"
+        }
+      ]
+    },
+    {
+      "id": "nervous",
+      "text": "管家沉默片刻：因为钟声响起的时候，我听见书房里有第二个人的脚步声，但我没有看清是谁。",
+      "nextNodeId": "nervous_choice",
+      "choices": []
+    },
+    {
+      "id": "nervous_choice",
+      "text": "他的声音越来越低：如果我说出来，可能会害死另一个人。",
+      "nextNodeId": "",
+      "choices": [
+        {
+          "text": "安抚他，让他说出真相",
+          "nextNodeId": "trust"
+        },
+        {
+          "text": "警告他隐瞒也是罪",
+          "nextNodeId": "pressure"
+        }
+      ]
+    },
+    {
+      "id": "letter",
+      "text": "管家低声说：信上只有一句话，今晚十点，把怀表还给我。落款是一个黑色的月牙标记。",
+      "nextNodeId": "end_clue_letter",
+      "choices": []
+    },
+    {
+      "id": "drawer",
+      "text": "抽屉里有一小片湿泥，泥里混着玫瑰花瓣。书房窗外正好通向花园。",
+      "nextNodeId": "end_clue_garden",
+      "choices": []
+    },
+    {
+      "id": "watch_secret",
+      "text": "管家说：老爷曾说过，怀表里藏着一张名单。名单上的人，都和十年前那场火有关。",
+      "nextNodeId": "end_clue_watch",
+      "choices": []
+    },
+    {
+      "id": "trust",
+      "text": "管家终于点头：我看见少爷从书房后门离开。他衣袖上有血，但他看起来像是在保护什么人。",
+      "nextNodeId": "end_clue_son",
+      "choices": []
+    },
+    {
+      "id": "pressure",
+      "text": "管家的脸色变得苍白：我不能说名字。但如果你去看走廊地毯，会发现一枚金色袖扣。",
+      "nextNodeId": "end_clue_cufflink",
+      "choices": []
+    },
+    {
+      "id": "end_clue_letter",
+      "text": "你获得线索：黑色月牙信件。",
+      "nextNodeId": "",
+      "choices": []
+    },
+    {
+      "id": "end_clue_garden",
+      "text": "你获得线索：带玫瑰花瓣的湿泥。",
+      "nextNodeId": "",
+      "choices": []
+    },
+    {
+      "id": "end_clue_watch",
+      "text": "你获得线索：怀表里的名单。",
+      "nextNodeId": "",
+      "choices": []
+    },
+    {
+      "id": "end_clue_son",
+      "text": "你获得线索：少爷衣袖上的血迹。",
+      "nextNodeId": "",
+      "choices": []
+    },
+    {
+      "id": "end_clue_cufflink",
+      "text": "你获得线索：走廊地毯上的金色袖扣。",
+      "nextNodeId": "",
+      "choices": []
+    }
+  ]
+}

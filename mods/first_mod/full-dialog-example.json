@@ -1,0 +1,276 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "管家站在大厅门口，低声说道：你终于来了。今晚的宅邸不太平，很多人都在隐瞒真相。",
+      "nextNodeId": "check_pass",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_pass",
+      "text": "管家看了看你的行囊，似乎在确认你是否带着调查许可。",
+      "nextNodeId": "no_pass",
+      "conditionJumps": [
+        {
+          "item": "minecraft:paper",
+          "count": 1,
+          "nextNodeId": "has_pass"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "no_pass",
+      "text": "管家摇头：你没有调查许可，我不能直接让你进书房。但我可以告诉你两个方向。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "询问如何获得调查许可",
+          "nextNodeId": "ask_permission"
+        },
+        {
+          "text": "追问有没有别的入口",
+          "nextNodeId": "ask_secret_path"
+        }
+      ]
+    },
+    {
+      "id": "ask_permission",
+      "text": "管家说：书记官在东侧档案室。他手里有盖章的纸。带上它回来，我会换一种态度。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:compass",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "ask_secret_path",
+      "text": "管家压低声音：如果你愿意拿出一点诚意，我可以告诉你一条不走正门的路。",
+      "nextNodeId": "secret_payment_check",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "secret_payment_check",
+      "text": "他盯着你的口袋，像是在等待某种暗示。",
+      "nextNodeId": "secret_refuse",
+      "conditionJumps": [
+        {
+          "item": "minecraft:emerald",
+          "count": 1,
+          "nextNodeId": "secret_path"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "secret_refuse",
+      "text": "管家叹了口气：看来你还没准备好。等你带着合适的东西再来找我。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "secret_path",
+      "text": "管家小声说道：花园水井后有一道旧门。这把钩子能打开门闩，但你最好别让别人看见。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:tripwire_hook",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "has_pass",
+      "text": "管家看见你包里的调查许可，立刻让开：既然你有许可，那就请进。书房还保持着案发时的样子。",
+      "nextNodeId": "inside_choice",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 3
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "inside_choice",
+      "text": "你进入大厅。二楼传来轻微脚步声，壁炉旁的地毯也有被拖拽过的痕迹。你想先调查哪里？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "去二楼查看脚步声",
+          "nextNodeId": "second_floor"
+        },
+        {
+          "text": "留在大厅检查地毯",
+          "nextNodeId": "hall_carpet"
+        },
+        {
+          "text": "询问管家最后见到死者的人",
+          "nextNodeId": "last_seen"
+        }
+      ]
+    },
+    {
+      "id": "second_floor",
+      "text": "二楼栏杆旁有一枚破碎纽扣。它不像佣人制服上的纽扣，更像是礼服的一部分。",
+      "nextNodeId": "second_floor_choice",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:button",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "second_floor_choice",
+      "text": "你准备如何处理这枚纽扣？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "把纽扣交给管家辨认",
+          "nextNodeId": "identify_button"
+        },
+        {
+          "text": "暂时收好，继续调查大厅",
+          "nextNodeId": "hall_carpet"
+        }
+      ]
+    },
+    {
+      "id": "identify_button",
+      "text": "管家脸色微变：这是少爷礼服上的纽扣。他今晚说自己从没上过二楼。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:iron_nugget",
+          "count": 2
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "hall_carpet",
+      "text": "地毯边缘残留着黑灰，拖拽痕迹一直延伸到壁炉前。",
+      "nextNodeId": "fireplace_check",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:charcoal",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fireplace_check",
+      "text": "壁炉里似乎烧过纸张。如果你身上有放大镜，也许能看出残片上的字。",
+      "nextNodeId": "no_lens",
+      "conditionJumps": [
+        {
+          "item": "minecraft:spyglass",
+          "count": 1,
+          "nextNodeId": "has_lens"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "no_lens",
+      "text": "你看不清灰烬里的字，只能确认有人刻意烧毁了证据。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "has_lens",
+      "text": "你用望远镜仔细观察灰烬，残片上还能辨认出半个名字：林。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:written_book",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "last_seen",
+      "text": "管家回忆道：女主人最后进入过书房，但她出来时很平静，手里拿着一封没有署名的信。",
+      "nextNodeId": "letter_choice",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "letter_choice",
+      "text": "你注意到管家说到那封信时，视线闪躲了一下。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "追问信的内容",
+          "nextNodeId": "letter_truth"
+        },
+        {
+          "text": "不动声色，询问怀表",
+          "nextNodeId": "watch"
+        }
+      ]
+    },
+    {
+      "id": "letter_truth",
+      "text": "管家说：信上只有一句话，今晚十点，把怀表还给我。落款是一个黑色月牙。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:black_dye",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "watch",
+      "text": "管家说：那块银色怀表不见了。死者从不让它离身，因为里面藏着一份名单。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:clock",
+          "count": 1
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

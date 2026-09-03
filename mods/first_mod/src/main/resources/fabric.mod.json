@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "first_mod",
+  "version": "${version}",
+  "name": "First Mod",
+  "description": "A dedicated Fabric mod for the Minecraft murder mystery map.",
+  "authors": [
+    "Map Team"
+  ],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.jubensha.firstmod.FirstMod"
+    ],
+    "client": [
+      "com.jubensha.firstmod.client.FirstModClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "fabric-api": "*",
+    "minecraft": "1.21",
+    "java": ">=21"
+  }
+}

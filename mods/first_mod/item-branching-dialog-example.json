@@ -1,0 +1,132 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "守门人看了你一眼，似乎在判断你有没有通行凭证。",
+      "nextNodeId": "no_pass",
+      "conditionJumps": [
+        {
+          "item": "minecraft:paper",
+          "count": 1,
+          "nextNodeId": "has_pass"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "no_pass",
+      "text": "守门人摇头：没有通行纸，我不能让你进去。你可以先去找书记官。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "询问书记官在哪里",
+          "nextNodeId": "ask_clerk"
+        },
+        {
+          "text": "尝试说服守门人",
+          "nextNodeId": "persuade"
+        }
+      ]
+    },
+    {
+      "id": "ask_clerk",
+      "text": "守门人指向东侧：书记官在档案室。如果你能拿到盖章的纸，我会放你过去。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:compass",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "persuade",
+      "text": "守门人压低声音：规矩就是规矩。不过如果你有一枚绿宝石，我可以告诉你另一条路。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:emerald",
+          "count": 1,
+          "nextNodeId": "secret_path"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "secret_path",
+      "text": "守门人收起表情：从花园水井后面的暗门进去，别让别人看见。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:tripwire_hook",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "has_pass",
+      "text": "守门人看见你包里的通行纸，立刻让开：原来你已经拿到凭证了，请进。",
+      "nextNodeId": "inside_choice",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 3
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "inside_choice",
+      "text": "进入大厅后，你听见楼上传来脚步声。你准备先调查哪里？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "去二楼查看脚步声",
+          "nextNodeId": "second_floor"
+        },
+        {
+          "text": "留在大厅检查地毯",
+          "nextNodeId": "hall"
+        }
+      ]
+    },
+    {
+      "id": "second_floor",
+      "text": "二楼栏杆旁有一枚破碎的纽扣。它不像是佣人的制服纽扣。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:button",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "hall",
+      "text": "地毯边缘有拖拽痕迹，痕迹一直延伸到壁炉前。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:charcoal",
+          "count": 1
+        }
+      ],
+      "choices": []
+    }
+  ]
+}
