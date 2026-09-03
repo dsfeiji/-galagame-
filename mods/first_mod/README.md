@@ -2,6 +2,14 @@
 
 Minecraft 1.21 Fabric dialog mod for the script-killing map.
 
+Use only the release jar in Minecraft's `mods` folder:
+
+```text
+first_mod-1.0.0.jar
+```
+
+Do not put source jars or Gradle build folders into the game `mods` folder.
+
 ## Dialog JSON
 
 Put dialog files in the game run directory:
