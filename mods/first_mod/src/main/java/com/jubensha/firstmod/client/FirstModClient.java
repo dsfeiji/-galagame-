@@ -5,7 +5,6 @@ import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.StaminaPayload;
-import com.jubensha.firstmod.network.TransitionPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -25,7 +24,6 @@ public class FirstModClient implements ClientModInitializer {
         registerPayloadTypes();
         registerKeyBinding();
         StaminaHud.register();
-        TransitionOverlay.register();
 
         ClientPlayNetworking.registerGlobalReceiver(DialogPayload.ID, (payload, context) -> {
             MinecraftClient client = context.client();
@@ -47,12 +45,6 @@ public class FirstModClient implements ClientModInitializer {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(StaminaPayload.ID, (payload, context) -> context.client().execute(() -> StaminaHud.update(payload.stamina(), payload.maxStamina())));
-        ClientPlayNetworking.registerGlobalReceiver(TransitionPayload.ID, (payload, context) -> context.client().execute(() -> {
-            TransitionOverlay.update(payload.blackScreen(), payload.message());
-            if (payload.blackScreen() && context.client().currentScreen instanceof PlayerDialogScreen) {
-                context.client().setScreen(null);
-            }
-        }));
     }
 
     private static void registerKeyBinding() {

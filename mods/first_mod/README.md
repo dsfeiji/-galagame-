@@ -98,7 +98,7 @@ Other teleport commands:
 /dialogphase tpinfo <phase>
 ```
 
-When the protagonist spends their last stamina point, all players enter a black screen, the global phase advances, players teleport by their claimed role for the new phase, and stamina resets to 5.
+When the protagonist spends their last stamina point, the global phase advances immediately, players teleport by their claimed role for the new phase, and stamina resets to 5.
 
 ## Stamina
 
