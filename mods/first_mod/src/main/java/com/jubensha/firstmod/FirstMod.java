@@ -6,10 +6,12 @@ import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
+import com.jubensha.firstmod.network.StaminaPayload;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.api.ModInitializer;
@@ -44,6 +46,7 @@ public class FirstMod implements ModInitializer {
     public void onInitialize() {
         DialogStore.load();
         registerPayloadTypes();
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncStamina(handler.player));
 
         ServerPlayNetworking.registerGlobalReceiver(SaveDialogPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
@@ -80,11 +83,12 @@ public class FirstMod implements ModInitializer {
             }
 
             DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
-            if (tree == null || payload.nextNodeId().isBlank() || !tree.hasNode(payload.nextNodeId())) {
+            String nextNodeId = resolveRequestedAdvance(actor, tree, session, payload);
+            if (nextNodeId.isBlank() || tree == null || !tree.hasNode(nextNodeId)) {
                 closeDialog(actor, target, target.getUuid());
                 return;
             }
-            showNode(actor, target, tree, payload.nextNodeId(), session);
+            showNode(actor, target, tree, nextNodeId, session);
         });
 
         registerCommands();
@@ -139,6 +143,10 @@ public class FirstMod implements ModInitializer {
         } catch (IllegalArgumentException ignored) {
         }
         try {
+            PayloadTypeRegistry.playS2C().register(StaminaPayload.ID, StaminaPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
             PayloadTypeRegistry.playC2S().register(SaveDialogPayload.ID, SaveDialogPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
@@ -155,8 +163,42 @@ public class FirstMod implements ModInitializer {
             closeDialog(actor, target, target.getUuid());
             return;
         }
+        session.currentNodeId = nodeId;
         giveRewards(actor, node, session);
         sendDialogPair(actor, target, tree, nodeId, session.roleId);
+    }
+
+    private static String resolveRequestedAdvance(ServerPlayerEntity actor, DialogTree tree, DialogSession session, AdvanceDialogPayload payload) {
+        if (tree == null) {
+            return "";
+        }
+        DialogTree.DialogNode currentNode = tree.getNode(session.currentNodeId);
+        if (currentNode == null) {
+            return "";
+        }
+
+        if (!currentNode.choices.isEmpty()) {
+            int choiceIndex = payload.choiceIndex();
+            if (choiceIndex < 0 || choiceIndex >= currentNode.choices.size()) {
+                return "";
+            }
+            DialogTree.DialogChoice choice = currentNode.choices.get(choiceIndex);
+            if (!choice.nextNodeId.equals(payload.nextNodeId())) {
+                return "";
+            }
+            if (!DialogStore.spendStamina(actor.getUuid(), choice.staminaCost)) {
+                actor.sendMessage(Text.literal("体力不足，无法选择这个回答。"), false);
+                syncStamina(actor);
+                return session.currentNodeId;
+            }
+            syncStamina(actor);
+            return choice.nextNodeId;
+        }
+
+        if (payload.choiceIndex() != -1 || !currentNode.nextNodeId.equals(payload.nextNodeId())) {
+            return "";
+        }
+        return currentNode.nextNodeId;
     }
 
     private static void sendDialogPair(ServerPlayerEntity actor, ServerPlayerEntity target, DialogTree tree, String nodeId, String roleId) {
@@ -169,6 +211,7 @@ public class FirstMod implements ModInitializer {
                 tree.toJson()
         );
         sendDialog(actor, payload);
+        syncStamina(actor);
         if (!actor.getUuid().equals(target.getUuid())) {
             sendDialog(target, payload);
         }
@@ -337,7 +380,33 @@ public class FirstMod implements ModInitializer {
                                         feedback(context.getSource(), roleId.isBlank() ? target.getNameForScoreboard() + " has no dialog role." : target.getNameForScoreboard() + " dialog role: " + roleId);
                                         return roleId.isBlank() ? 0 : 1;
                                     }))));
+
+            dispatcher.register(literal("dialogstamina")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(literal("reset")
+                            .then(argument("player", EntityArgumentType.player())
+                                    .executes(context -> {
+                                        ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
+                                        DialogStore.resetStamina(target.getUuid());
+                                        syncStamina(target);
+                                        feedback(context.getSource(), target.getNameForScoreboard() + " stamina reset to " + DialogStore.MAX_STAMINA + ".");
+                                        return DialogStore.MAX_STAMINA;
+                                    })))
+                    .then(literal("info")
+                            .then(argument("player", EntityArgumentType.player())
+                                    .executes(context -> {
+                                        ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
+                                        int stamina = DialogStore.getStamina(target.getUuid());
+                                        feedback(context.getSource(), target.getNameForScoreboard() + " stamina: " + stamina + " / " + DialogStore.MAX_STAMINA);
+                                        return stamina;
+                                    }))));
         });
+    }
+
+    private static void syncStamina(ServerPlayerEntity player) {
+        if (ServerPlayNetworking.canSend(player, StaminaPayload.ID)) {
+            ServerPlayNetworking.send(player, new StaminaPayload(DialogStore.getStamina(player.getUuid()), DialogStore.MAX_STAMINA));
+        }
     }
 
     private static void feedback(ServerCommandSource source, String message) {
@@ -348,6 +417,7 @@ public class FirstMod implements ModInitializer {
         private final UUID targetPlayerId;
         private final String roleId;
         private final Set<String> rewardedNodeIds = new HashSet<>();
+        private String currentNodeId = "";
 
         private DialogSession(UUID targetPlayerId, String roleId) {
             this.targetPlayerId = targetPlayerId;

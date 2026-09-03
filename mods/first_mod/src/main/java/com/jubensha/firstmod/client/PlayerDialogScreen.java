@@ -70,18 +70,18 @@ public class PlayerDialogScreen extends Screen {
         if (!node.choices.isEmpty()) {
             for (ChoiceHitbox hitbox : choiceHitboxes) {
                 if (hitbox.contains(mouseX, mouseY)) {
-                    advance(hitbox.choice.nextNodeId);
+                    advance(hitbox.choice.nextNodeId, hitbox.choiceIndex);
                     return true;
                 }
             }
             return true;
         }
-        advance(node.nextNodeId);
+        advance(node.nextNodeId, -1);
         return true;
     }
 
-    private void advance(String nextNodeId) {
-        ClientPlayNetworking.send(new AdvanceDialogPayload(targetPlayerId, nextNodeId == null ? "" : nextNodeId));
+    private void advance(String nextNodeId, int choiceIndex) {
+        ClientPlayNetworking.send(new AdvanceDialogPayload(targetPlayerId, nextNodeId == null ? "" : nextNodeId, choiceIndex));
     }
 
     @Override
@@ -181,8 +181,9 @@ public class PlayerDialogScreen extends Screen {
         int choiceWidth = Math.min(108, panelRight - panelX - MODEL_WIDTH - 28);
         int x = panelRight - choiceWidth - 2;
         int y = panelY - node.choices.size() * (CHOICE_HEIGHT + 3) - 5;
-        for (DialogTree.DialogChoice choice : node.choices) {
-            ChoiceHitbox hitbox = new ChoiceHitbox(x, y, choiceWidth, CHOICE_HEIGHT, choice);
+        for (int i = 0; i < node.choices.size(); i++) {
+            DialogTree.DialogChoice choice = node.choices.get(i);
+            ChoiceHitbox hitbox = new ChoiceHitbox(x, y, choiceWidth, CHOICE_HEIGHT, choice, i);
             choiceHitboxes.add(hitbox);
             boolean hovered = controller && hitbox.contains(mouseX, mouseY);
             int bg = hovered ? 0xF0383446 : 0xD81E2535;
@@ -192,6 +193,9 @@ public class PlayerDialogScreen extends Screen {
             context.fill(x + 8, y, x + choiceWidth - 8, y + 1, line);
             context.fill(x + 8, y + CHOICE_HEIGHT - 1, x + choiceWidth - 8, y + CHOICE_HEIGHT, line);
             String answer = choice.text.isBlank() ? "..." : choice.text;
+            if (choice.staminaCost > 0) {
+                answer = answer + " -" + choice.staminaCost + "体力";
+            }
             int maxTextWidth = choiceWidth - 16;
             if (this.textRenderer.getWidth(answer) > maxTextWidth) {
                 answer = this.textRenderer.trimToWidth(answer, maxTextWidth - this.textRenderer.getWidth("> "));
@@ -201,7 +205,7 @@ public class PlayerDialogScreen extends Screen {
         }
     }
 
-    private record ChoiceHitbox(int x, int y, int width, int height, DialogTree.DialogChoice choice) {
+    private record ChoiceHitbox(int x, int y, int width, int height, DialogTree.DialogChoice choice, int choiceIndex) {
         private boolean contains(double mouseX, double mouseY) {
             return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
         }

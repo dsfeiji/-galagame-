@@ -122,6 +122,7 @@ public class DialogTree {
     public static class DialogChoice {
         public String text = "";
         public String nextNodeId = "";
+        public int staminaCost = 0;
 
         public DialogChoice() {
         }
@@ -137,6 +138,9 @@ public class DialogTree {
             }
             if (nextNodeId == null) {
                 nextNodeId = "";
+            }
+            if (staminaCost < 0) {
+                staminaCost = 0;
             }
         }
     }

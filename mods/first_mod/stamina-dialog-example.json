@@ -1,0 +1,63 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "管家压低声音：有些线索不是免费告诉你的。你想问哪件事？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "追问书房钥匙的去向",
+          "nextNodeId": "key",
+          "staminaCost": 1
+        },
+        {
+          "text": "询问晚宴座位安排",
+          "nextNodeId": "seat",
+          "staminaCost": 0
+        },
+        {
+          "text": "强行逼问他隐瞒的事",
+          "nextNodeId": "pressure",
+          "staminaCost": 2
+        }
+      ]
+    },
+    {
+      "id": "key",
+      "text": "管家说：钥匙原本在银盘里，但九点之后就不见了。女主人离开大厅时曾靠近过那里。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:tripwire_hook",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "seat",
+      "text": "管家回答：少爷坐在死者右手边，侦探先生坐在壁炉旁，女主人整晚几乎没有离开座位。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "pressure",
+      "text": "管家脸色一沉：既然你一定要知道，十点前有人从后门进来过，但我没有看清脸。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

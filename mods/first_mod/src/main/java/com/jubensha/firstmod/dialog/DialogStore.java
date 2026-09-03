@@ -18,6 +18,8 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 public final class DialogStore {
+    public static final int MAX_STAMINA = 5;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type OLD_STORE_TYPE = new TypeToken<LinkedHashMap<String, DialogTree>>() {
     }.getType();
@@ -92,6 +94,28 @@ public final class DialogStore {
         return roleId == null || roleId.isBlank() ? "" : roleId;
     }
 
+    public static int getStamina(UUID playerId) {
+        return normalizeStamina(data.playerStamina.get(playerId.toString()));
+    }
+
+    public static boolean spendStamina(UUID playerId, int amount) {
+        if (amount <= 0) {
+            return true;
+        }
+        int current = getStamina(playerId);
+        if (current < amount) {
+            return false;
+        }
+        data.playerStamina.put(playerId.toString(), current - amount);
+        saveAll();
+        return true;
+    }
+
+    public static void resetStamina(UUID playerId) {
+        data.playerStamina.put(playerId.toString(), MAX_STAMINA);
+        saveAll();
+    }
+
     public static int getCurrentPhase() {
         return data.currentPhase;
     }
@@ -139,6 +163,13 @@ public final class DialogStore {
         return phase;
     }
 
+    private static int normalizeStamina(Integer stamina) {
+        if (stamina == null) {
+            return MAX_STAMINA;
+        }
+        return Math.max(0, Math.min(MAX_STAMINA, stamina));
+    }
+
     private static void saveAll() {
         try {
             Files.createDirectories(STORE_PATH.getParent());
@@ -152,6 +183,7 @@ public final class DialogStore {
         int currentPhase = 1;
         Map<String, Map<String, DialogTree>> dialogs = new LinkedHashMap<>();
         Map<String, String> playerRoles = new LinkedHashMap<>();
+        Map<String, Integer> playerStamina = new LinkedHashMap<>();
 
         StoreData normalize() {
             if (phaseCount < 1) {
@@ -166,7 +198,11 @@ public final class DialogStore {
             if (playerRoles == null) {
                 playerRoles = new LinkedHashMap<>();
             }
+            if (playerStamina == null) {
+                playerStamina = new LinkedHashMap<>();
+            }
             playerRoles.entrySet().removeIf(entry -> !DialogStore.isValidRoleId(entry.getValue()));
+            playerStamina.replaceAll((playerId, stamina) -> normalizeStamina(stamina));
             dialogs.values().forEach(phases -> phases.replaceAll((phase, tree) -> tree.normalize()));
             return this;
         }
