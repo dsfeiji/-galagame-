@@ -53,6 +53,14 @@ Only the protagonist can advance the whole story phase when stamina reaches 0.
 
 Other players can spend stamina for dialog choices, but stamina reaching 0 will not change the phase.
 
+The protagonist has a dedicated teleport role id:
+
+```text
+protagonist
+```
+
+This id is only used for phase teleports. It does not replace the player's claimed dialog role.
+
 ## Phases And Teleports
 
 The phase is global for all players:
@@ -74,6 +82,12 @@ Use `default` as a fallback point:
 
 ```mcfunction
 /dialogphase settp 2 default
+```
+
+Set a protagonist-only teleport point:
+
+```mcfunction
+/dialogphase settp 2 protagonist
 ```
 
 Other teleport commands:

@@ -47,6 +47,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class FirstMod implements ModInitializer {
     public static final String MOD_ID = "first_mod";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    private static final String PROTAGONIST_TELEPORT_ROLE_ID = "protagonist";
     private static final int TRANSITION_DELAY_TICKS = 40;
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
     private static PhaseTransition pendingTransition;
@@ -302,7 +303,12 @@ public class FirstMod implements ModInitializer {
 
     private static void teleportForCurrentRole(MinecraftServer server, ServerPlayerEntity player, int phase) {
         String roleId = DialogStore.getClaimedRole(player.getUuid());
-        DialogStore.TeleportPoint point = DialogStore.getTeleport(phase, roleId.isBlank() ? "default" : roleId);
+        DialogStore.TeleportPoint point = DialogStore.isProtagonist(player.getUuid())
+                ? DialogStore.getTeleportExact(phase, PROTAGONIST_TELEPORT_ROLE_ID)
+                : null;
+        if (point == null) {
+            point = DialogStore.getTeleport(phase, roleId.isBlank() ? "default" : roleId);
+        }
         if (point == null) {
             player.sendMessage(Text.literal("当前阶段没有你的角色传送点。"), false);
             return;
@@ -547,7 +553,7 @@ public class FirstMod implements ModInitializer {
                                     .executes(context -> {
                                         ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
                                         DialogStore.setProtagonist(target.getUuid());
-                                        feedback(context.getSource(), target.getNameForScoreboard() + " is now the protagonist.");
+                                        feedback(context.getSource(), target.getNameForScoreboard() + " is now the protagonist. Protagonist teleport role id: " + PROTAGONIST_TELEPORT_ROLE_ID);
                                         return 1;
                                     })))
                     .then(literal("clear")
@@ -564,7 +570,8 @@ public class FirstMod implements ModInitializer {
                                     return 0;
                                 }
                                 ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(UUID.fromString(protagonistId));
-                                feedback(context.getSource(), player == null ? "Protagonist UUID: " + protagonistId : "Protagonist: " + player.getNameForScoreboard());
+                                String name = player == null ? "UUID: " + protagonistId : player.getNameForScoreboard();
+                                feedback(context.getSource(), "Protagonist: " + name + ". Teleport role id: " + PROTAGONIST_TELEPORT_ROLE_ID);
                                 return 1;
                             })));
 

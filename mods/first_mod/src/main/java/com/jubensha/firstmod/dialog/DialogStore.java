@@ -172,6 +172,15 @@ public final class DialogStore {
         return point == null ? null : point.normalize();
     }
 
+    public static TeleportPoint getTeleportExact(int phase, String roleId) {
+        Map<String, TeleportPoint> teleports = data.phaseTeleports.get(String.valueOf(normalizePhase(phase)));
+        if (teleports == null) {
+            return null;
+        }
+        TeleportPoint point = teleports.get(roleId);
+        return point == null ? null : point.normalize();
+    }
+
     public static String getTeleportInfo(int phase) {
         Map<String, TeleportPoint> teleports = data.phaseTeleports.get(String.valueOf(normalizePhase(phase)));
         if (teleports == null || teleports.isEmpty()) {
