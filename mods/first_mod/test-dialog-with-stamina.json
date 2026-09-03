@@ -1,0 +1,156 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "管家看着你，压低声音说：今晚的宅邸很不对劲。你想先问什么？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "追问书房钥匙",
+          "nextNodeId": "ask_key",
+          "staminaCost": 1
+        },
+        {
+          "text": "询问晚宴座位",
+          "nextNodeId": "ask_seat",
+          "staminaCost": 0
+        },
+        {
+          "text": "强行逼问隐瞒的事",
+          "nextNodeId": "pressure",
+          "staminaCost": 2
+        }
+      ]
+    },
+    {
+      "id": "ask_key",
+      "text": "管家说：书房钥匙原本放在银盘里。九点之后，女主人曾经靠近过那里。",
+      "nextNodeId": "key_check",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:tripwire_hook",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "key_check",
+      "text": "管家盯着你的背包：如果你已经拿到了书房钥匙，我可以告诉你下一条线索。",
+      "nextNodeId": "no_key",
+      "conditionJumps": [
+        {
+          "item": "minecraft:tripwire_hook",
+          "count": 1,
+          "nextNodeId": "has_key"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "no_key",
+      "text": "你还没有钥匙。管家摇摇头：先去大厅银盘附近找找。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "has_key",
+      "text": "管家点头：既然钥匙在你手上，去二楼书房。壁炉后的画框可能被动过。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "ask_seat",
+      "text": "管家回忆道：少爷坐在死者右手边，女主人坐在窗边，侦探一直靠近壁炉。",
+      "nextNodeId": "seat_choice",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "seat_choice",
+      "text": "你准备继续调查哪一个方向？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "调查少爷",
+          "nextNodeId": "young_master",
+          "staminaCost": 1
+        },
+        {
+          "text": "调查女主人",
+          "nextNodeId": "lady",
+          "staminaCost": 1
+        },
+        {
+          "text": "先不追问",
+          "nextNodeId": "end_wait",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "young_master",
+      "text": "你注意到少爷的袖口少了一枚纽扣。管家说：二楼栏杆旁也许能找到。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:button",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lady",
+      "text": "管家说：女主人离席时手里拿着一封没有署名的信。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:written_book",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "pressure",
+      "text": "管家脸色一变：十点前有人从后门进来过。我没有看清脸，只看见黑色披风。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:black_dye",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "end_wait",
+      "text": "管家退后半步：如果你想清楚了，再来问我。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

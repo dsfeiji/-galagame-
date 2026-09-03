@@ -28,10 +28,10 @@ public final class StaminaHud {
             return;
         }
 
-        int x = 8;
-        int y = client.getWindow().getScaledHeight() - 58;
         int width = 86;
         int height = 23;
+        int x = client.getWindow().getScaledWidth() - width - 8;
+        int y = client.getWindow().getScaledHeight() - 58;
         context.fill(x + 2, y + 2, x + width + 2, y + height + 2, 0x66000000);
         context.fill(x, y, x + width, y + height, 0xD81B1F2B);
         context.fill(x + 6, y + 2, x + width - 6, y + 3, 0xFFE6C879);

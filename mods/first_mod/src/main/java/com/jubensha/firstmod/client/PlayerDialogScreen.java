@@ -46,10 +46,6 @@ public class PlayerDialogScreen extends Screen {
 
     @Override
     protected void init() {
-        rebuildControls();
-    }
-
-    private void rebuildControls() {
         clearChildren();
         choiceHitboxes.clear();
     }
@@ -124,10 +120,10 @@ public class PlayerDialogScreen extends Screen {
         drawWrappedText(context, dialogText, textX, panelY + 20, textWidth, 4);
 
         if (node != null && node.choices.isEmpty()) {
-            String hint = controller ? "\u70b9\u51fb\u7ee7\u7eed" : "\u7b49\u5f85\u5bf9\u65b9";
+            String hint = controller ? "点击继续" : "等待对方";
             context.drawTextWithShadow(this.textRenderer, Text.literal(hint), panelRight - this.textRenderer.getWidth(hint) - 18, panelBottom - 18, 0xFFD8D2C0);
         } else if (!controller) {
-            String hint = "\u7b49\u5f85\u5bf9\u65b9\u9009\u62e9";
+            String hint = "等待对方选择";
             context.drawTextWithShadow(this.textRenderer, Text.literal(hint), panelRight - this.textRenderer.getWidth(hint) - 18, panelBottom - 18, 0xFFD8D2C0);
         }
 
@@ -192,17 +188,29 @@ public class PlayerDialogScreen extends Screen {
             context.fill(x, y, x + choiceWidth, y + CHOICE_HEIGHT, bg);
             context.fill(x + 8, y, x + choiceWidth - 8, y + 1, line);
             context.fill(x + 8, y + CHOICE_HEIGHT - 1, x + choiceWidth - 8, y + CHOICE_HEIGHT, line);
+
             String answer = choice.text.isBlank() ? "..." : choice.text;
+            int textOffset = choice.staminaCost > 0 ? 10 : 0;
             if (choice.staminaCost > 0) {
-                answer = answer + " -" + choice.staminaCost + "体力";
+                drawStaminaBolt(context, x + 8, y + 2, hovered ? 0xFFFFE0A3 : 0xFFE85252);
             }
-            int maxTextWidth = choiceWidth - 16;
+
+            int maxTextWidth = choiceWidth - 16 - textOffset;
             if (this.textRenderer.getWidth(answer) > maxTextWidth) {
                 answer = this.textRenderer.trimToWidth(answer, maxTextWidth - this.textRenderer.getWidth("> "));
             }
-            context.drawTextWithShadow(this.textRenderer, Text.literal("> " + answer), x + 7, y + 2, hovered ? 0xFFFFF2CC : 0xFFF7F4EA);
+            context.drawTextWithShadow(this.textRenderer, Text.literal("> " + answer), x + 7 + textOffset, y + 2, hovered ? 0xFFFFF2CC : 0xFFF7F4EA);
             y += CHOICE_HEIGHT + 3;
         }
+    }
+
+    private void drawStaminaBolt(DrawContext context, int x, int y, int color) {
+        context.fill(x + 3, y, x + 6, y + 1, color);
+        context.fill(x + 2, y + 1, x + 5, y + 2, color);
+        context.fill(x + 1, y + 2, x + 4, y + 3, color);
+        context.fill(x + 3, y + 3, x + 6, y + 4, color);
+        context.fill(x + 2, y + 4, x + 5, y + 5, color);
+        context.fill(x + 1, y + 5, x + 3, y + 6, color);
     }
 
     private record ChoiceHitbox(int x, int y, int width, int height, DialogTree.DialogChoice choice, int choiceIndex) {
