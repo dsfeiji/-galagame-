@@ -116,6 +116,70 @@ public final class DialogStore {
         saveAll();
     }
 
+    public static void resetAllStamina(Iterable<UUID> playerIds) {
+        for (UUID playerId : playerIds) {
+            data.playerStamina.put(playerId.toString(), MAX_STAMINA);
+        }
+        saveAll();
+    }
+
+    public static void setProtagonist(UUID playerId) {
+        data.protagonistPlayer = playerId.toString();
+        saveAll();
+    }
+
+    public static void clearProtagonist() {
+        data.protagonistPlayer = "";
+        saveAll();
+    }
+
+    public static boolean isProtagonist(UUID playerId) {
+        return !data.protagonistPlayer.isBlank() && data.protagonistPlayer.equals(playerId.toString());
+    }
+
+    public static String getProtagonistPlayerId() {
+        return data.protagonistPlayer == null ? "" : data.protagonistPlayer;
+    }
+
+    public static void setTeleport(int phase, String roleId, TeleportPoint point) {
+        int normalizedPhase = normalizePhase(phase);
+        data.phaseTeleports
+                .computeIfAbsent(String.valueOf(normalizedPhase), ignored -> new LinkedHashMap<>())
+                .put(roleId, point.normalize());
+        saveAll();
+    }
+
+    public static void clearTeleport(int phase, String roleId) {
+        Map<String, TeleportPoint> teleports = data.phaseTeleports.get(String.valueOf(normalizePhase(phase)));
+        if (teleports != null) {
+            teleports.remove(roleId);
+            if (teleports.isEmpty()) {
+                data.phaseTeleports.remove(String.valueOf(normalizePhase(phase)));
+            }
+            saveAll();
+        }
+    }
+
+    public static TeleportPoint getTeleport(int phase, String roleId) {
+        Map<String, TeleportPoint> teleports = data.phaseTeleports.get(String.valueOf(normalizePhase(phase)));
+        if (teleports == null) {
+            return null;
+        }
+        TeleportPoint point = teleports.get(roleId);
+        if (point == null && !"default".equals(roleId)) {
+            point = teleports.get("default");
+        }
+        return point == null ? null : point.normalize();
+    }
+
+    public static String getTeleportInfo(int phase) {
+        Map<String, TeleportPoint> teleports = data.phaseTeleports.get(String.valueOf(normalizePhase(phase)));
+        if (teleports == null || teleports.isEmpty()) {
+            return "";
+        }
+        return String.join(", ", teleports.keySet());
+    }
+
     public static int getCurrentPhase() {
         return data.currentPhase;
     }
@@ -181,9 +245,11 @@ public final class DialogStore {
     private static class StoreData {
         int phaseCount = 1;
         int currentPhase = 1;
+        String protagonistPlayer = "";
         Map<String, Map<String, DialogTree>> dialogs = new LinkedHashMap<>();
         Map<String, String> playerRoles = new LinkedHashMap<>();
         Map<String, Integer> playerStamina = new LinkedHashMap<>();
+        Map<String, Map<String, TeleportPoint>> phaseTeleports = new LinkedHashMap<>();
 
         StoreData normalize() {
             if (phaseCount < 1) {
@@ -201,9 +267,26 @@ public final class DialogStore {
             if (playerStamina == null) {
                 playerStamina = new LinkedHashMap<>();
             }
+            if (protagonistPlayer == null) {
+                protagonistPlayer = "";
+            }
+            try {
+                if (!protagonistPlayer.isBlank()) {
+                    UUID.fromString(protagonistPlayer);
+                }
+            } catch (RuntimeException exception) {
+                protagonistPlayer = "";
+            }
+            if (phaseTeleports == null) {
+                phaseTeleports = new LinkedHashMap<>();
+            }
             playerRoles.entrySet().removeIf(entry -> !DialogStore.isValidRoleId(entry.getValue()));
             playerStamina.replaceAll((playerId, stamina) -> normalizeStamina(stamina));
             dialogs.values().forEach(phases -> phases.replaceAll((phase, tree) -> tree.normalize()));
+            phaseTeleports.values().forEach(teleports -> {
+                teleports.entrySet().removeIf(entry -> !DialogStore.isValidRoleId(entry.getKey()) || entry.getValue() == null);
+                teleports.replaceAll((roleId, point) -> point.normalize());
+            });
             return this;
         }
 
@@ -212,6 +295,22 @@ public final class DialogStore {
                 return 1;
             }
             return ((phase - 1) % phaseCount) + 1;
+        }
+    }
+
+    public static class TeleportPoint {
+        public String world = "minecraft:overworld";
+        public double x;
+        public double y;
+        public double z;
+        public float yaw;
+        public float pitch;
+
+        public TeleportPoint normalize() {
+            if (world == null || world.isBlank()) {
+                world = "minecraft:overworld";
+            }
+            return this;
         }
     }
 }

@@ -7,11 +7,13 @@ import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.StaminaPayload;
+import com.jubensha.firstmod.network.TransitionPayload;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.api.ModInitializer;
@@ -19,12 +21,17 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,13 +47,16 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class FirstMod implements ModInitializer {
     public static final String MOD_ID = "first_mod";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    private static final int TRANSITION_DELAY_TICKS = 40;
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
+    private static PhaseTransition pendingTransition;
 
     @Override
     public void onInitialize() {
         DialogStore.load();
         registerPayloadTypes();
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncStamina(handler.player));
+        ServerTickEvents.END_SERVER_TICK.register(FirstMod::tickTransition);
 
         ServerPlayNetworking.registerGlobalReceiver(SaveDialogPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
@@ -147,6 +157,10 @@ public class FirstMod implements ModInitializer {
         } catch (IllegalArgumentException ignored) {
         }
         try {
+            PayloadTypeRegistry.playS2C().register(TransitionPayload.ID, TransitionPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
             PayloadTypeRegistry.playC2S().register(SaveDialogPayload.ID, SaveDialogPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
@@ -192,6 +206,12 @@ public class FirstMod implements ModInitializer {
                 return session.currentNodeId;
             }
             syncStamina(actor);
+            if (choice.staminaCost > 0 && DialogStore.getStamina(actor.getUuid()) == 0) {
+                handleStaminaDepleted(actor);
+                if (pendingTransition != null) {
+                    return "";
+                }
+            }
             return choice.nextNodeId;
         }
 
@@ -199,6 +219,23 @@ public class FirstMod implements ModInitializer {
             return "";
         }
         return currentNode.nextNodeId;
+    }
+
+    private static void handleStaminaDepleted(ServerPlayerEntity actor) {
+        if (actor.getServer() == null) {
+            return;
+        }
+        if (!DialogStore.isProtagonist(actor.getUuid())) {
+            actor.sendMessage(Text.literal("体力已耗尽，但只有主角可以推动剧情阶段。"), false);
+            return;
+        }
+        int nextPhase = nextPhaseValue();
+        startPhaseTransition(actor.getServer(), nextPhase, "阶段 " + nextPhase);
+    }
+
+    private static int nextPhaseValue() {
+        int next = DialogStore.getCurrentPhase() + 1;
+        return next > DialogStore.getPhaseCount() ? 1 : next;
     }
 
     private static void sendDialogPair(ServerPlayerEntity actor, ServerPlayerEntity target, DialogTree tree, String nodeId, String roleId) {
@@ -225,6 +262,72 @@ public class FirstMod implements ModInitializer {
         }
         if (target != null && !actor.getUuid().equals(target.getUuid()) && ServerPlayNetworking.canSend(target, CloseDialogPayload.ID)) {
             ServerPlayNetworking.send(target, payload);
+        }
+    }
+
+    private static void closeAllDialogs(MinecraftServer server) {
+        ACTIVE_DIALOGS.clear();
+    }
+
+    private static void startPhaseTransition(MinecraftServer server, int targetPhase, String message) {
+        if (pendingTransition != null) {
+            return;
+        }
+        pendingTransition = new PhaseTransition(targetPhase, TRANSITION_DELAY_TICKS, message);
+        closeAllDialogs(server);
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            sendTransition(player, true, message);
+        }
+    }
+
+    private static void tickTransition(MinecraftServer server) {
+        if (pendingTransition == null) {
+            return;
+        }
+        pendingTransition.ticksRemaining--;
+        if (pendingTransition.ticksRemaining > 0) {
+            return;
+        }
+
+        int targetPhase = pendingTransition.targetPhase;
+        DialogStore.setCurrentPhase(targetPhase);
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            teleportForCurrentRole(server, player, targetPhase);
+            DialogStore.resetStamina(player.getUuid());
+            syncStamina(player);
+            sendTransition(player, false, "");
+        }
+        pendingTransition = null;
+    }
+
+    private static void teleportForCurrentRole(MinecraftServer server, ServerPlayerEntity player, int phase) {
+        String roleId = DialogStore.getClaimedRole(player.getUuid());
+        DialogStore.TeleportPoint point = DialogStore.getTeleport(phase, roleId.isBlank() ? "default" : roleId);
+        if (point == null) {
+            player.sendMessage(Text.literal("当前阶段没有你的角色传送点。"), false);
+            return;
+        }
+        teleportToPoint(server, player, point);
+    }
+
+    private static void teleportToPoint(MinecraftServer server, ServerPlayerEntity player, DialogStore.TeleportPoint point) {
+        Identifier worldId = Identifier.tryParse(point.world);
+        if (worldId == null) {
+            player.sendMessage(Text.literal("传送点世界无效：" + point.world), false);
+            return;
+        }
+        RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, worldId);
+        ServerWorld world = server.getWorld(worldKey);
+        if (world == null) {
+            player.sendMessage(Text.literal("找不到传送点世界：" + point.world), false);
+            return;
+        }
+        player.teleport(world, point.x, point.y, point.z, point.yaw, point.pitch);
+    }
+
+    private static void sendTransition(ServerPlayerEntity player, boolean blackScreen, String message) {
+        if (ServerPlayNetworking.canSend(player, TransitionPayload.ID)) {
+            ServerPlayNetworking.send(player, new TransitionPayload(blackScreen, message));
         }
     }
 
@@ -310,8 +413,9 @@ public class FirstMod implements ModInitializer {
                                 })))
                 .then(literal("next")
                         .executes(context -> {
-                            int phase = DialogStore.nextPhase();
-                            feedback(context.getSource(), "Dialog phase switched to " + phase + " / " + DialogStore.getPhaseCount());
+                            int phase = nextPhaseValue();
+                            startPhaseTransition(context.getSource().getServer(), phase, "阶段 " + phase);
+                            feedback(context.getSource(), "Dialog phase transition started: " + phase + " / " + DialogStore.getPhaseCount());
                             return phase;
                         }))
                 .then(literal("set")
@@ -326,7 +430,62 @@ public class FirstMod implements ModInitializer {
                         .executes(context -> {
                             feedback(context.getSource(), "Current dialog phase: " + DialogStore.getCurrentPhase() + " / " + DialogStore.getPhaseCount());
                             return DialogStore.getCurrentPhase();
-                        })));
+                        }))
+                .then(literal("settp")
+                        .then(argument("phase", IntegerArgumentType.integer(1))
+                                .then(argument("role_id", StringArgumentType.word())
+                                        .executes(context -> {
+                                            ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
+                                            int phase = IntegerArgumentType.getInteger(context, "phase");
+                                            String roleId = StringArgumentType.getString(context, "role_id").trim();
+                                            if (!DialogStore.isValidRoleId(roleId)) {
+                                                feedback(context.getSource(), "Invalid role id. Use default or a-z, 0-9, _, -, . or /, max 64 chars.");
+                                                return 0;
+                                            }
+                                            DialogStore.TeleportPoint point = new DialogStore.TeleportPoint();
+                                            point.world = player.getWorld().getRegistryKey().getValue().toString();
+                                            point.x = player.getX();
+                                            point.y = player.getY();
+                                            point.z = player.getZ();
+                                            point.yaw = player.getYaw();
+                                            point.pitch = player.getPitch();
+                                            DialogStore.setTeleport(phase, roleId, point);
+                                            feedback(context.getSource(), "Saved phase " + phase + " teleport for role " + roleId + ".");
+                                            return 1;
+                                        }))))
+                .then(literal("tptest")
+                        .then(argument("phase", IntegerArgumentType.integer(1))
+                                .then(argument("role_id", StringArgumentType.word())
+                                        .executes(context -> {
+                                            ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
+                                            int phase = IntegerArgumentType.getInteger(context, "phase");
+                                            String roleId = StringArgumentType.getString(context, "role_id").trim();
+                                            DialogStore.TeleportPoint point = DialogStore.getTeleport(phase, roleId);
+                                            if (point == null) {
+                                                feedback(context.getSource(), "No teleport for phase " + phase + " role " + roleId + ".");
+                                                return 0;
+                                            }
+                                            teleportToPoint(context.getSource().getServer(), player, point);
+                                            return 1;
+                                        }))))
+                .then(literal("cleartp")
+                        .then(argument("phase", IntegerArgumentType.integer(1))
+                                .then(argument("role_id", StringArgumentType.word())
+                                        .executes(context -> {
+                                            int phase = IntegerArgumentType.getInteger(context, "phase");
+                                            String roleId = StringArgumentType.getString(context, "role_id").trim();
+                                            DialogStore.clearTeleport(phase, roleId);
+                                            feedback(context.getSource(), "Cleared phase " + phase + " teleport for role " + roleId + ".");
+                                            return 1;
+                                        }))))
+                .then(literal("tpinfo")
+                        .then(argument("phase", IntegerArgumentType.integer(1))
+                                .executes(context -> {
+                                    int phase = IntegerArgumentType.getInteger(context, "phase");
+                                    String roles = DialogStore.getTeleportInfo(phase);
+                                    feedback(context.getSource(), roles.isBlank() ? "No teleports for phase " + phase + "." : "Phase " + phase + " teleports: " + roles);
+                                    return roles.isBlank() ? 0 : 1;
+                                }))));
 
             dispatcher.register(literal("dialogrole")
                     .then(literal("claim")
@@ -381,6 +540,34 @@ public class FirstMod implements ModInitializer {
                                         return roleId.isBlank() ? 0 : 1;
                                     }))));
 
+            dispatcher.register(literal("dialogprotagonist")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(literal("set")
+                            .then(argument("player", EntityArgumentType.player())
+                                    .executes(context -> {
+                                        ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
+                                        DialogStore.setProtagonist(target.getUuid());
+                                        feedback(context.getSource(), target.getNameForScoreboard() + " is now the protagonist.");
+                                        return 1;
+                                    })))
+                    .then(literal("clear")
+                            .executes(context -> {
+                                DialogStore.clearProtagonist();
+                                feedback(context.getSource(), "Protagonist cleared.");
+                                return 1;
+                            }))
+                    .then(literal("get")
+                            .executes(context -> {
+                                String protagonistId = DialogStore.getProtagonistPlayerId();
+                                if (protagonistId.isBlank()) {
+                                    feedback(context.getSource(), "No protagonist set.");
+                                    return 0;
+                                }
+                                ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(UUID.fromString(protagonistId));
+                                feedback(context.getSource(), player == null ? "Protagonist UUID: " + protagonistId : "Protagonist: " + player.getNameForScoreboard());
+                                return 1;
+                            })));
+
             dispatcher.register(literal("dialogstamina")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(literal("reset")
@@ -422,6 +609,18 @@ public class FirstMod implements ModInitializer {
         private DialogSession(UUID targetPlayerId, String roleId) {
             this.targetPlayerId = targetPlayerId;
             this.roleId = roleId;
+        }
+    }
+
+    private static class PhaseTransition {
+        private final int targetPhase;
+        private int ticksRemaining;
+        private final String message;
+
+        private PhaseTransition(int targetPhase, int ticksRemaining, String message) {
+            this.targetPhase = targetPhase;
+            this.ticksRemaining = ticksRemaining;
+            this.message = message;
         }
     }
 }
