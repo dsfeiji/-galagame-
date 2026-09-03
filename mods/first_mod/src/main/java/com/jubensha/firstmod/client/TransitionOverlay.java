@@ -1,36 +1,86 @@
 package com.jubensha.firstmod.client;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
 
 public final class TransitionOverlay {
-    private static int remainingTicks;
-
     private TransitionOverlay() {
     }
 
-    public static void register() {
-        HudRenderCallback.EVENT.register((context, tickCounter) -> render(context));
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (remainingTicks > 0) {
-                remainingTicks--;
-            }
-        });
+    public static void show(MinecraftClient client, int durationTicks) {
+        int totalTicks = Math.max(20, durationTicks);
+        client.setScreen(new TransitionScreen(client.currentScreen, totalTicks));
     }
 
-    public static void show(int durationTicks) {
-        remainingTicks = Math.max(0, durationTicks);
-    }
+    private static class TransitionScreen extends Screen {
+        private final Screen previousScreen;
+        private final int totalTicks;
+        private final int fadeTicks;
+        private int age;
 
-    private static void render(DrawContext context) {
-        if (remainingTicks <= 0) {
-            return;
+        private TransitionScreen(Screen previousScreen, int totalTicks) {
+            super(Text.empty());
+            this.previousScreen = previousScreen;
+            this.totalTicks = totalTicks;
+            this.fadeTicks = Math.max(6, Math.min(12, totalTicks / 3));
         }
-        MinecraftClient client = MinecraftClient.getInstance();
-        int width = client.getWindow().getScaledWidth();
-        int height = client.getWindow().getScaledHeight();
-        context.fill(0, 0, width, height, 0xF8000000);
+
+        @Override
+        public void tick() {
+            age++;
+            if (age >= totalTicks && this.client != null && this.client.currentScreen == this) {
+                this.client.setScreen(null);
+            }
+        }
+
+        @Override
+        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+            if (previousScreen != null && age < fadeTicks) {
+                previousScreen.render(context, mouseX, mouseY, delta);
+            }
+            context.fill(0, 0, this.width, this.height, alpha() << 24);
+        }
+
+        private int alpha() {
+            if (age < fadeTicks) {
+                return Math.min(255, age * 255 / fadeTicks);
+            }
+            int fadeOutStart = totalTicks - fadeTicks;
+            if (age > fadeOutStart) {
+                int remaining = Math.max(0, totalTicks - age);
+                return Math.min(255, remaining * 255 / fadeTicks);
+            }
+            return 255;
+        }
+
+        @Override
+        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+            return true;
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            return true;
+        }
+
+        @Override
+        public boolean shouldPause() {
+            return false;
+        }
+
+        @Override
+        public boolean shouldCloseOnEsc() {
+            return false;
+        }
+
+        @Override
+        public void blur() {
+        }
+
+        @Override
+        public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        }
     }
 }

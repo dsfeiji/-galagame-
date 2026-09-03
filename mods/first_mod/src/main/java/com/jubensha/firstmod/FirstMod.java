@@ -47,7 +47,7 @@ public class FirstMod implements ModInitializer {
     public static final String MOD_ID = "first_mod";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static final String PROTAGONIST_TELEPORT_ROLE_ID = "protagonist";
-    private static final int PHASE_TRANSITION_BLACKOUT_TICKS = 30;
+    private static final int PHASE_TRANSITION_BLACKOUT_TICKS = 40;
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
 
     @Override

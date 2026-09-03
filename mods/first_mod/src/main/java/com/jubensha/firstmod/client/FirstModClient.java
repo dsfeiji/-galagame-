@@ -25,7 +25,6 @@ public class FirstModClient implements ClientModInitializer {
         registerPayloadTypes();
         registerKeyBinding();
         StaminaHud.register();
-        TransitionOverlay.register();
 
         ClientPlayNetworking.registerGlobalReceiver(DialogPayload.ID, (payload, context) -> {
             MinecraftClient client = context.client();
@@ -48,10 +47,7 @@ public class FirstModClient implements ClientModInitializer {
         });
         ClientPlayNetworking.registerGlobalReceiver(StaminaPayload.ID, (payload, context) -> context.client().execute(() -> StaminaHud.update(payload.stamina(), payload.maxStamina())));
         ClientPlayNetworking.registerGlobalReceiver(TransitionPayload.ID, (payload, context) -> context.client().execute(() -> {
-            if (context.client().currentScreen instanceof PlayerDialogScreen) {
-                context.client().setScreen(null);
-            }
-            TransitionOverlay.show(payload.durationTicks());
+            TransitionOverlay.show(context.client(), payload.durationTicks());
         }));
     }
 
