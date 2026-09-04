@@ -2,21 +2,28 @@ package com.jubensha.firstmod;
 
 import com.jubensha.firstmod.dialog.DialogStore;
 import com.jubensha.firstmod.dialog.DialogTree;
+import com.jubensha.firstmod.minigame.MinigameInteraction;
+import com.jubensha.firstmod.minigame.MinigameStore;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
+import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
+import com.jubensha.firstmod.network.SaveMinigamePayload;
+import com.jubensha.firstmod.network.StartInteractionMinigamePayload;
 import com.jubensha.firstmod.network.StaminaPayload;
 import com.jubensha.firstmod.network.TransitionPayload;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.Block;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -31,6 +38,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,16 +58,21 @@ public class FirstMod implements ModInitializer {
     private static final String PROTAGONIST_TELEPORT_ROLE_ID = "protagonist";
     private static final int PHASE_TRANSITION_BLACKOUT_TICKS = 40;
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
+    private static final Map<UUID, String> ACTIVE_INTERACTION_MINIGAMES = new HashMap<>();
 
     @Override
     public void onInitialize() {
         DialogStore.load();
+        MinigameStore.load();
         registerPayloadTypes();
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncStamina(handler.player));
         registerSaveReceiver();
+        registerSaveMinigameReceiver();
         registerAdvanceReceiver();
         registerMinigameReceiver();
+        registerInteractionMinigameReceiver();
         registerCommands();
+        registerBlockMinigames();
         registerRightClickDialog();
         LOGGER.info("First Mod initialized.");
     }
@@ -84,6 +97,24 @@ public class FirstMod implements ModInitializer {
                 refreshActiveDialogAfterImport(player, roleId, tree);
             } catch (RuntimeException exception) {
                 player.sendMessage(Text.literal("Dialog JSON import failed: " + exception.getMessage()), false);
+            }
+        });
+    }
+
+    private static void registerSaveMinigameReceiver() {
+        ServerPlayNetworking.registerGlobalReceiver(SaveMinigamePayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            if (!player.isCreative()) {
+                player.sendMessage(Text.literal("Only creative players can import minigame JSON."), false);
+                return;
+            }
+
+            try {
+                MinigameInteraction interaction = MinigameStore.fromJsonStrict(payload.minigameJson());
+                MinigameStore.saveInteraction(interaction);
+                player.sendMessage(Text.literal("Imported minigame interaction: " + interaction.id), false);
+            } catch (RuntimeException exception) {
+                player.sendMessage(Text.literal("Minigame JSON import failed: " + exception.getMessage()), false);
             }
         });
     }
@@ -144,6 +175,27 @@ public class FirstMod implements ModInitializer {
         });
     }
 
+    private static void registerBlockMinigames() {
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClient() || hand != Hand.MAIN_HAND || !(player instanceof ServerPlayerEntity serverPlayer)) {
+                return ActionResult.PASS;
+            }
+
+            BlockPos pos = hitResult.getBlockPos();
+            Block block = world.getBlockState(pos).getBlock();
+            String blockId = Registries.BLOCK.getId(block).toString();
+            String worldId = world.getRegistryKey().getValue().toString();
+
+            for (MinigameInteraction interaction : MinigameStore.all()) {
+                if (matchesInteraction(interaction, serverPlayer, blockId, worldId, pos)) {
+                    startInteractionMinigame(serverPlayer, interaction);
+                    return ActionResult.SUCCESS;
+                }
+            }
+            return ActionResult.PASS;
+        });
+    }
+
     private static void registerPayloadTypes() {
         try {
             PayloadTypeRegistry.playS2C().register(DialogPayload.ID, DialogPayload.CODEC);
@@ -162,7 +214,15 @@ public class FirstMod implements ModInitializer {
         } catch (IllegalArgumentException ignored) {
         }
         try {
+            PayloadTypeRegistry.playS2C().register(StartInteractionMinigamePayload.ID, StartInteractionMinigamePayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
             PayloadTypeRegistry.playC2S().register(SaveDialogPayload.ID, SaveDialogPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(SaveMinigamePayload.ID, SaveMinigamePayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {
@@ -171,6 +231,10 @@ public class FirstMod implements ModInitializer {
         }
         try {
             PayloadTypeRegistry.playC2S().register(MinigameResultPayload.ID, MinigameResultPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(InteractionMinigameResultPayload.ID, InteractionMinigameResultPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
     }
@@ -205,6 +269,23 @@ public class FirstMod implements ModInitializer {
                 return;
             }
             showNode(actor, target, tree, nextNodeId, session);
+        });
+    }
+
+    private static void registerInteractionMinigameReceiver() {
+        ServerPlayNetworking.registerGlobalReceiver(InteractionMinigameResultPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            String activeId = ACTIVE_INTERACTION_MINIGAMES.get(player.getUuid());
+            if (activeId == null || !activeId.equals(payload.interactionId())) {
+                return;
+            }
+            ACTIVE_INTERACTION_MINIGAMES.remove(player.getUuid());
+
+            MinigameInteraction interaction = MinigameStore.get(payload.interactionId());
+            if (interaction == null) {
+                return;
+            }
+            applyInteractionResult(player, payload.success() ? interaction.success : interaction.failure);
         });
     }
 
@@ -388,6 +469,45 @@ public class FirstMod implements ModInitializer {
         return nodeId;
     }
 
+    private static boolean matchesInteraction(MinigameInteraction interaction, ServerPlayerEntity player, String blockId, String worldId, BlockPos pos) {
+        interaction.normalize();
+        if (!"use_block".equals(interaction.trigger.type) || !interaction.trigger.block.equals(blockId)) {
+            return false;
+        }
+        if (interaction.protagonistOnly && !DialogStore.isProtagonist(player.getUuid())) {
+            return false;
+        }
+        if (!interaction.trigger.world.isBlank() && !interaction.trigger.world.equals(worldId)) {
+            return false;
+        }
+        if (interaction.trigger.x != null && interaction.trigger.x != pos.getX()) {
+            return false;
+        }
+        if (interaction.trigger.y != null && interaction.trigger.y != pos.getY()) {
+            return false;
+        }
+        if (interaction.trigger.z != null && interaction.trigger.z != pos.getZ()) {
+            return false;
+        }
+        if (!interaction.trigger.phases.isEmpty()) {
+            return interaction.trigger.phases.contains(DialogStore.getCurrentPhase());
+        }
+        return interaction.trigger.phase < 1 || interaction.trigger.phase == DialogStore.getCurrentPhase();
+    }
+
+    private static void startInteractionMinigame(ServerPlayerEntity player, MinigameInteraction interaction) {
+        if (!DialogStore.spendStamina(player.getUuid(), interaction.staminaCost)) {
+            player.sendMessage(Text.literal("体力不足，无法进行这个行动。"), false);
+            syncStamina(player);
+            return;
+        }
+        syncStamina(player);
+        ACTIVE_INTERACTION_MINIGAMES.put(player.getUuid(), interaction.id);
+        if (ServerPlayNetworking.canSend(player, StartInteractionMinigamePayload.ID)) {
+            ServerPlayNetworking.send(player, new StartInteractionMinigamePayload(interaction.id, interaction.minigame.title, interaction.minigame.difficulty));
+        }
+    }
+
     private static boolean hasItem(ServerPlayerEntity player, String itemId, int count) {
         Item item = getItem(itemId);
         if (item == null) {
@@ -414,6 +534,19 @@ public class FirstMod implements ModInitializer {
             Item item = getItem(reward.item);
             if (item != null) {
                 actor.giveItemStack(new ItemStack(item, reward.count));
+            }
+        }
+    }
+
+    private static void applyInteractionResult(ServerPlayerEntity player, MinigameInteraction.Result result) {
+        result.normalize();
+        if (!result.message.isBlank()) {
+            player.sendMessage(Text.literal(result.message), false);
+        }
+        for (DialogTree.ItemReward reward : result.rewards) {
+            Item item = getItem(reward.item);
+            if (item != null) {
+                player.giveItemStack(new ItemStack(item, reward.count));
             }
         }
     }

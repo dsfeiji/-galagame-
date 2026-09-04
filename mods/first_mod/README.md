@@ -32,6 +32,59 @@ Choices can spend stamina:
 
 Missing `staminaCost` means `0`.
 
+## Block Minigame JSON
+
+Put block minigame interaction files in the game run directory:
+
+```text
+./first_mod_minigames
+```
+
+Creative players can press `O`, switch to `小游戏JSON`, choose a JSON file, then import it. Imported minigames are stored on the server and trigger when the configured block is right-clicked.
+
+Example:
+
+```json
+{
+  "id": "roster_lectern_timing",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:lectern",
+    "phase": 1
+  },
+  "minigame": {
+    "type": "timing",
+    "title": "偷看点名册",
+    "difficulty": 2
+  },
+  "success": {
+    "message": "你成功看到了旧名单。",
+    "rewards": [
+      {
+        "item": "minecraft:paper",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "老师突然回头，你没能看清点名册。"
+  }
+}
+```
+
+Optional exact block position:
+
+```json
+"world": "minecraft:overworld",
+"x": 12,
+"y": 64,
+"z": -8
+```
+
+If position is omitted, every matching block in the configured phase can trigger the minigame.
+
 ## Roles
 
 Players claim role ids before playing:

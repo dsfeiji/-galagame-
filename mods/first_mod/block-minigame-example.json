@@ -1,0 +1,27 @@
+{
+  "id": "roster_lectern_timing",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:lectern",
+    "phase": 1
+  },
+  "minigame": {
+    "type": "timing",
+    "title": "偷看点名册",
+    "difficulty": 2
+  },
+  "success": {
+    "message": "你成功看到了旧名单，拿到了一张点名纸。",
+    "rewards": [
+      {
+        "item": "minecraft:paper",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "老师突然回头，你没能看清点名册。"
+  }
+}

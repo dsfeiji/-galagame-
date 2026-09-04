@@ -6,6 +6,9 @@ import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.StaminaPayload;
+import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
+import com.jubensha.firstmod.network.SaveMinigamePayload;
+import com.jubensha.firstmod.network.StartInteractionMinigamePayload;
 import com.jubensha.firstmod.network.TransitionPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -23,6 +26,7 @@ public class FirstModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         DialogJsonFolder.ensureExists();
+        MinigameJsonFolder.ensureExists();
         registerPayloadTypes();
         registerKeyBinding();
         StaminaHud.register();
@@ -49,6 +53,9 @@ public class FirstModClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(StaminaPayload.ID, (payload, context) -> context.client().execute(() -> StaminaHud.update(payload.stamina(), payload.maxStamina())));
         ClientPlayNetworking.registerGlobalReceiver(TransitionPayload.ID, (payload, context) -> context.client().execute(() -> {
             TransitionOverlay.show(context.client(), payload.durationTicks());
+        }));
+        ClientPlayNetworking.registerGlobalReceiver(StartInteractionMinigamePayload.ID, (payload, context) -> context.client().execute(() -> {
+            context.client().setScreen(new InteractionMinigameScreen(payload.interactionId(), payload.title(), payload.difficulty()));
         }));
     }
 
@@ -77,11 +84,23 @@ public class FirstModClient implements ClientModInitializer {
         } catch (IllegalArgumentException ignored) {
         }
         try {
+            PayloadTypeRegistry.playC2S().register(SaveMinigamePayload.ID, SaveMinigamePayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
             PayloadTypeRegistry.playC2S().register(AdvanceDialogPayload.ID, AdvanceDialogPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {
             PayloadTypeRegistry.playC2S().register(MinigameResultPayload.ID, MinigameResultPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(InteractionMinigameResultPayload.ID, InteractionMinigameResultPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playS2C().register(StartInteractionMinigamePayload.ID, StartInteractionMinigamePayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
     }

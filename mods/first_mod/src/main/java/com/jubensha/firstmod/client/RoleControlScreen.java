@@ -1,7 +1,9 @@
 package com.jubensha.firstmod.client;
 
+import com.google.gson.JsonParser;
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.SaveDialogPayload;
+import com.jubensha.firstmod.network.SaveMinigamePayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -27,43 +29,51 @@ public class RoleControlScreen extends Screen {
     private final List<Path> jsonFiles = new ArrayList<>();
     private TextFieldWidget roleField;
     private TextFieldWidget phaseField;
+    private boolean minigameMode;
     private int selectedIndex = -1;
     private int scrollOffset = 0;
-    private String message = "选择 JSON 文件，导入到指定角色阶段";
+    private String message = "选择 JSON 文件并导入";
 
     public RoleControlScreen() {
-        super(Text.literal("角色对话控制面板"));
+        super(Text.literal("剧情控制面板"));
     }
 
     @Override
     protected void init() {
-        reloadFiles();
         int panelX = (this.width - PANEL_WIDTH) / 2;
         int panelY = panelY();
 
-        roleField = new TextFieldWidget(this.textRenderer, panelX + 30, panelY + 64, 150, 18, Text.literal("角色ID"));
+        roleField = new TextFieldWidget(this.textRenderer, panelX + 30, panelY + 72, 150, 18, Text.literal("角色ID"));
         roleField.setMaxLength(64);
         roleField.setText("role_1");
-        addDrawableChild(roleField);
 
-        phaseField = new TextFieldWidget(this.textRenderer, panelX + 30, panelY + 112, 54, 18, Text.literal("阶段"));
+        phaseField = new TextFieldWidget(this.textRenderer, panelX + 30, panelY + 120, 54, 18, Text.literal("阶段"));
         phaseField.setMaxLength(3);
         phaseField.setText("1");
-        addDrawableChild(phaseField);
 
+        reloadFiles();
         rebuildButtons();
     }
 
     private void rebuildButtons() {
         clearChildren();
-        addDrawableChild(roleField);
-        addDrawableChild(phaseField);
-
         int panelX = (this.width - PANEL_WIDTH) / 2;
         int panelY = panelY();
         int listX = panelX + 210;
-        int listY = panelY + 52;
+        int listY = panelY + 58;
         int listWidth = PANEL_WIDTH - 236;
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("对话JSON"), button -> switchMode(false))
+                .dimensions(panelX + 30, panelY + 36, 72, 18)
+                .build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("小游戏JSON"), button -> switchMode(true))
+                .dimensions(panelX + 108, panelY + 36, 82, 18)
+                .build());
+
+        if (!minigameMode) {
+            addDrawableChild(roleField);
+            addDrawableChild(phaseField);
+        }
 
         int visibleRows = Math.min(MAX_ROWS, jsonFiles.size());
         for (int i = 0; i < visibleRows; i++) {
@@ -83,18 +93,18 @@ public class RoleControlScreen extends Screen {
                     .build());
         }
 
-        int leftButtonY = panelY + 144;
+        int leftButtonY = panelY + 152;
         addDrawableChild(ButtonWidget.builder(Text.literal("打开文件夹"), button -> openFolder())
-                .dimensions(panelX + 30, leftButtonY, 72, 18)
+                .dimensions(panelX + 30, leftButtonY, 82, 18)
                 .build());
         addDrawableChild(ButtonWidget.builder(Text.literal("刷新"), button -> {
                     reloadFiles();
                     rebuildButtons();
                 })
-                .dimensions(panelX + 108, leftButtonY, 48, 18)
+                .dimensions(panelX + 118, leftButtonY, 48, 18)
                 .build());
 
-        int listButtonY = panelY + 184;
+        int listButtonY = panelY + 190;
         addDrawableChild(ButtonWidget.builder(Text.literal("上翻"), button -> {
                     scrollOffset = Math.max(0, scrollOffset - 1);
                     rebuildButtons();
@@ -126,22 +136,29 @@ public class RoleControlScreen extends Screen {
         context.fill(panelX, panelY, panelRight, panelBottom, 0xF0191D28);
         context.fill(panelX, panelY, panelRight, panelY + 29, 0xF0242B3A);
         context.fill(panelX + 14, panelY + 2, panelRight - 14, panelY + 3, 0xFFE6C879);
-        context.fill(panelX + 196, panelY + 42, panelX + 197, panelY + 207, 0x44E6C879);
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("角色对话控制面板"), this.width / 2, panelY + 11, 0xFFFFF2CC);
+        context.fill(panelX + 196, panelY + 42, panelX + 197, panelY + 212, 0x44E6C879);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("剧情控制面板"), this.width / 2, panelY + 11, 0xFFFFF2CC);
 
-        context.drawTextWithShadow(this.textRenderer, Text.literal("角色设置"), panelX + 30, panelY + 42, 0xFFE6C879);
-        context.drawTextWithShadow(this.textRenderer, Text.literal("角色ID"), panelX + 30, panelY + 54, 0xFFE4D7B4);
-        context.drawTextWithShadow(this.textRenderer, Text.literal("阶段"), panelX + 30, panelY + 102, 0xFFE4D7B4);
-        context.drawTextWithShadow(this.textRenderer, Text.literal("玩家认领：/dialogrole claim <角色ID>"), panelX + 30, panelY + 174, 0xFFB9C6D6);
+        context.fill(panelX + (minigameMode ? 108 : 30), panelY + 55, panelX + (minigameMode ? 190 : 102), panelY + 56, 0xFFE6C879);
+        if (minigameMode) {
+            context.drawTextWithShadow(this.textRenderer, Text.literal("小游戏配置"), panelX + 30, panelY + 70, 0xFFE6C879);
+            context.drawTextWithShadow(this.textRenderer, Text.literal("右键地图方块触发小游戏"), panelX + 30, panelY + 92, 0xFFE4D7B4);
+            context.drawTextWithShadow(this.textRenderer, Text.literal("导入后立即保存在服务器配置"), panelX + 30, panelY + 108, 0xFFB9C6D6);
+        } else {
+            context.drawTextWithShadow(this.textRenderer, Text.literal("角色对话配置"), panelX + 30, panelY + 58, 0xFFE6C879);
+            context.drawTextWithShadow(this.textRenderer, Text.literal("角色ID"), panelX + 30, panelY + 62, 0xFFE4D7B4);
+            context.drawTextWithShadow(this.textRenderer, Text.literal("阶段"), panelX + 30, panelY + 110, 0xFFE4D7B4);
+            context.drawTextWithShadow(this.textRenderer, Text.literal("/dialogrole claim <角色ID>"), panelX + 30, panelY + 182, 0xFFB9C6D6);
+        }
 
-        context.drawTextWithShadow(this.textRenderer, Text.literal("JSON 文件"), panelX + 210, panelY + 38, 0xFFE6C879);
-        context.drawTextWithShadow(this.textRenderer, Text.literal("目录：" + DialogJsonFolder.getDisplayPath()), panelX + 30, panelBottom - 34, 0xFFB9C6D6);
+        context.drawTextWithShadow(this.textRenderer, Text.literal("JSON 文件"), panelX + 210, panelY + 44, 0xFFE6C879);
+        context.drawTextWithShadow(this.textRenderer, Text.literal("目录：" + currentDisplayPath()), panelX + 30, panelBottom - 34, 0xFFB9C6D6);
         context.drawTextWithShadow(this.textRenderer, Text.literal(trimMiddle(message, 54)), panelX + 30, panelBottom - 17, 0xFFFFFFFF);
 
         if (jsonFiles.isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("未找到 .json 文件"), panelX + 326, panelY + 112, 0xFFB9C6D6);
+            context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("未找到 .json 文件"), panelX + 326, panelY + 118, 0xFFB9C6D6);
         } else if (selectedIndex >= scrollOffset && selectedIndex < scrollOffset + MAX_ROWS) {
-            int y = panelY + 52 + (selectedIndex - scrollOffset) * ROW_HEIGHT;
+            int y = panelY + 58 + (selectedIndex - scrollOffset) * ROW_HEIGHT;
             context.fill(panelX + 210, y, panelRight - 26, y + 16, 0x44E6C879);
         }
 
@@ -161,10 +178,22 @@ public class RoleControlScreen extends Screen {
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
     }
 
+    private void switchMode(boolean minigameMode) {
+        if (this.minigameMode == minigameMode) {
+            return;
+        }
+        this.minigameMode = minigameMode;
+        selectedIndex = -1;
+        scrollOffset = 0;
+        message = minigameMode ? "选择小游戏 JSON 文件并导入" : "选择对话 JSON 文件并导入";
+        reloadFiles();
+        rebuildButtons();
+    }
+
     private void reloadFiles() {
-        DialogJsonFolder.ensureExists();
+        ensureCurrentFolder();
         jsonFiles.clear();
-        try (Stream<Path> stream = Files.list(DialogJsonFolder.getFolder())) {
+        try (Stream<Path> stream = Files.list(currentFolder())) {
             stream.filter(path -> Files.isRegularFile(path) && path.getFileName().toString().toLowerCase().endsWith(".json"))
                     .sorted(Comparator.comparing(path -> path.getFileName().toString()))
                     .forEach(jsonFiles::add);
@@ -177,6 +206,29 @@ public class RoleControlScreen extends Screen {
     }
 
     private void importSelected() {
+        if (selectedIndex < 0 || selectedIndex >= jsonFiles.size()) {
+            message = "请先选择一个 JSON 文件";
+            return;
+        }
+
+        Path path = jsonFiles.get(selectedIndex);
+        try {
+            String json = Files.readString(path, StandardCharsets.UTF_8);
+            if (minigameMode) {
+                JsonParser.parseString(json).getAsJsonObject();
+                ClientPlayNetworking.send(new SaveMinigamePayload(json));
+                message = "已导入小游戏：" + path.getFileName();
+            } else {
+                importDialog(json);
+            }
+        } catch (IOException exception) {
+            message = "读取失败：" + exception.getMessage();
+        } catch (RuntimeException exception) {
+            message = "JSON 无效：" + exception.getMessage();
+        }
+    }
+
+    private void importDialog(String json) {
         String roleId = roleField.getText().trim();
         if (!roleId.matches("[a-z0-9_./-]{1,64}")) {
             message = "角色ID无效，只能用小写英文、数字、_、-、.、/";
@@ -189,30 +241,34 @@ public class RoleControlScreen extends Screen {
             message = "阶段必须是数字";
             return;
         }
-        if (selectedIndex < 0 || selectedIndex >= jsonFiles.size()) {
-            message = "请先选择一个 JSON 文件";
-            return;
-        }
-
-        Path path = jsonFiles.get(selectedIndex);
-        try {
-            String json = Files.readString(path, StandardCharsets.UTF_8);
-            DialogTree.fromJsonStrict(json);
-            ClientPlayNetworking.send(new SaveDialogPayload(roleId, phase, json));
-            message = "已导入到 " + roleId + " 的第 " + phase + " 阶段";
-        } catch (IOException exception) {
-            message = "读取失败：" + exception.getMessage();
-        } catch (RuntimeException exception) {
-            message = "JSON 无效：" + exception.getMessage();
-        }
+        DialogTree.fromJsonStrict(json);
+        ClientPlayNetworking.send(new SaveDialogPayload(roleId, phase, json));
+        message = "已导入到 " + roleId + " 的第 " + phase + " 阶段";
     }
 
     private void openFolder() {
-        if (DialogJsonFolder.openFolder()) {
+        boolean opened = minigameMode ? MinigameJsonFolder.openFolder() : DialogJsonFolder.openFolder();
+        if (opened) {
             message = "文件夹已打开，放入文件后点刷新";
         } else {
-            message = "目录：" + DialogJsonFolder.getDisplayPath();
+            message = "目录：" + currentDisplayPath();
         }
+    }
+
+    private void ensureCurrentFolder() {
+        if (minigameMode) {
+            MinigameJsonFolder.ensureExists();
+        } else {
+            DialogJsonFolder.ensureExists();
+        }
+    }
+
+    private Path currentFolder() {
+        return minigameMode ? MinigameJsonFolder.getFolder() : DialogJsonFolder.getFolder();
+    }
+
+    private String currentDisplayPath() {
+        return minigameMode ? MinigameJsonFolder.getDisplayPath() : DialogJsonFolder.getDisplayPath();
     }
 
     private int panelY() {
