@@ -1,0 +1,50 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "体育生把手肘压在桌上：赢了我，我就把器材室的秘密告诉你。",
+      "choices": [
+        {
+          "text": "和他扳手腕",
+          "nextNodeId": "arm_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "先离开",
+          "nextNodeId": "",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "arm_game",
+      "text": "双方快速点击屏幕或按空格。倒计时结束后，右键发起者点击数领先才算胜利。",
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕",
+        "durationTicks": 100,
+        "opponentAutoClicksPerSecond": 5.5,
+        "winClickLead": 1,
+        "successNodeId": "win",
+        "failureNodeId": "lose"
+      }
+    },
+    {
+      "id": "win",
+      "text": "你赢了。体育生咬牙把器材室的线索交给你。",
+      "rewards": [
+        {
+          "item": "minecraft:rabbit_foot",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    },
+    {
+      "id": "lose",
+      "text": "你输了。体育生笑得很大声：等你有力气了再来吧。",
+      "nextNodeId": ""
+    }
+  ]
+}

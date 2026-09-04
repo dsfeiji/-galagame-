@@ -1,0 +1,29 @@
+{
+  "id": "arm_wrestle_table_test",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:oak_planks",
+    "phase": 1
+  },
+  "minigame": {
+    "type": "arm_wrestle",
+    "title": "桌边扳手腕",
+    "durationTicks": 100,
+    "opponentAutoClicksPerSecond": 5.5,
+    "winClickLead": 1
+  },
+  "success": {
+    "message": "你赢了扳手腕，获得体育生信物。",
+    "rewards": [
+      {
+        "item": "minecraft:rabbit_foot",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "你输掉了扳手腕。"
+  }
+}

@@ -67,8 +67,8 @@ public final class MinigameStore {
         if ("use_item".equals(interaction.trigger.type) && interaction.trigger.item.isBlank()) {
             throw new IllegalArgumentException("trigger.item is required");
         }
-        if (!"timing".equals(interaction.minigame.type)) {
-            throw new IllegalArgumentException("only timing minigame is supported");
+        if (!"timing".equals(interaction.minigame.type) && !"arm_wrestle".equals(interaction.minigame.type)) {
+            throw new IllegalArgumentException("only timing and arm_wrestle minigames are supported");
         }
         return interaction;
     }

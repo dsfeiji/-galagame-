@@ -191,6 +191,9 @@ public class DialogTree {
         public float speed = 0.78F;
         public float successStart = -1.0F;
         public float successWidth = -1.0F;
+        public int durationTicks = 100;
+        public float opponentAutoClicksPerSecond = 5.5F;
+        public int winClickLead = 1;
         public String successNodeId = "";
         public String failureNodeId = "";
 
@@ -215,6 +218,18 @@ public class DialogTree {
             }
             if (successWidth > 1.0F) {
                 successWidth = 1.0F;
+            }
+            if (durationTicks < 20) {
+                durationTicks = 20;
+            }
+            if (durationTicks > 600) {
+                durationTicks = 600;
+            }
+            if (opponentAutoClicksPerSecond < 0.0F) {
+                opponentAutoClicksPerSecond = 0.0F;
+            }
+            if (winClickLead < 1) {
+                winClickLead = 1;
             }
             if (successNodeId == null) {
                 successNodeId = "";

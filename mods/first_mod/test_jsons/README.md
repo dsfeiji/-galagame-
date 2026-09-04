@@ -14,6 +14,7 @@
 
 ```text
 dialog_full_test.json
+dialog_arm_wrestle_test.json
 ```
 
 建议角色 ID：`test_npc`
@@ -30,6 +31,7 @@ dialog_full_test.json
 
 ```text
 block_minigame_test.json
+block_arm_wrestle_test.json
 item_minigame_test.json
 ```
 
@@ -42,4 +44,5 @@ item_minigame_test.json
 ```
 
 右键讲台 `minecraft:lectern` 可以测试方块小游戏。
+右键橡木木板 `minecraft:oak_planks` 可以测试方块扳手腕小游戏。
 手持纸 `minecraft:paper` 右键可以测试物品小游戏。

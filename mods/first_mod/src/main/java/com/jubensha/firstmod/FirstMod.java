@@ -1,10 +1,14 @@
 package com.jubensha.firstmod;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.jubensha.firstmod.dialog.DialogStore;
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.minigame.MinigameInteraction;
 import com.jubensha.firstmod.minigame.MinigameStore;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
+import com.jubensha.firstmod.network.ArmWrestleClickPayload;
+import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
@@ -59,6 +63,7 @@ public class FirstMod implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static final String PROTAGONIST_TELEPORT_ROLE_ID = "protagonist";
     private static final int PHASE_TRANSITION_BLACKOUT_TICKS = 40;
+    private static final Gson GSON = new GsonBuilder().create();
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
     private static final Map<UUID, String> ACTIVE_INTERACTION_MINIGAMES = new HashMap<>();
 
@@ -73,6 +78,7 @@ public class FirstMod implements ModInitializer {
         registerAdvanceReceiver();
         registerMinigameReceiver();
         registerInteractionMinigameReceiver();
+        registerArmWrestleReceivers();
         registerCommands();
         registerBlockMinigames();
         registerItemMinigames();
@@ -259,6 +265,14 @@ public class FirstMod implements ModInitializer {
             PayloadTypeRegistry.playC2S().register(InteractionMinigameResultPayload.ID, InteractionMinigameResultPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
+        try {
+            PayloadTypeRegistry.playC2S().register(ArmWrestleClickPayload.ID, ArmWrestleClickPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(ArmWrestleFinishPayload.ID, ArmWrestleFinishPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
     }
 
     private static void registerMinigameReceiver() {
@@ -281,7 +295,7 @@ public class FirstMod implements ModInitializer {
                 return;
             }
             DialogTree.DialogNode currentNode = tree.getNode(session.currentNodeId);
-            if (currentNode == null || currentNode.minigame == null) {
+            if (currentNode == null || currentNode.minigame == null || !"timing".equals(currentNode.minigame.type)) {
                 return;
             }
 
@@ -309,6 +323,75 @@ public class FirstMod implements ModInitializer {
             }
             applyInteractionResult(player, payload.success() ? interaction.success : interaction.failure);
         });
+    }
+
+    private static void registerArmWrestleReceivers() {
+        ServerPlayNetworking.registerGlobalReceiver(ArmWrestleClickPayload.ID, (payload, context) -> {
+            ServerPlayerEntity sender = context.player();
+            DialogSession session = ACTIVE_DIALOGS.get(payload.controllerPlayerId());
+            if (!isValidDialogArmWrestle(session, payload.targetPlayerId(), payload.nodeId(), sender)) {
+                return;
+            }
+            if (sender.getUuid().equals(payload.controllerPlayerId())) {
+                session.actorArmClicks++;
+            } else if (sender.getUuid().equals(payload.targetPlayerId())) {
+                session.targetArmClicks++;
+            }
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(ArmWrestleFinishPayload.ID, (payload, context) -> {
+            ServerPlayerEntity actor = context.player();
+            if (!actor.getUuid().equals(payload.controllerPlayerId())) {
+                return;
+            }
+            DialogSession session = ACTIVE_DIALOGS.get(actor.getUuid());
+            if (!isValidDialogArmWrestle(session, payload.targetPlayerId(), payload.nodeId(), actor)) {
+                return;
+            }
+            if (session.armWrestleFinished) {
+                return;
+            }
+            session.armWrestleFinished = true;
+
+            ServerPlayerEntity target = actor.getServer().getPlayerManager().getPlayer(payload.targetPlayerId());
+            if (target == null) {
+                closeDialog(actor, null, payload.targetPlayerId());
+                return;
+            }
+            DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
+            if (tree == null) {
+                closeDialog(actor, target, target.getUuid());
+                return;
+            }
+            DialogTree.DialogNode currentNode = tree.getNode(session.currentNodeId);
+            if (currentNode == null || currentNode.minigame == null) {
+                return;
+            }
+
+            int targetClicks = session.targetArmClicks;
+            if (targetClicks == 0 && currentNode.minigame.opponentAutoClicksPerSecond > 0.0F) {
+                targetClicks = Math.round((currentNode.minigame.durationTicks / 20.0F) * currentNode.minigame.opponentAutoClicksPerSecond);
+            }
+            boolean success = session.actorArmClicks >= targetClicks + currentNode.minigame.winClickLead;
+            String nextNodeId = success ? currentNode.minigame.successNodeId : currentNode.minigame.failureNodeId;
+            if (nextNodeId.isBlank() || !tree.hasNode(nextNodeId)) {
+                closeDialog(actor, target, target.getUuid());
+                return;
+            }
+            showNode(actor, target, tree, nextNodeId, session);
+        });
+    }
+
+    private static boolean isValidDialogArmWrestle(DialogSession session, UUID targetPlayerId, String nodeId, ServerPlayerEntity sender) {
+        if (session == null || !session.targetPlayerId.equals(targetPlayerId) || !session.currentNodeId.equals(nodeId)) {
+            return false;
+        }
+        if (!sender.getUuid().equals(session.targetPlayerId) && ACTIVE_DIALOGS.get(sender.getUuid()) != session) {
+            return false;
+        }
+        DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
+        DialogTree.DialogNode node = tree == null ? null : tree.getNode(session.currentNodeId);
+        return node != null && node.minigame != null && "arm_wrestle".equals(node.minigame.type);
     }
 
     private static String resolveRequestedAdvance(ServerPlayerEntity actor, DialogTree tree, DialogSession session, AdvanceDialogPayload payload) {
@@ -386,6 +469,7 @@ public class FirstMod implements ModInitializer {
             return;
         }
         session.currentNodeId = nodeId;
+        session.resetArmWrestle();
         giveRewards(actor, node, session);
         sendDialogPair(actor, target, tree, nodeId, session.roleId);
     }
@@ -542,14 +626,7 @@ public class FirstMod implements ModInitializer {
         syncStamina(player);
         ACTIVE_INTERACTION_MINIGAMES.put(player.getUuid(), interaction.id);
         if (ServerPlayNetworking.canSend(player, StartInteractionMinigamePayload.ID)) {
-            ServerPlayNetworking.send(player, new StartInteractionMinigamePayload(
-                    interaction.id,
-                    interaction.minigame.title,
-                    interaction.minigame.difficulty,
-                    interaction.minigame.speed,
-                    interaction.minigame.successStart,
-                    interaction.minigame.successWidth
-            ));
+            ServerPlayNetworking.send(player, new StartInteractionMinigamePayload(interaction.id, GSON.toJson(interaction.minigame)));
         }
     }
 
@@ -833,10 +910,19 @@ public class FirstMod implements ModInitializer {
         private final String roleId;
         private final Set<String> rewardedNodeIds = new HashSet<>();
         private String currentNodeId = "";
+        private int actorArmClicks;
+        private int targetArmClicks;
+        private boolean armWrestleFinished;
 
         private DialogSession(UUID targetPlayerId, String roleId) {
             this.targetPlayerId = targetPlayerId;
             this.roleId = roleId;
+        }
+
+        private void resetArmWrestle() {
+            actorArmClicks = 0;
+            targetArmClicks = 0;
+            armWrestleFinished = false;
         }
     }
 }

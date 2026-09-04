@@ -1,5 +1,10 @@
 package com.jubensha.firstmod.client;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.jubensha.firstmod.dialog.DialogTree;
+import com.jubensha.firstmod.network.ArmWrestleClickPayload;
+import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
@@ -21,6 +26,7 @@ import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
 public class FirstModClient implements ClientModInitializer {
+    private static final Gson GSON = new GsonBuilder().create();
     private static KeyBinding controlPanelKey;
 
     @Override
@@ -55,14 +61,11 @@ public class FirstModClient implements ClientModInitializer {
             TransitionOverlay.show(context.client(), payload.durationTicks());
         }));
         ClientPlayNetworking.registerGlobalReceiver(StartInteractionMinigamePayload.ID, (payload, context) -> context.client().execute(() -> {
-            context.client().setScreen(new InteractionMinigameScreen(
-                    payload.interactionId(),
-                    payload.title(),
-                    payload.difficulty(),
-                    payload.speed(),
-                    payload.successStart(),
-                    payload.successWidth()
-            ));
+            DialogTree.DialogMinigame minigame = GSON.fromJson(payload.minigameJson(), DialogTree.DialogMinigame.class);
+            if (minigame != null) {
+                minigame.normalize();
+                context.client().setScreen(new InteractionMinigameScreen(payload.interactionId(), minigame));
+            }
         }));
     }
 
@@ -104,6 +107,14 @@ public class FirstModClient implements ClientModInitializer {
         }
         try {
             PayloadTypeRegistry.playC2S().register(InteractionMinigameResultPayload.ID, InteractionMinigameResultPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(ArmWrestleClickPayload.ID, ArmWrestleClickPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(ArmWrestleFinishPayload.ID, ArmWrestleFinishPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {

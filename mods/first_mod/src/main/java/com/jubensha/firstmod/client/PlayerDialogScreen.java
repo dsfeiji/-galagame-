@@ -2,6 +2,8 @@ package com.jubensha.firstmod.client;
 
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
+import com.jubensha.firstmod.network.ArmWrestleClickPayload;
+import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
@@ -13,11 +15,11 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.lwjgl.glfw.GLFW;
 
 public class PlayerDialogScreen extends Screen {
     private static final int PANEL_HEIGHT = 82;
@@ -35,6 +37,8 @@ public class PlayerDialogScreen extends Screen {
     private final List<ChoiceHitbox> choiceHitboxes = new ArrayList<>();
     private final long openedAtNanos = System.nanoTime();
     private boolean minigameSubmitted;
+    private boolean armWrestleFinishSent;
+    private int armWrestleClicks;
 
     public PlayerDialogScreen(UUID targetPlayerId, String targetPlayerName, String roleId, UUID controllerPlayerId, String currentNodeId, String dialogJson) {
         super(Text.literal(targetPlayerName));
@@ -59,12 +63,16 @@ public class PlayerDialogScreen extends Screen {
         if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
-        if (!controller) {
-            return true;
-        }
 
         DialogTree.DialogNode node = currentNode();
         if (node == null) {
+            return true;
+        }
+        if (node.minigame != null && "arm_wrestle".equals(node.minigame.type)) {
+            submitArmWrestleClick(node);
+            return true;
+        }
+        if (!controller) {
             return true;
         }
         if (node.minigame != null) {
@@ -86,14 +94,28 @@ public class PlayerDialogScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (controller && keyCode == GLFW.GLFW_KEY_SPACE) {
+        if (keyCode == GLFW.GLFW_KEY_SPACE) {
             DialogTree.DialogNode node = currentNode();
             if (node != null && node.minigame != null) {
-                submitMinigameResult(node);
+                if ("arm_wrestle".equals(node.minigame.type)) {
+                    submitArmWrestleClick(node);
+                } else if (controller) {
+                    submitMinigameResult(node);
+                }
                 return true;
             }
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public void tick() {
+        DialogTree.DialogNode node = currentNode();
+        if (controller && node != null && node.minigame != null && "arm_wrestle".equals(node.minigame.type)
+                && !armWrestleFinishSent && elapsedTicks() >= node.minigame.durationTicks) {
+            armWrestleFinishSent = true;
+            ClientPlayNetworking.send(new ArmWrestleFinishPayload(controllerPlayerId, targetPlayerId, node.id));
+        }
     }
 
     private void advance(String nextNodeId, int choiceIndex) {
@@ -106,6 +128,11 @@ public class PlayerDialogScreen extends Screen {
         }
         minigameSubmitted = true;
         ClientPlayNetworking.send(new MinigameResultPayload(targetPlayerId, node.id, isTimingInSuccessZone(node.minigame)));
+    }
+
+    private void submitArmWrestleClick(DialogTree.DialogNode node) {
+        armWrestleClicks++;
+        ClientPlayNetworking.send(new ArmWrestleClickPayload(controllerPlayerId, targetPlayerId, node.id));
     }
 
     @Override
@@ -149,7 +176,7 @@ public class PlayerDialogScreen extends Screen {
         drawWrappedText(context, dialogText, textX, panelY + 20, textWidth, 4);
 
         if (node != null && node.minigame != null) {
-            String hint = controller ? "点击或按空格判定" : "等待对方判定";
+            String hint = "arm_wrestle".equals(node.minigame.type) ? "快速点击 / 空格" : (controller ? "点击或按空格判定" : "等待对方判定");
             context.drawTextWithShadow(this.textRenderer, Text.literal(hint), panelRight - this.textRenderer.getWidth(hint) - 18, panelBottom - 18, 0xFFD8D2C0);
         } else if (node != null && node.choices.isEmpty()) {
             String hint = controller ? "点击继续" : "等待对方";
@@ -237,7 +264,14 @@ public class PlayerDialogScreen extends Screen {
     }
 
     private void renderMinigame(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
-        if (node == null || node.minigame == null || !"timing".equals(node.minigame.type)) {
+        if (node == null || node.minigame == null) {
+            return;
+        }
+        if ("arm_wrestle".equals(node.minigame.type)) {
+            renderArmWrestle(context, node, panelX, panelY, panelRight);
+            return;
+        }
+        if (!"timing".equals(node.minigame.type)) {
             return;
         }
 
@@ -262,6 +296,36 @@ public class PlayerDialogScreen extends Screen {
 
         String title = node.minigame.title.isBlank() ? "时机判定" : node.minigame.title;
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title), boxX + boxWidth / 2, boxY + 9, 0xFFFFF2CC);
+    }
+
+    private void renderArmWrestle(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
+        int boxWidth = Math.min(300, panelRight - panelX - 80);
+        int boxHeight = 62;
+        int boxX = (this.width - boxWidth) / 2;
+        int boxY = Math.max(30, panelY - boxHeight - 26);
+        int barX = boxX + 26;
+        int barY = boxY + 34;
+        int barWidth = boxWidth - 52;
+        int centerX = barX + barWidth / 2;
+        int markerOffset = Math.max(-barWidth / 2, Math.min(barWidth / 2, armWrestleClicks * 4));
+        int markerX = controller ? centerX - markerOffset : centerX + markerOffset;
+        int ticksLeft = Math.max(0, node.minigame.durationTicks - elapsedTicks());
+
+        context.fill(boxX + 3, boxY + 3, boxX + boxWidth + 3, boxY + boxHeight + 3, 0x77000000);
+        context.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE8202430);
+        context.fill(boxX + 12, boxY, boxX + boxWidth - 12, boxY + 1, 0xFFE6C879);
+        String title = node.minigame.title.isBlank() ? "扳手腕" : node.minigame.title;
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title), boxX + boxWidth / 2, boxY + 8, 0xFFFFF2CC);
+        String left = controller ? "你" : targetPlayerName;
+        String right = controller ? targetPlayerName : "你";
+        context.drawTextWithShadow(this.textRenderer, Text.literal(left), barX, barY - 12, 0xFF6FD08C);
+        context.drawTextWithShadow(this.textRenderer, Text.literal(right), barX + barWidth - this.textRenderer.getWidth(right), barY - 12, 0xFFE85252);
+        context.fill(barX, barY, barX + barWidth, barY + 8, 0xFF121722);
+        context.fill(barX, barY, centerX, barY + 8, 0x6656C878);
+        context.fill(centerX, barY, barX + barWidth, barY + 8, 0x66D85A5A);
+        context.fill(centerX - 1, barY - 4, centerX + 1, barY + 12, 0xFFE6C879);
+        context.fill(markerX - 2, barY - 7, markerX + 3, barY + 15, 0xFFFFF2CC);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("快速点击 / 空格  " + ticksLeft / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
     }
 
     private boolean isTimingInSuccessZone(DialogTree.DialogMinigame minigame) {
@@ -307,6 +371,10 @@ public class PlayerDialogScreen extends Screen {
 
     private int successZoneWidth(int difficulty, int barWidth) {
         return Math.max(12, Math.round(successZoneWidthRatio(difficulty) * barWidth));
+    }
+
+    private int elapsedTicks() {
+        return Math.round(((System.nanoTime() - openedAtNanos) / 1_000_000_000.0F) * 20.0F);
     }
 
     private void drawStaminaBolt(DrawContext context, int x, int y, int color) {
