@@ -1,4 +1,12 @@
 {
   "category.first_mod.dialog": "Dialog Roles",
-  "key.first_mod.role_control_panel": "Open Role Dialog Control Panel"
+  "key.first_mod.role_control_panel": "Open Role Dialog Control Panel",
+  "itemGroup.first_mod.script_tokens": "Script Tokens",
+  "item.first_mod.broken_exam_paper": "Broken Perfect Exam",
+  "item.first_mod.broken_wristband": "Broken Wristband",
+  "item.first_mod.burnt_note": "Burnt Note",
+  "item.first_mod.chipped_attendance_tag": "Chipped Attendance Tag",
+  "item.first_mod.cracked_phone_charm": "Cracked Phone Charm",
+  "item.first_mod.crumpled_witness_note": "Crumpled Witness Note",
+  "item.first_mod.stained_paintbrush": "Stained Paintbrush"
 }

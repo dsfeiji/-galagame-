@@ -73,6 +73,7 @@ public class FirstMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModItems.register();
         DialogStore.load();
         MinigameStore.load();
         registerPayloadTypes();

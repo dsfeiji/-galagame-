@@ -1,4 +1,12 @@
 {
   "category.first_mod.dialog": "剧本杀对话",
-  "key.first_mod.role_control_panel": "打开角色对话控制面板"
+  "key.first_mod.role_control_panel": "打开角色对话控制面板",
+  "itemGroup.first_mod.script_tokens": "剧本杀信物",
+  "item.first_mod.broken_exam_paper": "破损的满分试卷",
+  "item.first_mod.broken_wristband": "断裂的护腕",
+  "item.first_mod.burnt_note": "烧焦的纸条",
+  "item.first_mod.chipped_attendance_tag": "缺角的点名牌",
+  "item.first_mod.cracked_phone_charm": "碎裂的手机挂坠",
+  "item.first_mod.crumpled_witness_note": "揉皱的目击便签",
+  "item.first_mod.stained_paintbrush": "染色的画笔"
 }
