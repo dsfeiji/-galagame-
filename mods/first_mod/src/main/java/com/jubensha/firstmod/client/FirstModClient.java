@@ -4,12 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.ArmWrestleClickPayload;
-import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
 import com.jubensha.firstmod.network.ArmWrestleStatePayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.DuelFinishPayload;
 import com.jubensha.firstmod.network.DuelScorePayload;
+import com.jubensha.firstmod.network.DuelStatePayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
@@ -75,6 +75,11 @@ public class FirstModClient implements ClientModInitializer {
                 screen.updateArmWrestleState(payload.controllerPlayerId(), payload.targetPlayerId(), payload.nodeId(), payload.progress());
             }
         }));
+        ClientPlayNetworking.registerGlobalReceiver(DuelStatePayload.ID, (payload, context) -> context.client().execute(() -> {
+            if (context.client().currentScreen instanceof PlayerDialogScreen screen) {
+                screen.updateDuelState(payload.controllerPlayerId(), payload.targetPlayerId(), payload.nodeId(), payload.actorScore(), payload.targetScore());
+            }
+        }));
     }
 
     private static void registerKeyBinding() {
@@ -122,11 +127,11 @@ public class FirstModClient implements ClientModInitializer {
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            PayloadTypeRegistry.playC2S().register(ArmWrestleFinishPayload.ID, ArmWrestleFinishPayload.CODEC);
+            PayloadTypeRegistry.playS2C().register(ArmWrestleStatePayload.ID, ArmWrestleStatePayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            PayloadTypeRegistry.playS2C().register(ArmWrestleStatePayload.ID, ArmWrestleStatePayload.CODEC);
+            PayloadTypeRegistry.playS2C().register(DuelStatePayload.ID, DuelStatePayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {

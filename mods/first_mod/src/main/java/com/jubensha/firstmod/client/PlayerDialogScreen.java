@@ -3,7 +3,6 @@ package com.jubensha.firstmod.client;
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.ArmWrestleClickPayload;
-import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
 import com.jubensha.firstmod.network.DuelFinishPayload;
 import com.jubensha.firstmod.network.DuelScorePayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
@@ -39,10 +38,11 @@ public class PlayerDialogScreen extends Screen {
     private final List<ChoiceHitbox> choiceHitboxes = new ArrayList<>();
     private final long openedAtNanos = System.nanoTime();
     private boolean minigameSubmitted;
-    private boolean armWrestleFinishSent;
     private float armWrestleProgress;
     private final boolean[] openedCells = new boolean[16];
     private int duelScore;
+    private int syncedActorDuelScore;
+    private int syncedTargetDuelScore;
     private int rhythmScoredRound = -1;
     private boolean duelFinishSent;
 
@@ -123,11 +123,6 @@ public class PlayerDialogScreen extends Screen {
     @Override
     public void tick() {
         DialogTree.DialogNode node = currentNode();
-        if (controller && node != null && node.minigame != null && "arm_wrestle".equals(node.minigame.type)
-                && !armWrestleFinishSent && elapsedTicks() >= node.minigame.durationTicks) {
-            armWrestleFinishSent = true;
-            ClientPlayNetworking.send(new ArmWrestleFinishPayload(controllerPlayerId, targetPlayerId, node.id));
-        }
         if (controller && node != null && node.minigame != null && isScoreDuelType(node.minigame.type)
                 && !duelFinishSent && elapsedTicks() >= node.minigame.durationTicks) {
             duelFinishSent = true;
@@ -157,6 +152,14 @@ public class PlayerDialogScreen extends Screen {
         }
     }
 
+    public void updateDuelState(UUID controllerPlayerId, UUID targetPlayerId, String nodeId, int actorScore, int targetScore) {
+        if (this.controllerPlayerId.equals(controllerPlayerId) && this.targetPlayerId.equals(targetPlayerId) && currentNodeId.equals(nodeId)) {
+            this.syncedActorDuelScore = actorScore;
+            this.syncedTargetDuelScore = targetScore;
+            this.duelScore = controller ? actorScore : targetScore;
+        }
+    }
+
     private void handleDuelClick(DialogTree.DialogNode node, double mouseX, double mouseY) {
         int delta = switch (node.minigame.type) {
             case "locker_search_duel" -> clickGrid(node, mouseX, mouseY, false);
@@ -166,6 +169,11 @@ public class PlayerDialogScreen extends Screen {
         };
         if (delta != 0) {
             duelScore += delta;
+            if (controller) {
+                syncedActorDuelScore = duelScore;
+            } else {
+                syncedTargetDuelScore = duelScore;
+            }
             ClientPlayNetworking.send(new DuelScorePayload(controllerPlayerId, targetPlayerId, node.id, delta));
         }
     }
@@ -347,7 +355,6 @@ public class PlayerDialogScreen extends Screen {
         int barWidth = boxWidth - 52;
         int centerX = barX + barWidth / 2;
         int markerX = centerX + Math.round(armWrestleProgress * (barWidth / 2));
-        int ticksLeft = Math.max(0, node.minigame.durationTicks - elapsedTicks());
 
         context.fill(boxX + 3, boxY + 3, boxX + boxWidth + 3, boxY + boxHeight + 3, 0x77000000);
         context.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE8202430);
@@ -363,7 +370,7 @@ public class PlayerDialogScreen extends Screen {
         context.fill(centerX, barY, barX + barWidth, barY + 8, 0x66D85A5A);
         context.fill(centerX - 1, barY - 4, centerX + 1, barY + 12, 0xFFE6C879);
         context.fill(markerX - 2, barY - 7, markerX + 3, barY + 15, 0xFFFFF2CC);
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("快速点击 / 空格  " + ticksLeft / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("快速点击 / 空格，推到底获胜"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
     }
 
     private void renderScoreDuel(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
@@ -395,7 +402,7 @@ public class PlayerDialogScreen extends Screen {
             context.fill(x + 1, y + 1, x + cell - 1, y + cell - 1, color);
         }
         String hint = "memory_flip_duel".equals(node.minigame.type) && elapsedTicks() < node.minigame.previewTicks ? "记住发光格子" : "抢先得分";
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(hint + "  分数 " + duelScore + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(hint + "  " + scoreLine() + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
     }
 
     private void renderRhythmDuel(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
@@ -414,7 +421,7 @@ public class PlayerDialogScreen extends Screen {
         context.fill(barX, barY, barX + barWidth, barY + 8, 0xFF121722);
         context.fill(centerX - 18, barY - 1, centerX + 18, barY + 9, 0xFF6FD08C);
         context.fill(pulseX - 2, barY - 7, pulseX + 3, barY + 15, 0xFFFFF2CC);
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("分数 " + duelScore + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 11, 0xFFD8D2C0);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(scoreLine() + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 11, 0xFFD8D2C0);
     }
 
     private void drawMiniBox(DrawContext context, int boxX, int boxY, int boxWidth, int boxHeight) {
@@ -500,6 +507,12 @@ public class PlayerDialogScreen extends Screen {
 
     private boolean isScoreDuelType(String type) {
         return "locker_search_duel".equals(type) || "rhythm_duel".equals(type) || "memory_flip_duel".equals(type);
+    }
+
+    private String scoreLine() {
+        int ownScore = controller ? syncedActorDuelScore : syncedTargetDuelScore;
+        int opponentScore = controller ? syncedTargetDuelScore : syncedActorDuelScore;
+        return "你 " + ownScore + " / 对手 " + opponentScore;
     }
 
     private String minigameTitle(DialogTree.DialogNode node) {

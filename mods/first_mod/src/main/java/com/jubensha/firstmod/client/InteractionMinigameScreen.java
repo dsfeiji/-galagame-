@@ -48,9 +48,7 @@ public class InteractionMinigameScreen extends Screen {
         if (submitted) {
             return;
         }
-        if ("arm_wrestle".equals(minigame.type) && elapsedTicks() >= minigame.durationTicks) {
-            submit(armProgress < 0.0F);
-        } else if ("arm_wrestle".equals(minigame.type)) {
+        if ("arm_wrestle".equals(minigame.type)) {
             armProgress = Math.min(minigame.winProgress, armProgress + minigame.opponentAutoClicksPerSecond * minigame.pushPerClick / 20.0F);
             if (armProgress >= minigame.winProgress) {
                 submit(false);
@@ -182,7 +180,7 @@ public class InteractionMinigameScreen extends Screen {
         context.fill(centerX, barY, barX + barWidth, barY + 8, 0x66D85A5A);
         context.fill(centerX - 1, barY - 4, centerX + 1, barY + 12, 0xFFE6C879);
         context.fill(markerX - 2, barY - 7, markerX + 3, barY + 15, 0xFFFFF2CC);
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("快速点击 / 空格  " + secondsLeft() + "s"), boxX + boxWidth / 2, boxY + boxHeight - 14, 0xFFD8D2C0);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("快速点击 / 空格，推到底获胜"), boxX + boxWidth / 2, boxY + boxHeight - 14, 0xFFD8D2C0);
     }
 
     private void renderGridGame(DrawContext context, String hint) {
@@ -209,7 +207,7 @@ public class InteractionMinigameScreen extends Screen {
             context.fill(x, y, x + cell, y + cell, color);
             context.fill(x + 1, y + 1, x + cell - 1, y + cell - 1, openedCells[i] || preview ? color : 0xFF151B28);
         }
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(hint + "  " + secondsLeft() + "s"), boxX + boxWidth / 2, boxY + boxHeight - 13, 0xFFD8D2C0);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(hint + "  你 " + playerScore + " / AI " + aiScore() + "  " + secondsLeft() + "s"), boxX + boxWidth / 2, boxY + boxHeight - 13, 0xFFD8D2C0);
     }
 
     private void renderRhythm(DrawContext context) {
