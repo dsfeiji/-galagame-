@@ -5,6 +5,7 @@ import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
+import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.StaminaPayload;
 import com.jubensha.firstmod.network.TransitionPayload;
@@ -57,6 +58,7 @@ public class FirstMod implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncStamina(handler.player));
         registerSaveReceiver();
         registerAdvanceReceiver();
+        registerMinigameReceiver();
         registerCommands();
         registerRightClickDialog();
         LOGGER.info("First Mod initialized.");
@@ -167,6 +169,43 @@ public class FirstMod implements ModInitializer {
             PayloadTypeRegistry.playC2S().register(AdvanceDialogPayload.ID, AdvanceDialogPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
+        try {
+            PayloadTypeRegistry.playC2S().register(MinigameResultPayload.ID, MinigameResultPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    private static void registerMinigameReceiver() {
+        ServerPlayNetworking.registerGlobalReceiver(MinigameResultPayload.ID, (payload, context) -> {
+            ServerPlayerEntity actor = context.player();
+            DialogSession session = ACTIVE_DIALOGS.get(actor.getUuid());
+            if (session == null || !payload.targetPlayerId().equals(session.targetPlayerId) || !payload.nodeId().equals(session.currentNodeId)) {
+                return;
+            }
+
+            ServerPlayerEntity target = actor.getServer().getPlayerManager().getPlayer(payload.targetPlayerId());
+            if (target == null) {
+                closeDialog(actor, null, payload.targetPlayerId());
+                return;
+            }
+
+            DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
+            if (tree == null) {
+                closeDialog(actor, target, target.getUuid());
+                return;
+            }
+            DialogTree.DialogNode currentNode = tree.getNode(session.currentNodeId);
+            if (currentNode == null || currentNode.minigame == null) {
+                return;
+            }
+
+            String nextNodeId = payload.success() ? currentNode.minigame.successNodeId : currentNode.minigame.failureNodeId;
+            if (nextNodeId.isBlank() || !tree.hasNode(nextNodeId)) {
+                closeDialog(actor, target, target.getUuid());
+                return;
+            }
+            showNode(actor, target, tree, nextNodeId, session);
+        });
     }
 
     private static String resolveRequestedAdvance(ServerPlayerEntity actor, DialogTree tree, DialogSession session, AdvanceDialogPayload payload) {
@@ -176,6 +215,9 @@ public class FirstMod implements ModInitializer {
         DialogTree.DialogNode currentNode = tree.getNode(session.currentNodeId);
         if (currentNode == null) {
             return "";
+        }
+        if (currentNode.minigame != null) {
+            return session.currentNodeId;
         }
 
         if (!currentNode.choices.isEmpty()) {

@@ -2,6 +2,7 @@ package com.jubensha.firstmod.client;
 
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
+import com.jubensha.firstmod.network.MinigameResultPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -16,6 +17,7 @@ import net.minecraft.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.lwjgl.glfw.GLFW;
 
 public class PlayerDialogScreen extends Screen {
     private static final int PANEL_HEIGHT = 82;
@@ -31,6 +33,8 @@ public class PlayerDialogScreen extends Screen {
     private final String currentNodeId;
     private final boolean controller;
     private final List<ChoiceHitbox> choiceHitboxes = new ArrayList<>();
+    private final long openedAtNanos = System.nanoTime();
+    private boolean minigameSubmitted;
 
     public PlayerDialogScreen(UUID targetPlayerId, String targetPlayerName, String roleId, UUID controllerPlayerId, String currentNodeId, String dialogJson) {
         super(Text.literal(targetPlayerName));
@@ -63,6 +67,10 @@ public class PlayerDialogScreen extends Screen {
         if (node == null) {
             return true;
         }
+        if (node.minigame != null) {
+            submitMinigameResult(node);
+            return true;
+        }
         if (!node.choices.isEmpty()) {
             for (ChoiceHitbox hitbox : choiceHitboxes) {
                 if (hitbox.contains(mouseX, mouseY)) {
@@ -76,8 +84,28 @@ public class PlayerDialogScreen extends Screen {
         return true;
     }
 
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (controller && keyCode == GLFW.GLFW_KEY_SPACE) {
+            DialogTree.DialogNode node = currentNode();
+            if (node != null && node.minigame != null) {
+                submitMinigameResult(node);
+                return true;
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
     private void advance(String nextNodeId, int choiceIndex) {
         ClientPlayNetworking.send(new AdvanceDialogPayload(targetPlayerId, nextNodeId == null ? "" : nextNodeId, choiceIndex));
+    }
+
+    private void submitMinigameResult(DialogTree.DialogNode node) {
+        if (minigameSubmitted) {
+            return;
+        }
+        minigameSubmitted = true;
+        ClientPlayNetworking.send(new MinigameResultPayload(targetPlayerId, node.id, isTimingInSuccessZone(node.minigame)));
     }
 
     @Override
@@ -92,6 +120,7 @@ public class PlayerDialogScreen extends Screen {
         DialogTree.DialogNode node = currentNode();
 
         renderChoices(context, node, panelX, panelY, panelRight, mouseX, mouseY);
+        renderMinigame(context, node, panelX, panelY, panelRight);
 
         context.fill(panelX + 5, panelY + 5, panelRight - 5, panelBottom, 0xB8000000);
         context.fill(panelX + 12, panelY, panelRight - 12, panelBottom - 5, 0xF0202430);
@@ -119,7 +148,10 @@ public class PlayerDialogScreen extends Screen {
         String dialogText = node == null ? "" : node.text;
         drawWrappedText(context, dialogText, textX, panelY + 20, textWidth, 4);
 
-        if (node != null && node.choices.isEmpty()) {
+        if (node != null && node.minigame != null) {
+            String hint = controller ? "点击或按空格判定" : "等待对方判定";
+            context.drawTextWithShadow(this.textRenderer, Text.literal(hint), panelRight - this.textRenderer.getWidth(hint) - 18, panelBottom - 18, 0xFFD8D2C0);
+        } else if (node != null && node.choices.isEmpty()) {
             String hint = controller ? "点击继续" : "等待对方";
             context.drawTextWithShadow(this.textRenderer, Text.literal(hint), panelRight - this.textRenderer.getWidth(hint) - 18, panelBottom - 18, 0xFFD8D2C0);
         } else if (!controller) {
@@ -170,7 +202,7 @@ public class PlayerDialogScreen extends Screen {
 
     private void renderChoices(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight, int mouseX, int mouseY) {
         choiceHitboxes.clear();
-        if (node == null || node.choices.isEmpty()) {
+        if (node == null || node.minigame != null || node.choices.isEmpty()) {
             return;
         }
 
@@ -202,6 +234,69 @@ public class PlayerDialogScreen extends Screen {
             context.drawTextWithShadow(this.textRenderer, Text.literal("> " + answer), x + 7 + textOffset, y + 2, hovered ? 0xFFFFF2CC : 0xFFF7F4EA);
             y += CHOICE_HEIGHT + 3;
         }
+    }
+
+    private void renderMinigame(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
+        if (node == null || node.minigame == null || !"timing".equals(node.minigame.type)) {
+            return;
+        }
+
+        int boxWidth = Math.min(260, panelRight - panelX - 80);
+        int boxHeight = 48;
+        int boxX = (this.width - boxWidth) / 2;
+        int boxY = Math.max(30, panelY - boxHeight - 30);
+        int barX = boxX + 24;
+        int barY = boxY + 29;
+        int barWidth = boxWidth - 48;
+        int barHeight = 6;
+        int pointerX = barX + Math.round(getTimingPosition() * barWidth);
+        int zoneWidth = successZoneWidth(node.minigame.difficulty, barWidth);
+        int zoneX = barX + Math.round(successZoneStart(node.minigame.difficulty) * barWidth);
+
+        context.fill(boxX + 3, boxY + 3, boxX + boxWidth + 3, boxY + boxHeight + 3, 0x77000000);
+        context.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE8202430);
+        context.fill(boxX + 12, boxY, boxX + boxWidth - 12, boxY + 1, 0xFFE6C879);
+        context.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF121722);
+        context.fill(zoneX, barY - 1, zoneX + zoneWidth, barY + barHeight + 1, 0xFF6FD08C);
+        context.fill(pointerX - 1, barY - 6, pointerX + 2, barY + barHeight + 6, 0xFFFFF2CC);
+
+        String title = node.minigame.title.isBlank() ? "时机判定" : node.minigame.title;
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title), boxX + boxWidth / 2, boxY + 9, 0xFFFFF2CC);
+    }
+
+    private boolean isTimingInSuccessZone(DialogTree.DialogMinigame minigame) {
+        float position = getTimingPosition();
+        float start = successZoneStart(minigame.difficulty);
+        float width = successZoneWidthRatio(minigame.difficulty);
+        return position >= start && position <= start + width;
+    }
+
+    private float getTimingPosition() {
+        double seconds = (System.nanoTime() - openedAtNanos) / 1_000_000_000.0;
+        double cycle = (seconds * 0.78) % 2.0;
+        return (float) (cycle <= 1.0 ? cycle : 2.0 - cycle);
+    }
+
+    private float successZoneStart(int difficulty) {
+        return switch (Math.max(1, Math.min(4, difficulty))) {
+            case 1 -> 0.34F;
+            case 2 -> 0.39F;
+            case 3 -> 0.44F;
+            default -> 0.47F;
+        };
+    }
+
+    private float successZoneWidthRatio(int difficulty) {
+        return switch (Math.max(1, Math.min(4, difficulty))) {
+            case 1 -> 0.32F;
+            case 2 -> 0.22F;
+            case 3 -> 0.14F;
+            default -> 0.08F;
+        };
+    }
+
+    private int successZoneWidth(int difficulty, int barWidth) {
+        return Math.max(12, Math.round(successZoneWidthRatio(difficulty) * barWidth));
     }
 
     private void drawStaminaBolt(DrawContext context, int x, int y, int color) {

@@ -1,0 +1,48 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "NPC压低声音：点名册就在讲台边。老师转身的一瞬间，你可以试着偷看旧名单。",
+      "choices": [
+        {
+          "text": "等待老师转身",
+          "nextNodeId": "timing_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "先离开",
+          "nextNodeId": "",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "timing_game",
+      "text": "老师正在黑板上写字。指针进入绿色区域时点击鼠标或按空格。",
+      "minigame": {
+        "type": "timing",
+        "title": "偷看点名册",
+        "difficulty": 2,
+        "successNodeId": "success",
+        "failureNodeId": "failure"
+      }
+    },
+    {
+      "id": "success",
+      "text": "你成功看到了旧名单。名单最下面有一个被划掉的名字，这会成为后续路线的关键证据。",
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    },
+    {
+      "id": "failure",
+      "text": "老师突然回头。你没能看清旧名单，只能假装路过。今天这条线暂时断了。",
+      "nextNodeId": ""
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
+import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.StaminaPayload;
 import com.jubensha.firstmod.network.TransitionPayload;
 import net.fabricmc.api.ClientModInitializer;
@@ -77,6 +78,10 @@ public class FirstModClient implements ClientModInitializer {
         }
         try {
             PayloadTypeRegistry.playC2S().register(AdvanceDialogPayload.ID, AdvanceDialogPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(MinigameResultPayload.ID, MinigameResultPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
     }

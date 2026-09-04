@@ -87,6 +87,7 @@ public class DialogTree {
         public List<ItemConditionJump> conditionJumps = new ArrayList<>();
         public List<ItemReward> rewards = new ArrayList<>();
         public List<DialogChoice> choices = new ArrayList<>();
+        public DialogMinigame minigame = null;
 
         public void normalize() {
             if (id == null || id.isBlank()) {
@@ -115,6 +116,12 @@ public class DialogTree {
             }
             for (DialogChoice choice : choices) {
                 choice.normalize();
+            }
+            if (minigame != null) {
+                minigame.normalize();
+                if (minigame.type.isBlank()) {
+                    minigame = null;
+                }
             }
         }
     }
@@ -173,6 +180,35 @@ public class DialogTree {
             }
             if (count < 1) {
                 count = 1;
+            }
+        }
+    }
+
+    public static class DialogMinigame {
+        public String type = "";
+        public String title = "";
+        public int difficulty = 2;
+        public String successNodeId = "";
+        public String failureNodeId = "";
+
+        public void normalize() {
+            if (type == null) {
+                type = "";
+            }
+            if (title == null) {
+                title = "";
+            }
+            if (difficulty < 1) {
+                difficulty = 1;
+            }
+            if (difficulty > 4) {
+                difficulty = 4;
+            }
+            if (successNodeId == null) {
+                successNodeId = "";
+            }
+            if (failureNodeId == null) {
+                failureNodeId = "";
             }
         }
     }
