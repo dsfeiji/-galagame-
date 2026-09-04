@@ -48,6 +48,7 @@ public class PlayerDialogScreen extends Screen {
     private boolean duelFinishSent;
     private int gridTargetIndex = -1;
     private int gridSecondTargetIndex = -1;
+    private final int[] memoryTargetIndexes = new int[6];
     private int memoryHitsInSet;
     private int memoryPreviewUntilTick;
     private int rhythmRoundIndex;
@@ -405,7 +406,7 @@ public class PlayerDialogScreen extends Screen {
             int x = gridX + (i % columns) * (cell + gap);
             int y = gridY + (i / columns) * (cell + gap);
             ensureGridTargets(node);
-            boolean target = i == targetIndex(node) || ("memory_flip_duel".equals(node.minigame.type) && i == secondTargetIndex(node));
+            boolean target = "memory_flip_duel".equals(node.minigame.type) ? isMemoryTarget(node, i) : i == targetIndex(node);
             boolean preview = "memory_flip_duel".equals(node.minigame.type) && memoryPreviewActive() && target;
             int color = openedCells[i] ? (target ? 0xFF6FD08C : 0xFF3A4050) : (preview ? 0xFFE6C879 : 0xFF151B28);
             context.fill(x, y, x + cell, y + cell, 0xFF202638);
@@ -456,10 +457,10 @@ public class PlayerDialogScreen extends Screen {
             return 0;
         }
         openedCells[index] = true;
-        if (index == targetIndex(node) || (memoryMode && index == secondTargetIndex(node))) {
+        if ((!memoryMode && index == targetIndex(node)) || (memoryMode && isMemoryTarget(node, index))) {
             if (memoryMode) {
                 memoryHitsInSet++;
-                if (memoryHitsInSet >= 2) {
+                if (memoryHitsInSet >= memoryTargetCount(node)) {
                     chooseNextGridTargets(node);
                 }
             } else {
@@ -559,6 +560,19 @@ public class PlayerDialogScreen extends Screen {
         gridTargetIndex = Math.floorMod(seed, node.minigame.gridSize);
         int offset = Math.max(1, Math.floorMod(seed / 17, node.minigame.gridSize - 1) + 1);
         gridSecondTargetIndex = (gridTargetIndex + offset) % node.minigame.gridSize;
+        for (int i = 0; i < memoryTargetIndexes.length; i++) {
+            memoryTargetIndexes[i] = -1;
+        }
+        int targetCount = memoryTargetCount(node);
+        int cursor = Math.floorMod(seed, node.minigame.gridSize);
+        for (int i = 0; i < targetCount; i++) {
+            while (containsMemoryTarget(cursor, i)) {
+                cursor = (cursor + 1) % node.minigame.gridSize;
+            }
+            memoryTargetIndexes[i] = cursor;
+            int step = Math.max(1, Math.floorMod(seed / Math.max(1, i + 3), node.minigame.gridSize - 1) + 1);
+            cursor = (cursor + step) % node.minigame.gridSize;
+        }
         memoryHitsInSet = 0;
         memoryPreviewUntilTick = elapsedTicks() + node.minigame.previewTicks;
     }
@@ -574,6 +588,24 @@ public class PlayerDialogScreen extends Screen {
 
     private boolean memoryPreviewActive() {
         return elapsedTicks() < memoryPreviewUntilTick;
+    }
+
+    private boolean isMemoryTarget(DialogTree.DialogNode node, int index) {
+        ensureGridTargets(node);
+        return containsMemoryTarget(index, memoryTargetCount(node));
+    }
+
+    private boolean containsMemoryTarget(int index, int limit) {
+        for (int i = 0; i < limit && i < memoryTargetIndexes.length; i++) {
+            if (memoryTargetIndexes[i] == index) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int memoryTargetCount(DialogTree.DialogNode node) {
+        return Math.min(6, node.minigame.gridSize);
     }
 
     private void ensureRhythmRound(DialogTree.DialogNode node) {

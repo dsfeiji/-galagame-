@@ -22,6 +22,7 @@ public class InteractionMinigameScreen extends Screen {
     private int rhythmScoredRound = -1;
     private int gridTargetIndex = -1;
     private int gridSecondTargetIndex = -1;
+    private final int[] memoryTargetIndexes = new int[6];
     private int memoryHitsInSet;
     private int memoryPreviewUntilTick;
     private int rhythmRoundIndex;
@@ -123,11 +124,11 @@ public class InteractionMinigameScreen extends Screen {
             return;
         }
         openedCells[index] = true;
-        if (index == targetIndex() || (memoryMode && index == secondTargetIndex())) {
+        if ((!memoryMode && index == targetIndex()) || (memoryMode && isMemoryTarget(index))) {
             playerScore++;
             if (memoryMode) {
                 memoryHitsInSet++;
-                if (memoryHitsInSet >= 2) {
+                if (memoryHitsInSet >= memoryTargetCount()) {
                     chooseNextGridTargets();
                 }
             } else {
@@ -226,7 +227,7 @@ public class InteractionMinigameScreen extends Screen {
             ensureGridTargets();
             int x = gridX + (i % columns) * (cell + gap);
             int y = gridY + (i / columns) * (cell + gap);
-            boolean target = i == targetIndex() || ("memory_flip_duel".equals(minigame.type) && i == secondTargetIndex());
+            boolean target = "memory_flip_duel".equals(minigame.type) ? isMemoryTarget(i) : i == targetIndex();
             boolean preview = "memory_flip_duel".equals(minigame.type) && memoryPreviewActive() && target;
             int color = openedCells[i] ? (target ? 0xFF6FD08C : 0xFF3A4050) : (preview ? 0xFFE6C879 : 0xFF202638);
             context.fill(x, y, x + cell, y + cell, color);
@@ -305,7 +306,7 @@ public class InteractionMinigameScreen extends Screen {
     private int aiScore() {
         int maxScore = switch (minigame.type) {
             case "locker_search_duel" -> 1;
-            case "memory_flip_duel" -> 2;
+            case "memory_flip_duel" -> 6;
             default -> minigame.rounds;
         };
         return Math.round(maxScore * minigame.opponentAccuracy);
@@ -351,6 +352,19 @@ public class InteractionMinigameScreen extends Screen {
         gridTargetIndex = Math.floorMod(seed, minigame.gridSize);
         int offset = Math.max(1, Math.floorMod(seed / 17, minigame.gridSize - 1) + 1);
         gridSecondTargetIndex = (gridTargetIndex + offset) % minigame.gridSize;
+        for (int i = 0; i < memoryTargetIndexes.length; i++) {
+            memoryTargetIndexes[i] = -1;
+        }
+        int targetCount = memoryTargetCount();
+        int cursor = Math.floorMod(seed, minigame.gridSize);
+        for (int i = 0; i < targetCount; i++) {
+            while (containsMemoryTarget(cursor, i)) {
+                cursor = (cursor + 1) % minigame.gridSize;
+            }
+            memoryTargetIndexes[i] = cursor;
+            int step = Math.max(1, Math.floorMod(seed / Math.max(1, i + 3), minigame.gridSize - 1) + 1);
+            cursor = (cursor + step) % minigame.gridSize;
+        }
         memoryHitsInSet = 0;
         memoryPreviewUntilTick = elapsedTicks() + minigame.previewTicks;
     }
@@ -366,6 +380,24 @@ public class InteractionMinigameScreen extends Screen {
 
     private boolean memoryPreviewActive() {
         return elapsedTicks() < memoryPreviewUntilTick;
+    }
+
+    private boolean isMemoryTarget(int index) {
+        ensureGridTargets();
+        return containsMemoryTarget(index, memoryTargetCount());
+    }
+
+    private boolean containsMemoryTarget(int index, int limit) {
+        for (int i = 0; i < limit && i < memoryTargetIndexes.length; i++) {
+            if (memoryTargetIndexes[i] == index) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int memoryTargetCount() {
+        return Math.min(6, minigame.gridSize);
     }
 
     private void ensureRhythmRound() {

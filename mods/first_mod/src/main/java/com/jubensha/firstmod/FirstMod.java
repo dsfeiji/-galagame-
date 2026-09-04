@@ -481,7 +481,7 @@ public class FirstMod implements ModInitializer {
     private static int automaticDuelScore(DialogTree.DialogMinigame minigame) {
         int maxScore = switch (minigame.type) {
             case "locker_search_duel" -> 1;
-            case "memory_flip_duel" -> 2;
+            case "memory_flip_duel" -> 6;
             default -> minigame.rounds;
         };
         return Math.round(maxScore * minigame.opponentAccuracy);

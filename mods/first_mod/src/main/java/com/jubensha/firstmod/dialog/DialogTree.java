@@ -257,11 +257,12 @@ public class DialogTree {
             if (winProgress > 1.0F) {
                 winProgress = 1.0F;
             }
-            if (gridSize < 4) {
-                gridSize = 4;
-            }
             if ("memory_flip_duel".equals(type)) {
-                gridSize = 6;
+                if (gridSize < 9) {
+                    gridSize = 9;
+                }
+            } else if (gridSize < 4) {
+                gridSize = 4;
             }
             if (gridSize > 16) {
                 gridSize = 16;
