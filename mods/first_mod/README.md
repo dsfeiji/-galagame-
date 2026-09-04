@@ -148,13 +148,15 @@ Arm wrestle minigame:
   "title": "扳手腕",
   "durationTicks": 100,
   "opponentAutoClicksPerSecond": 5.5,
+  "pushPerClick": 0.08,
+  "winProgress": 1.0,
   "winClickLead": 1,
   "successNodeId": "win",
   "failureNodeId": "lose"
 }
 ```
 
-In dialog nodes, arm wrestle is the right-clicking player versus the clicked player. Both players can click or press space. The right-clicking player's win or loss decides the dialog branch.
+In dialog nodes, arm wrestle is the right-clicking player versus the clicked player. Both players click or press space on the same shared progress bar. The right-clicking player pushes left; the clicked player pushes right. Whoever pushes the bar to their end wins. The right-clicking player's win or loss decides the dialog branch.
 
 In block or item interactions, arm wrestle is the player versus an automatic opponent controlled by `opponentAutoClicksPerSecond`.
 

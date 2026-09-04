@@ -14,7 +14,7 @@ public class InteractionMinigameScreen extends Screen {
     private final long openedAtNanos = System.nanoTime();
     private final boolean[] openedCells;
     private boolean submitted;
-    private int playerClicks;
+    private float armProgress;
     private int playerScore;
     private int rhythmScoredRound = -1;
 
@@ -49,7 +49,12 @@ public class InteractionMinigameScreen extends Screen {
             return;
         }
         if ("arm_wrestle".equals(minigame.type) && elapsedTicks() >= minigame.durationTicks) {
-            submit(isArmWrestleWinning());
+            submit(armProgress < 0.0F);
+        } else if ("arm_wrestle".equals(minigame.type)) {
+            armProgress = Math.min(minigame.winProgress, armProgress + minigame.opponentAutoClicksPerSecond * minigame.pushPerClick / 20.0F);
+            if (armProgress >= minigame.winProgress) {
+                submit(false);
+            }
         } else if (isScoreDuelType() && elapsedTicks() >= minigame.durationTicks) {
             submit(playerScore >= aiScore() + minigame.winClickLead);
         }
@@ -86,8 +91,8 @@ public class InteractionMinigameScreen extends Screen {
         }
         switch (minigame.type) {
             case "arm_wrestle" -> {
-                playerClicks++;
-                if (isArmWrestleWinning() && clickLead() >= Math.max(1, minigame.winClickLead + 8)) {
+                armProgress = Math.max(-minigame.winProgress, armProgress - minigame.pushPerClick);
+                if (armProgress <= -minigame.winProgress) {
                     submit(true);
                 }
             }
@@ -166,7 +171,7 @@ public class InteractionMinigameScreen extends Screen {
         int barY = boxY + 37;
         int barWidth = boxWidth - 56;
         int centerX = barX + barWidth / 2;
-        int markerX = centerX - Math.round(powerRatio() * (barWidth / 2));
+        int markerX = centerX + Math.round(armProgress * (barWidth / 2));
 
         renderBox(context, boxX, boxY, boxWidth, boxHeight);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title()), boxX + boxWidth / 2, boxY + 9, 0xFFFFF2CC);
@@ -288,18 +293,6 @@ public class InteractionMinigameScreen extends Screen {
         float start = successZoneStart();
         float width = successZoneWidthRatio();
         return position >= start && position <= start + width;
-    }
-
-    private boolean isArmWrestleWinning() {
-        return clickLead() >= minigame.winClickLead;
-    }
-
-    private int clickLead() {
-        return playerClicks - Math.round(elapsedSeconds() * minigame.opponentAutoClicksPerSecond);
-    }
-
-    private float powerRatio() {
-        return Math.max(-1.0F, Math.min(1.0F, clickLead() / 18.0F));
     }
 
     private float getTimingPosition() {

@@ -9,6 +9,7 @@ import com.jubensha.firstmod.minigame.MinigameStore;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.ArmWrestleClickPayload;
 import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
+import com.jubensha.firstmod.network.ArmWrestleStatePayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.DuelFinishPayload;
@@ -249,6 +250,10 @@ public class FirstMod implements ModInitializer {
         } catch (IllegalArgumentException ignored) {
         }
         try {
+            PayloadTypeRegistry.playS2C().register(ArmWrestleStatePayload.ID, ArmWrestleStatePayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
             PayloadTypeRegistry.playC2S().register(SaveDialogPayload.ID, SaveDialogPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
@@ -343,10 +348,25 @@ public class FirstMod implements ModInitializer {
             if (!isValidDialogArmWrestle(session, payload.targetPlayerId(), payload.nodeId(), sender)) {
                 return;
             }
-            if (sender.getUuid().equals(payload.controllerPlayerId())) {
-                session.actorArmClicks++;
-            } else if (sender.getUuid().equals(payload.targetPlayerId())) {
-                session.targetArmClicks++;
+            if (session.armWrestleFinished) {
+                return;
+            }
+            ServerPlayerEntity actor = sender.getServer().getPlayerManager().getPlayer(payload.controllerPlayerId());
+            ServerPlayerEntity target = sender.getServer().getPlayerManager().getPlayer(payload.targetPlayerId());
+            if (actor == null || target == null) {
+                return;
+            }
+            DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
+            DialogTree.DialogNode currentNode = tree == null ? null : tree.getNode(session.currentNodeId);
+            if (currentNode == null || currentNode.minigame == null) {
+                return;
+            }
+            float direction = sender.getUuid().equals(payload.controllerPlayerId()) ? -1.0F : 1.0F;
+            session.armProgress += direction * currentNode.minigame.pushPerClick;
+            session.armProgress = Math.max(-currentNode.minigame.winProgress, Math.min(currentNode.minigame.winProgress, session.armProgress));
+            sendArmWrestleState(actor, target, session, payload.nodeId());
+            if (session.armProgress <= -currentNode.minigame.winProgress || session.armProgress >= currentNode.minigame.winProgress) {
+                finishArmWrestle(actor, target, tree, currentNode, session, session.armProgress <= -currentNode.minigame.winProgress);
             }
         });
 
@@ -378,19 +398,31 @@ public class FirstMod implements ModInitializer {
             if (currentNode == null || currentNode.minigame == null) {
                 return;
             }
-
-            int targetClicks = session.targetArmClicks;
-            if (targetClicks == 0 && currentNode.minigame.opponentAutoClicksPerSecond > 0.0F) {
-                targetClicks = Math.round((currentNode.minigame.durationTicks / 20.0F) * currentNode.minigame.opponentAutoClicksPerSecond);
-            }
-            boolean success = session.actorArmClicks >= targetClicks + currentNode.minigame.winClickLead;
-            String nextNodeId = success ? currentNode.minigame.successNodeId : currentNode.minigame.failureNodeId;
-            if (nextNodeId.isBlank() || !tree.hasNode(nextNodeId)) {
-                closeDialog(actor, target, target.getUuid());
-                return;
-            }
-            showNode(actor, target, tree, nextNodeId, session);
+            finishArmWrestle(actor, target, tree, currentNode, session, session.armProgress < 0.0F);
         });
+    }
+
+    private static void finishArmWrestle(ServerPlayerEntity actor, ServerPlayerEntity target, DialogTree tree, DialogTree.DialogNode currentNode, DialogSession session, boolean success) {
+        if (session.armWrestleFinished) {
+            return;
+        }
+        session.armWrestleFinished = true;
+        String nextNodeId = success ? currentNode.minigame.successNodeId : currentNode.minigame.failureNodeId;
+        if (nextNodeId.isBlank() || !tree.hasNode(nextNodeId)) {
+            closeDialog(actor, target, target.getUuid());
+            return;
+        }
+        showNode(actor, target, tree, nextNodeId, session);
+    }
+
+    private static void sendArmWrestleState(ServerPlayerEntity actor, ServerPlayerEntity target, DialogSession session, String nodeId) {
+        ArmWrestleStatePayload payload = new ArmWrestleStatePayload(actor.getUuid(), target.getUuid(), nodeId, session.armProgress);
+        if (ServerPlayNetworking.canSend(actor, ArmWrestleStatePayload.ID)) {
+            ServerPlayNetworking.send(actor, payload);
+        }
+        if (!actor.getUuid().equals(target.getUuid()) && ServerPlayNetworking.canSend(target, ArmWrestleStatePayload.ID)) {
+            ServerPlayNetworking.send(target, payload);
+        }
     }
 
     private static boolean isValidDialogArmWrestle(DialogSession session, UUID targetPlayerId, String nodeId, ServerPlayerEntity sender) {
@@ -997,8 +1029,7 @@ public class FirstMod implements ModInitializer {
         private final String roleId;
         private final Set<String> rewardedNodeIds = new HashSet<>();
         private String currentNodeId = "";
-        private int actorArmClicks;
-        private int targetArmClicks;
+        private float armProgress;
         private boolean armWrestleFinished;
         private int actorDuelScore;
         private int targetDuelScore;
@@ -1010,8 +1041,7 @@ public class FirstMod implements ModInitializer {
         }
 
         private void resetArmWrestle() {
-            actorArmClicks = 0;
-            targetArmClicks = 0;
+            armProgress = 0.0F;
             armWrestleFinished = false;
         }
 

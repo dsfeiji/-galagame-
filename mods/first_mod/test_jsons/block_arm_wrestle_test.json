@@ -12,6 +12,8 @@
     "title": "桌边扳手腕",
     "durationTicks": 100,
     "opponentAutoClicksPerSecond": 5.5,
+    "pushPerClick": 0.08,
+    "winProgress": 1.0,
     "winClickLead": 1
   },
   "success": {

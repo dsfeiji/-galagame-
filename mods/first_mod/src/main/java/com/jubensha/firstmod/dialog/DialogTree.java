@@ -194,6 +194,8 @@ public class DialogTree {
         public int durationTicks = 100;
         public float opponentAutoClicksPerSecond = 5.5F;
         public float opponentAccuracy = 0.65F;
+        public float pushPerClick = 0.06F;
+        public float winProgress = 1.0F;
         public int gridSize = 9;
         public int targetIndex = -1;
         public int previewTicks = 40;
@@ -238,6 +240,18 @@ public class DialogTree {
             }
             if (opponentAccuracy > 1.0F) {
                 opponentAccuracy = 1.0F;
+            }
+            if (pushPerClick <= 0.0F) {
+                pushPerClick = 0.06F;
+            }
+            if (pushPerClick > 0.5F) {
+                pushPerClick = 0.5F;
+            }
+            if (winProgress <= 0.1F) {
+                winProgress = 1.0F;
+            }
+            if (winProgress > 1.0F) {
+                winProgress = 1.0F;
             }
             if (gridSize < 4) {
                 gridSize = 4;

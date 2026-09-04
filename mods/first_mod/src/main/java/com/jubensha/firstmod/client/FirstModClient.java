@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.ArmWrestleClickPayload;
 import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
+import com.jubensha.firstmod.network.ArmWrestleStatePayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.DuelFinishPayload;
@@ -69,6 +70,11 @@ public class FirstModClient implements ClientModInitializer {
                 context.client().setScreen(new InteractionMinigameScreen(payload.interactionId(), minigame));
             }
         }));
+        ClientPlayNetworking.registerGlobalReceiver(ArmWrestleStatePayload.ID, (payload, context) -> context.client().execute(() -> {
+            if (context.client().currentScreen instanceof PlayerDialogScreen screen) {
+                screen.updateArmWrestleState(payload.controllerPlayerId(), payload.targetPlayerId(), payload.nodeId(), payload.progress());
+            }
+        }));
     }
 
     private static void registerKeyBinding() {
@@ -117,6 +123,10 @@ public class FirstModClient implements ClientModInitializer {
         }
         try {
             PayloadTypeRegistry.playC2S().register(ArmWrestleFinishPayload.ID, ArmWrestleFinishPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playS2C().register(ArmWrestleStatePayload.ID, ArmWrestleStatePayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {

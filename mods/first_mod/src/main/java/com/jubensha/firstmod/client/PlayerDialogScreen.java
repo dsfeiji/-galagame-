@@ -40,7 +40,7 @@ public class PlayerDialogScreen extends Screen {
     private final long openedAtNanos = System.nanoTime();
     private boolean minigameSubmitted;
     private boolean armWrestleFinishSent;
-    private int armWrestleClicks;
+    private float armWrestleProgress;
     private final boolean[] openedCells = new boolean[16];
     private int duelScore;
     private int rhythmScoredRound = -1;
@@ -148,8 +148,13 @@ public class PlayerDialogScreen extends Screen {
     }
 
     private void submitArmWrestleClick(DialogTree.DialogNode node) {
-        armWrestleClicks++;
         ClientPlayNetworking.send(new ArmWrestleClickPayload(controllerPlayerId, targetPlayerId, node.id));
+    }
+
+    public void updateArmWrestleState(UUID controllerPlayerId, UUID targetPlayerId, String nodeId, float progress) {
+        if (this.controllerPlayerId.equals(controllerPlayerId) && this.targetPlayerId.equals(targetPlayerId) && currentNodeId.equals(nodeId)) {
+            this.armWrestleProgress = Math.max(-1.0F, Math.min(1.0F, progress));
+        }
     }
 
     private void handleDuelClick(DialogTree.DialogNode node, double mouseX, double mouseY) {
@@ -341,8 +346,7 @@ public class PlayerDialogScreen extends Screen {
         int barY = boxY + 34;
         int barWidth = boxWidth - 52;
         int centerX = barX + barWidth / 2;
-        int markerOffset = Math.max(-barWidth / 2, Math.min(barWidth / 2, armWrestleClicks * 4));
-        int markerX = controller ? centerX - markerOffset : centerX + markerOffset;
+        int markerX = centerX + Math.round(armWrestleProgress * (barWidth / 2));
         int ticksLeft = Math.max(0, node.minigame.durationTicks - elapsedTicks());
 
         context.fill(boxX + 3, boxY + 3, boxX + boxWidth + 3, boxY + boxHeight + 3, 0x77000000);
