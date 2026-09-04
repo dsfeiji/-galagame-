@@ -1,0 +1,106 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "测试NPC看着你：这是完整功能测试。你可以测试普通分支、体力消耗、物品奖励、背包检测和对话内小游戏。",
+      "choices": [
+        {
+          "text": "领取一张测试纸",
+          "nextNodeId": "give_paper",
+          "staminaCost": 0
+        },
+        {
+          "text": "消耗体力进入小游戏",
+          "nextNodeId": "dialog_minigame",
+          "staminaCost": 1
+        },
+        {
+          "text": "检测背包里有没有纸",
+          "nextNodeId": "check_paper",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "give_paper",
+      "text": "你获得了一张纸。接下来可以回到开头，测试背包检测。",
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "choices": [
+        {
+          "text": "回到开头",
+          "nextNodeId": "start",
+          "staminaCost": 0
+        },
+        {
+          "text": "结束对话",
+          "nextNodeId": "",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "check_paper",
+      "text": "正在检测你的背包里有没有纸。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:paper",
+          "count": 1,
+          "nextNodeId": "has_paper"
+        }
+      ],
+      "nextNodeId": "no_paper"
+    },
+    {
+      "id": "has_paper",
+      "text": "检测成功：你身上有纸。你获得一个回响碎片作为检测成功奖励。",
+      "rewards": [
+        {
+          "item": "minecraft:echo_shard",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    },
+    {
+      "id": "no_paper",
+      "text": "检测失败：你身上没有纸。先选择领取测试纸，再回来检测。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "dialog_minigame",
+      "text": "这是对话内小游戏测试。指针进入绿色区域时点击鼠标或按空格。",
+      "minigame": {
+        "type": "timing",
+        "title": "对话内时机判定",
+        "difficulty": 2,
+        "speed": 0.85,
+        "successStart": 0.4,
+        "successWidth": 0.2,
+        "successNodeId": "dialog_game_success",
+        "failureNodeId": "dialog_game_failure"
+      }
+    },
+    {
+      "id": "dialog_game_success",
+      "text": "小游戏成功。你获得一枚金粒。",
+      "rewards": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    },
+    {
+      "id": "dialog_game_failure",
+      "text": "小游戏失败。没有奖励，但对话流程正常进入失败分支。",
+      "nextNodeId": ""
+    }
+  ]
+}
