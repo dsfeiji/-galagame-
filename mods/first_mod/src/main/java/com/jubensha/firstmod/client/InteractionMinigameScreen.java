@@ -3,10 +3,13 @@ package com.jubensha.firstmod.client;
 import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.Arrays;
 
 public class InteractionMinigameScreen extends Screen {
     private final String interactionId;
@@ -17,6 +20,10 @@ public class InteractionMinigameScreen extends Screen {
     private float armProgress;
     private int playerScore;
     private int rhythmScoredRound = -1;
+    private int gridTargetIndex = -1;
+    private int gridSecondTargetIndex = -1;
+    private int memoryHitsInSet;
+    private int memoryPreviewUntilTick;
 
     public InteractionMinigameScreen(String interactionId, DialogTree.DialogMinigame minigame) {
         super(Text.literal(minigame.title == null || minigame.title.isBlank() ? defaultTitle(minigame.type) : minigame.title));
@@ -49,8 +56,8 @@ public class InteractionMinigameScreen extends Screen {
             return;
         }
         if ("arm_wrestle".equals(minigame.type)) {
-            armProgress = Math.min(minigame.winProgress, armProgress + minigame.opponentAutoClicksPerSecond * minigame.pushPerClick / 20.0F);
-            if (armProgress >= minigame.winProgress) {
+            armProgress = Math.max(-minigame.winProgress, armProgress - minigame.opponentAutoClicksPerSecond * minigame.pushPerClick / 20.0F);
+            if (armProgress <= -minigame.winProgress) {
                 submit(false);
             }
         } else if (isScoreDuelType() && elapsedTicks() >= minigame.durationTicks) {
@@ -63,7 +70,7 @@ public class InteractionMinigameScreen extends Screen {
         switch (minigame.type) {
             case "arm_wrestle" -> renderArmWrestle(context);
             case "locker_search_duel" -> renderGridGame(context, "抢先找到发光格子");
-            case "memory_flip_duel" -> renderGridGame(context, elapsedTicks() < minigame.previewTicks ? "记住发光格子" : "翻出刚才的位置");
+            case "memory_flip_duel" -> renderGridGame(context, memoryPreviewActive() ? "记住发光格子" : "翻出刚才的位置");
             case "rhythm_duel" -> renderRhythm(context);
             default -> renderTiming(context);
         }
@@ -89,14 +96,14 @@ public class InteractionMinigameScreen extends Screen {
         }
         switch (minigame.type) {
             case "arm_wrestle" -> {
-                armProgress = Math.max(-minigame.winProgress, armProgress - minigame.pushPerClick);
-                if (armProgress <= -minigame.winProgress) {
+                armProgress = Math.min(minigame.winProgress, armProgress + minigame.pushPerClick);
+                if (armProgress >= minigame.winProgress) {
                     submit(true);
                 }
             }
             case "locker_search_duel" -> clickGrid(mouseX, mouseY, false);
             case "memory_flip_duel" -> {
-                if (elapsedTicks() >= minigame.previewTicks) {
+                if (!memoryPreviewActive()) {
                     clickGrid(mouseX, mouseY, true);
                 }
             }
@@ -106,6 +113,7 @@ public class InteractionMinigameScreen extends Screen {
     }
 
     private void clickGrid(double mouseX, double mouseY, boolean memoryMode) {
+        ensureGridTargets();
         int index = cellAt(mouseX, mouseY);
         if (index < 0 || openedCells[index]) {
             return;
@@ -113,11 +121,19 @@ public class InteractionMinigameScreen extends Screen {
         openedCells[index] = true;
         if (index == targetIndex() || (memoryMode && index == secondTargetIndex())) {
             playerScore++;
-            if (!memoryMode || playerScore >= 2) {
-                submit(true);
+            if (memoryMode) {
+                memoryHitsInSet++;
+                if (memoryHitsInSet >= 2) {
+                    chooseNextGridTargets();
+                }
+            } else {
+                chooseNextGridTargets();
             }
         } else {
             playerScore--;
+            if (allCellsOpened()) {
+                chooseNextGridTargets();
+            }
         }
     }
 
@@ -173,8 +189,10 @@ public class InteractionMinigameScreen extends Screen {
 
         renderBox(context, boxX, boxY, boxWidth, boxHeight);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title()), boxX + boxWidth / 2, boxY + 9, 0xFFFFF2CC);
-        context.drawTextWithShadow(this.textRenderer, Text.literal("你"), barX, barY - 13, 0xFF6FD08C);
-        context.drawTextWithShadow(this.textRenderer, Text.literal("对手"), barX + barWidth - this.textRenderer.getWidth("对手"), barY - 13, 0xFFE85252);
+        String left = localPlayerName();
+        String right = "AI";
+        context.drawTextWithShadow(this.textRenderer, Text.literal(left), barX, barY - 13, 0xFF6FD08C);
+        context.drawTextWithShadow(this.textRenderer, Text.literal(right), barX + barWidth - this.textRenderer.getWidth(right), barY - 13, 0xFFE85252);
         context.fill(barX, barY, barX + barWidth, barY + 8, 0xFF121722);
         context.fill(barX, barY, centerX, barY + 8, 0x6656C878);
         context.fill(centerX, barY, barX + barWidth, barY + 8, 0x66D85A5A);
@@ -199,10 +217,11 @@ public class InteractionMinigameScreen extends Screen {
         renderBox(context, boxX, boxY, boxWidth, boxHeight);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title()), boxX + boxWidth / 2, boxY + 8, 0xFFFFF2CC);
         for (int i = 0; i < minigame.gridSize; i++) {
+            ensureGridTargets();
             int x = gridX + (i % columns) * (cell + gap);
             int y = gridY + (i / columns) * (cell + gap);
             boolean target = i == targetIndex() || ("memory_flip_duel".equals(minigame.type) && i == secondTargetIndex());
-            boolean preview = "memory_flip_duel".equals(minigame.type) && elapsedTicks() < minigame.previewTicks && target;
+            boolean preview = "memory_flip_duel".equals(minigame.type) && memoryPreviewActive() && target;
             int color = openedCells[i] ? (target ? 0xFF6FD08C : 0xFF3A4050) : (preview ? 0xFFE6C879 : 0xFF202638);
             context.fill(x, y, x + cell, y + cell, color);
             context.fill(x + 1, y + 1, x + cell - 1, y + cell - 1, openedCells[i] || preview ? color : 0xFF151B28);
@@ -219,7 +238,7 @@ public class InteractionMinigameScreen extends Screen {
         int barY = boxY + 38;
         int barWidth = boxWidth - 56;
         int pulseX = barX + Math.round(rhythmProgress() * barWidth);
-        int centerX = barX + barWidth / 2;
+        int centerX = barX + Math.round(rhythmZoneCenter() * barWidth);
         int zone = 18;
 
         renderBox(context, boxX, boxY, boxWidth, boxHeight);
@@ -267,14 +286,13 @@ public class InteractionMinigameScreen extends Screen {
     }
 
     private int targetIndex() {
-        if (minigame.targetIndex >= 0) {
-            return minigame.targetIndex;
-        }
-        return Math.floorMod(interactionId.hashCode(), minigame.gridSize);
+        ensureGridTargets();
+        return gridTargetIndex;
     }
 
     private int secondTargetIndex() {
-        return (targetIndex() + Math.max(1, minigame.gridSize / 2)) % minigame.gridSize;
+        ensureGridTargets();
+        return gridSecondTargetIndex;
     }
 
     private int aiScore() {
@@ -309,7 +327,48 @@ public class InteractionMinigameScreen extends Screen {
     }
 
     private boolean isRhythmHitWindow() {
-        return Math.abs(rhythmProgress() - 0.5F) <= 0.15F;
+        return Math.abs(rhythmProgress() - rhythmZoneCenter()) <= 0.13F;
+    }
+
+    private void ensureGridTargets() {
+        if (gridTargetIndex < 0 || gridTargetIndex >= minigame.gridSize) {
+            chooseNextGridTargets();
+        }
+    }
+
+    private void chooseNextGridTargets() {
+        Arrays.fill(openedCells, false);
+        int baseTarget = Math.max(0, minigame.targetIndex);
+        int seed = (interactionId + ":" + baseTarget + ":" + elapsedTicks() + ":" + playerScore + ":" + System.nanoTime()).hashCode();
+        gridTargetIndex = Math.floorMod(seed, minigame.gridSize);
+        int offset = Math.max(1, Math.floorMod(seed / 17, minigame.gridSize - 1) + 1);
+        gridSecondTargetIndex = (gridTargetIndex + offset) % minigame.gridSize;
+        memoryHitsInSet = 0;
+        memoryPreviewUntilTick = elapsedTicks() + minigame.previewTicks;
+    }
+
+    private boolean allCellsOpened() {
+        for (int i = 0; i < minigame.gridSize; i++) {
+            if (!openedCells[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean memoryPreviewActive() {
+        return elapsedTicks() < memoryPreviewUntilTick;
+    }
+
+    private float rhythmZoneCenter() {
+        int round = rhythmRound();
+        int seed = Math.floorMod((interactionId + ":rhythm:" + round).hashCode(), 1000);
+        return 0.25F + seed / 999.0F * 0.5F;
+    }
+
+    private String localPlayerName() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        return client.player == null ? "玩家" : client.player.getNameForScoreboard();
     }
 
     private float successZoneStart() {

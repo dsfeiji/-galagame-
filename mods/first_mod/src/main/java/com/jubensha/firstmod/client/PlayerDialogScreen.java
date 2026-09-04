@@ -19,6 +19,7 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +46,10 @@ public class PlayerDialogScreen extends Screen {
     private int syncedTargetDuelScore;
     private int rhythmScoredRound = -1;
     private boolean duelFinishSent;
+    private int gridTargetIndex = -1;
+    private int gridSecondTargetIndex = -1;
+    private int memoryHitsInSet;
+    private int memoryPreviewUntilTick;
 
     public PlayerDialogScreen(UUID targetPlayerId, String targetPlayerName, String roleId, UUID controllerPlayerId, String currentNodeId, String dialogJson) {
         super(Text.literal(targetPlayerName));
@@ -163,7 +168,7 @@ public class PlayerDialogScreen extends Screen {
     private void handleDuelClick(DialogTree.DialogNode node, double mouseX, double mouseY) {
         int delta = switch (node.minigame.type) {
             case "locker_search_duel" -> clickGrid(node, mouseX, mouseY, false);
-            case "memory_flip_duel" -> elapsedTicks() < node.minigame.previewTicks ? 0 : clickGrid(node, mouseX, mouseY, true);
+            case "memory_flip_duel" -> memoryPreviewActive() ? 0 : clickGrid(node, mouseX, mouseY, true);
             case "rhythm_duel" -> clickRhythm(node);
             default -> 0;
         };
@@ -361,8 +366,8 @@ public class PlayerDialogScreen extends Screen {
         context.fill(boxX + 12, boxY, boxX + boxWidth - 12, boxY + 1, 0xFFE6C879);
         String title = node.minigame.title.isBlank() ? "扳手腕" : node.minigame.title;
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title), boxX + boxWidth / 2, boxY + 8, 0xFFFFF2CC);
-        String left = controller ? "你" : targetPlayerName;
-        String right = controller ? targetPlayerName : "你";
+        String left = playerName(controllerPlayerId, "发起者");
+        String right = targetPlayerName;
         context.drawTextWithShadow(this.textRenderer, Text.literal(left), barX, barY - 12, 0xFF6FD08C);
         context.drawTextWithShadow(this.textRenderer, Text.literal(right), barX + barWidth - this.textRenderer.getWidth(right), barY - 12, 0xFFE85252);
         context.fill(barX, barY, barX + barWidth, barY + 8, 0xFF121722);
@@ -395,13 +400,14 @@ public class PlayerDialogScreen extends Screen {
         for (int i = 0; i < node.minigame.gridSize; i++) {
             int x = gridX + (i % columns) * (cell + gap);
             int y = gridY + (i / columns) * (cell + gap);
+            ensureGridTargets(node);
             boolean target = i == targetIndex(node) || ("memory_flip_duel".equals(node.minigame.type) && i == secondTargetIndex(node));
-            boolean preview = "memory_flip_duel".equals(node.minigame.type) && elapsedTicks() < node.minigame.previewTicks && target;
+            boolean preview = "memory_flip_duel".equals(node.minigame.type) && memoryPreviewActive() && target;
             int color = openedCells[i] ? (target ? 0xFF6FD08C : 0xFF3A4050) : (preview ? 0xFFE6C879 : 0xFF151B28);
             context.fill(x, y, x + cell, y + cell, 0xFF202638);
             context.fill(x + 1, y + 1, x + cell - 1, y + cell - 1, color);
         }
-        String hint = "memory_flip_duel".equals(node.minigame.type) && elapsedTicks() < node.minigame.previewTicks ? "记住发光格子" : "抢先得分";
+        String hint = "memory_flip_duel".equals(node.minigame.type) && memoryPreviewActive() ? "记住发光格子" : "抢先得分";
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(hint + "  " + scoreLine() + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
     }
 
@@ -413,7 +419,7 @@ public class PlayerDialogScreen extends Screen {
         int barX = boxX + 26;
         int barY = boxY + 33;
         int barWidth = boxWidth - 52;
-        int centerX = barX + barWidth / 2;
+        int centerX = barX + Math.round(rhythmZoneCenter(node) * barWidth);
         int pulseX = barX + Math.round(rhythmProgress(node) * barWidth);
 
         drawMiniBox(context, boxX, boxY, boxWidth, boxHeight);
@@ -438,13 +444,25 @@ public class PlayerDialogScreen extends Screen {
     }
 
     private int clickGrid(DialogTree.DialogNode node, double mouseX, double mouseY, boolean memoryMode) {
+        ensureGridTargets(node);
         int index = cellAt(node, mouseX, mouseY);
         if (index < 0 || openedCells[index]) {
             return 0;
         }
         openedCells[index] = true;
         if (index == targetIndex(node) || (memoryMode && index == secondTargetIndex(node))) {
+            if (memoryMode) {
+                memoryHitsInSet++;
+                if (memoryHitsInSet >= 2) {
+                    chooseNextGridTargets(node);
+                }
+            } else {
+                chooseNextGridTargets(node);
+            }
             return 1;
+        }
+        if (allRelevantCellsOpened(node)) {
+            chooseNextGridTargets(node);
         }
         return -1;
     }
@@ -455,7 +473,7 @@ public class PlayerDialogScreen extends Screen {
             return 0;
         }
         rhythmScoredRound = round;
-        return Math.abs(rhythmProgress(node) - 0.5F) <= 0.15F ? 1 : -1;
+        return Math.abs(rhythmProgress(node) - rhythmZoneCenter(node)) <= 0.13F ? 1 : -1;
     }
 
     private int cellAt(DialogTree.DialogNode node, double mouseX, double mouseY) {
@@ -485,14 +503,13 @@ public class PlayerDialogScreen extends Screen {
     }
 
     private int targetIndex(DialogTree.DialogNode node) {
-        if (node.minigame.targetIndex >= 0) {
-            return node.minigame.targetIndex;
-        }
-        return Math.floorMod(node.id.hashCode(), node.minigame.gridSize);
+        ensureGridTargets(node);
+        return gridTargetIndex;
     }
 
     private int secondTargetIndex(DialogTree.DialogNode node) {
-        return (targetIndex(node) + Math.max(1, node.minigame.gridSize / 2)) % node.minigame.gridSize;
+        ensureGridTargets(node);
+        return gridSecondTargetIndex;
     }
 
     private float rhythmProgress(DialogTree.DialogNode node) {
@@ -513,6 +530,51 @@ public class PlayerDialogScreen extends Screen {
         int ownScore = controller ? syncedActorDuelScore : syncedTargetDuelScore;
         int opponentScore = controller ? syncedTargetDuelScore : syncedActorDuelScore;
         return "你 " + ownScore + " / 对手 " + opponentScore;
+    }
+
+    private void ensureGridTargets(DialogTree.DialogNode node) {
+        if (gridTargetIndex < 0 || gridTargetIndex >= node.minigame.gridSize) {
+            chooseNextGridTargets(node);
+        }
+    }
+
+    private void chooseNextGridTargets(DialogTree.DialogNode node) {
+        Arrays.fill(openedCells, false);
+        int baseTarget = Math.max(0, node.minigame.targetIndex);
+        int seed = (node.id + ":" + baseTarget + ":" + elapsedTicks() + ":" + duelScore + ":" + System.nanoTime()).hashCode();
+        gridTargetIndex = Math.floorMod(seed, node.minigame.gridSize);
+        int offset = Math.max(1, Math.floorMod(seed / 17, node.minigame.gridSize - 1) + 1);
+        gridSecondTargetIndex = (gridTargetIndex + offset) % node.minigame.gridSize;
+        memoryHitsInSet = 0;
+        memoryPreviewUntilTick = elapsedTicks() + node.minigame.previewTicks;
+    }
+
+    private boolean allRelevantCellsOpened(DialogTree.DialogNode node) {
+        for (int i = 0; i < node.minigame.gridSize; i++) {
+            if (!openedCells[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean memoryPreviewActive() {
+        return elapsedTicks() < memoryPreviewUntilTick;
+    }
+
+    private float rhythmZoneCenter(DialogTree.DialogNode node) {
+        int round = rhythmRound(node);
+        int seed = Math.floorMod((node.id + ":rhythm:" + round).hashCode(), 1000);
+        return 0.25F + seed / 999.0F * 0.5F;
+    }
+
+    private String playerName(UUID playerId, String fallback) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null) {
+            return fallback;
+        }
+        PlayerEntity player = client.world.getPlayerByUuid(playerId);
+        return player == null ? fallback : player.getNameForScoreboard();
     }
 
     private String minigameTitle(DialogTree.DialogNode node) {

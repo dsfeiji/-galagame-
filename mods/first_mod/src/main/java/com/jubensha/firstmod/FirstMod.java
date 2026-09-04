@@ -69,6 +69,7 @@ public class FirstMod implements ModInitializer {
     private static final Gson GSON = new GsonBuilder().create();
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
     private static final Map<UUID, String> ACTIVE_INTERACTION_MINIGAMES = new HashMap<>();
+    private static boolean phaseAdvancing;
 
     @Override
     public void onInitialize() {
@@ -361,12 +362,12 @@ public class FirstMod implements ModInitializer {
             if (currentNode == null || currentNode.minigame == null) {
                 return;
             }
-            float direction = sender.getUuid().equals(payload.controllerPlayerId()) ? -1.0F : 1.0F;
+            float direction = sender.getUuid().equals(payload.controllerPlayerId()) ? 1.0F : -1.0F;
             session.armProgress += direction * currentNode.minigame.pushPerClick;
             session.armProgress = Math.max(-currentNode.minigame.winProgress, Math.min(currentNode.minigame.winProgress, session.armProgress));
             sendArmWrestleState(actor, target, session, payload.nodeId());
             if (session.armProgress <= -currentNode.minigame.winProgress || session.armProgress >= currentNode.minigame.winProgress) {
-                finishArmWrestle(actor, target, tree, currentNode, session, session.armProgress <= -currentNode.minigame.winProgress);
+                finishArmWrestle(actor, target, tree, currentNode, session, session.armProgress >= currentNode.minigame.winProgress);
             }
         });
     }
@@ -527,7 +528,7 @@ public class FirstMod implements ModInitializer {
             }
             syncStamina(actor);
             if (choice.staminaCost > 0 && DialogStore.getStamina(actor.getUuid()) == 0 && handleStaminaDepleted(actor)) {
-                return "";
+                session.pendingPhaseAdvance = true;
             }
             return choice.nextNodeId;
         }
@@ -546,7 +547,7 @@ public class FirstMod implements ModInitializer {
             actor.sendMessage(Text.literal("体力已耗尽，但只有主角可以推动剧情阶段。"), false);
             return false;
         }
-        advancePhaseNow(actor.getServer(), nextPhaseValue());
+        actor.sendMessage(Text.literal("体力已耗尽，当前对话结束后进入下一阶段。"), false);
         return true;
     }
 
@@ -556,13 +557,21 @@ public class FirstMod implements ModInitializer {
     }
 
     private static void advancePhaseNow(MinecraftServer server, int targetPhase) {
-        closeAllDialogs(server);
-        DialogStore.setCurrentPhase(targetPhase);
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            sendTransition(player, PHASE_TRANSITION_BLACKOUT_TICKS);
-            teleportForCurrentRole(server, player, targetPhase);
-            DialogStore.resetStamina(player.getUuid());
-            syncStamina(player);
+        if (phaseAdvancing) {
+            return;
+        }
+        phaseAdvancing = true;
+        try {
+            closeAllDialogs(server);
+            DialogStore.setCurrentPhase(targetPhase);
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                sendTransition(player, PHASE_TRANSITION_BLACKOUT_TICKS);
+                teleportForCurrentRole(server, player, targetPhase);
+                DialogStore.resetStamina(player.getUuid());
+                syncStamina(player);
+            }
+        } finally {
+            phaseAdvancing = false;
         }
     }
 
@@ -615,13 +624,16 @@ public class FirstMod implements ModInitializer {
     }
 
     private static void closeDialog(ServerPlayerEntity actor, ServerPlayerEntity target, UUID targetId) {
-        ACTIVE_DIALOGS.remove(actor.getUuid());
+        DialogSession session = ACTIVE_DIALOGS.remove(actor.getUuid());
         CloseDialogPayload payload = new CloseDialogPayload(targetId, actor.getUuid());
         if (ServerPlayNetworking.canSend(actor, CloseDialogPayload.ID)) {
             ServerPlayNetworking.send(actor, payload);
         }
         if (target != null && !actor.getUuid().equals(target.getUuid()) && ServerPlayNetworking.canSend(target, CloseDialogPayload.ID)) {
             ServerPlayNetworking.send(target, payload);
+        }
+        if (session != null && session.pendingPhaseAdvance && actor.getServer() != null && !phaseAdvancing) {
+            advancePhaseNow(actor.getServer(), nextPhaseValue());
         }
     }
 
@@ -1021,6 +1033,7 @@ public class FirstMod implements ModInitializer {
         private int actorDuelScore;
         private int targetDuelScore;
         private boolean duelFinished;
+        private boolean pendingPhaseAdvance;
 
         private DialogSession(UUID targetPlayerId, String roleId) {
             this.targetPlayerId = targetPlayerId;

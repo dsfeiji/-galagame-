@@ -226,11 +226,13 @@ public class DialogTree {
             if (successWidth > 1.0F) {
                 successWidth = 1.0F;
             }
-            if (durationTicks < 20) {
+            if (isScoreDuelType(type) && durationTicks < 1200) {
+                durationTicks = 1200;
+            } else if (durationTicks < 20) {
                 durationTicks = 20;
             }
-            if (durationTicks > 600) {
-                durationTicks = 600;
+            if (durationTicks > 1200) {
+                durationTicks = 1200;
             }
             if (opponentAutoClicksPerSecond < 0.0F) {
                 opponentAutoClicksPerSecond = 0.0F;
@@ -283,6 +285,10 @@ public class DialogTree {
             if (failureNodeId == null) {
                 failureNodeId = "";
             }
+        }
+
+        private boolean isScoreDuelType(String type) {
+            return "locker_search_duel".equals(type) || "rhythm_duel".equals(type) || "memory_flip_duel".equals(type);
         }
     }
 }
