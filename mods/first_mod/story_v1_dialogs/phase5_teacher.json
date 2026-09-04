@@ -1,0 +1,110 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "老师抬头看你：放学前最后一次点名。你带齐所有学生的信物了吗？",
+      "nextNodeId": "check_monitor"
+    },
+    {
+      "id": "check_monitor",
+      "text": "检查班长信物。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:paper",
+          "count": 1,
+          "nextNodeId": "check_athlete"
+        }
+      ],
+      "nextNodeId": "missing"
+    },
+    {
+      "id": "check_athlete",
+      "text": "检查体育生信物。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:rabbit_foot",
+          "count": 1,
+          "nextNodeId": "check_scholar"
+        }
+      ],
+      "nextNodeId": "missing"
+    },
+    {
+      "id": "check_scholar",
+      "text": "检查学霸信物。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:glass_bottle",
+          "count": 1,
+          "nextNodeId": "check_timid"
+        }
+      ],
+      "nextNodeId": "missing"
+    },
+    {
+      "id": "check_timid",
+      "text": "检查胆小学生信物。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:ghast_tear",
+          "count": 1,
+          "nextNodeId": "check_rich"
+        }
+      ],
+      "nextNodeId": "missing"
+    },
+    {
+      "id": "check_rich",
+      "text": "检查富家学生信物。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 1,
+          "nextNodeId": "check_broadcaster"
+        }
+      ],
+      "nextNodeId": "missing"
+    },
+    {
+      "id": "check_broadcaster",
+      "text": "检查广播员信物。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1,
+          "nextNodeId": "check_transfer"
+        }
+      ],
+      "nextNodeId": "missing"
+    },
+    {
+      "id": "check_transfer",
+      "text": "检查转学生信物。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:echo_shard",
+          "count": 1,
+          "nextNodeId": "final"
+        }
+      ],
+      "nextNodeId": "missing"
+    },
+    {
+      "id": "missing",
+      "text": "老师合上点名册：人数不对。你还没有在同一次循环里集齐所有学生信物。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "final",
+      "text": "老师的红笔停在最后一行。他第一次露出慌乱：这不可能。你拿走红笔，循环出口出现了。",
+      "rewards": [
+        {
+          "item": "minecraft:red_dye",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

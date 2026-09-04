@@ -1,0 +1,54 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "富家学生站在小卖部旁。他听说胆小学生出事后，终于觉得今天足够有趣。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:ghast_tear",
+          "count": 1,
+          "nextNodeId": "unlocked"
+        }
+      ],
+      "nextNodeId": "locked"
+    },
+    {
+      "id": "locked",
+      "text": "你还没有胆小学生信物。富家学生觉得你没有筹码。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "unlocked",
+      "text": "富家学生愿意用广播室权限交换刺激的消息。他把金色饭卡夹在指间。",
+      "choices": [
+        {
+          "text": "诱导他去天台确认消息",
+          "nextNodeId": "accident",
+          "staminaCost": 1
+        },
+        {
+          "text": "只索要广播员把柄",
+          "nextNodeId": "hint",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "hint",
+      "text": "他说：广播员偷录过老师训话，录音带藏在广播室桌底。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "accident",
+      "text": "天台门锁没有完全扣上。富家学生冲出去时门被风带上，你拿到他的金色饭卡。",
+      "rewards": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

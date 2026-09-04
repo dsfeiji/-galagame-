@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "转学生坐在窗边：这所学校的循环不是第一次发生。每次有人以为自己赢了，老师都会重新点名。",
+      "choices": [
+        {
+          "text": "问循环的出口",
+          "nextNodeId": "exit",
+          "staminaCost": 0
+        },
+        {
+          "text": "问老师的弱点",
+          "nextNodeId": "teacher",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "text": "他说：七个学生的信物只能打开办公室门。老师的红笔，才是离开这一天的证明。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "teacher",
+      "text": "他说：老师只怕一个结果：单次循环里，所有学生都不再出现在点名册上。",
+      "nextNodeId": ""
+    }
+  ]
+}

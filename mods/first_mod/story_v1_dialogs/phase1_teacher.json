@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "老师站在讲台前：今天会很平静。每个人都要按照课程表行动，任何越界都会被记录。",
+      "choices": [
+        {
+          "text": "询问课程表",
+          "nextNodeId": "schedule",
+          "staminaCost": 0
+        },
+        {
+          "text": "盯着老师的红笔",
+          "nextNodeId": "pen",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "schedule",
+      "text": "老师说：早读、课间、体育课、午休、实验课、放学。记住，别试图改变顺序。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "pen",
+      "text": "老师把红笔收进口袋：只有完成点名的人，才有资格碰它。",
+      "nextNodeId": ""
+    }
+  ]
+}

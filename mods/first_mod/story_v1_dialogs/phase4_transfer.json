@@ -1,0 +1,54 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "转学生在旧教学楼前等你。只有广播室出事后，旧楼的门禁才会短暂失效。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1,
+          "nextNodeId": "unlocked"
+        }
+      ],
+      "nextNodeId": "locked"
+    },
+    {
+      "id": "locked",
+      "text": "你还没有广播员信物。旧教学楼的门禁仍然锁着，转学生不会行动。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "unlocked",
+      "text": "门禁灯熄灭。转学生说：我可以带你看办公室真正的点名册，但你要承担结果。",
+      "choices": [
+        {
+          "text": "引他进入旧档案室",
+          "nextNodeId": "accident",
+          "staminaCost": 1
+        },
+        {
+          "text": "询问最终条件",
+          "nextNodeId": "hint",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "hint",
+      "text": "转学生说：七个学生信物集齐后去找老师。不要分开循环，必须同一天完成。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "accident",
+      "text": "旧档案柜倾倒，转学生被埋在循环记录里。你拾起他的旧校徽碎片。",
+      "rewards": [
+        {
+          "item": "minecraft:echo_shard",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "胆小学生站在医务室门口，声音很轻：我不想去实验课。上次有人把蓝盖瓶拿错了，老师却说是我记错了。",
+      "choices": [
+        {
+          "text": "安抚他",
+          "nextNodeId": "calm",
+          "staminaCost": 0
+        },
+        {
+          "text": "追问医务室钥匙",
+          "nextNodeId": "key",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "calm",
+      "text": "他说：如果广播里说医务室暂时关闭，我就只能回教室。可广播员只听有钱人的。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "key",
+      "text": "他摇头：钥匙在老师那里。可是老师每次去办公室前，都会先把红笔放进抽屉。",
+      "nextNodeId": ""
+    }
+  ]
+}

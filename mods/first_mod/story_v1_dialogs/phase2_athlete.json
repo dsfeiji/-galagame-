@@ -1,0 +1,49 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "体育生正在操场检查旧绳。你需要先让点名混乱，才能把他的注意力从储物柜移开。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:paper",
+          "count": 1,
+          "nextNodeId": "unlocked"
+        }
+      ],
+      "nextNodeId": "locked"
+    },
+    {
+      "id": "locked",
+      "text": "你还没有班长信物。体育生一直盯着储物柜，现在动手太显眼。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "unlocked",
+      "text": "点名混乱传到操场，体育生分心了。旧绳和松动的跨栏都摆在你面前。",
+      "choices": [
+        {
+          "text": "把旧绳绑到跨栏下沿",
+          "nextNodeId": "accident",
+          "staminaCost": 1
+        },
+        {
+          "text": "放弃这个机会",
+          "nextNodeId": "",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "accident",
+      "text": "体育生全速起跑，跨栏在关键时刻翻倒。你拿到他的幸运兔脚。",
+      "rewards": [
+        {
+          "item": "minecraft:rabbit_foot",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

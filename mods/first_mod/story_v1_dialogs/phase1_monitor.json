@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "班长把点名册抱在胸前，低声说：今天老师心情很差，任何迟到、缺席、乱跑都会被记下来。体育生刚才改过器材室登记表，我看见了。",
+      "choices": [
+        {
+          "text": "问器材室登记表",
+          "nextNodeId": "logbook",
+          "staminaCost": 0
+        },
+        {
+          "text": "试探点名册能不能借",
+          "nextNodeId": "refuse",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "logbook",
+      "text": "班长说：登记表在体育生那里。他想把操场储物柜的钥匙说成是老师拿走的。你如果要查，最好别让老师看见。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "refuse",
+      "text": "班长后退一步：不行。点名册少一页老师会第一个找我。除非有人让今天的点名彻底失效。",
+      "nextNodeId": ""
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "广播员守着麦克风。没有富家学生的饭卡，他不会相信控制权已经转移。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 1,
+          "nextNodeId": "unlocked"
+        }
+      ],
+      "nextNodeId": "locked"
+    },
+    {
+      "id": "locked",
+      "text": "你还没有富家学生信物。广播员不敢违抗他的命令。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "unlocked",
+      "text": "你把金色饭卡放到桌上。广播员终于愿意播一条你指定的通知。",
+      "choices": [
+        {
+          "text": "播放错误集合地点",
+          "nextNodeId": "accident",
+          "staminaCost": 1
+        },
+        {
+          "text": "播放老师训话录音",
+          "nextNodeId": "hint",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "hint",
+      "text": "录音播出后，全校短暂安静。转学生看向旧教学楼，像是终于确认了什么。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "accident",
+      "text": "广播员为了修正错误通知冲进设备间，老旧电闸跳火。你拿到他的音符盒。",
+      "rewards": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

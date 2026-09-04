@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "体育生把哨子转来转去：今天体育课测长跑。器材室门坏了，谁要是乱碰里面的东西，出了事可别怪我。",
+      "choices": [
+        {
+          "text": "问他为什么改登记表",
+          "nextNodeId": "registration",
+          "staminaCost": 0
+        },
+        {
+          "text": "激他比赛",
+          "nextNodeId": "race",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "registration",
+      "text": "他皱眉：你听谁说的？班长？那家伙什么都记。操场储物柜里有旧绳子，别碰，会断。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "race",
+      "text": "体育生笑了：放学前敢来操场吗？我让你知道谁才是这里跑得最快的人。",
+      "nextNodeId": ""
+    }
+  ]
+}

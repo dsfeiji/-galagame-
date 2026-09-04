@@ -1,0 +1,54 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "学霸在实验室门口等待老师。只有操场出事的证据，才能让他相信你。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:rabbit_foot",
+          "count": 1,
+          "nextNodeId": "unlocked"
+        }
+      ],
+      "nextNodeId": "locked"
+    },
+    {
+      "id": "locked",
+      "text": "你还没有体育生信物。学霸不会冒险帮你打开实验室。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "unlocked",
+      "text": "你展示体育生信物。学霸脸色变了：那瓶蓝盖液体，不能让胆小鬼碰到。",
+      "choices": [
+        {
+          "text": "调换实验台标签",
+          "nextNodeId": "accident",
+          "staminaCost": 1
+        },
+        {
+          "text": "只听他说完",
+          "nextNodeId": "hint",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "hint",
+      "text": "学霸说：如果实验报告消失，老师会让我一个人留在实验室补写。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "accident",
+      "text": "标签被调换，学霸为了证明自己正确亲手演示。实验室被封锁后，你拿到他的玻璃瓶信物。",
+      "rewards": [
+        {
+          "item": "minecraft:glass_bottle",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

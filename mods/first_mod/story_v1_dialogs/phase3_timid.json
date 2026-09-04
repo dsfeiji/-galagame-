@@ -1,0 +1,54 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "胆小学生躲在医务室附近。只有实验室出事后，广播通知才会让他失去退路。",
+      "conditionJumps": [
+        {
+          "item": "minecraft:glass_bottle",
+          "count": 1,
+          "nextNodeId": "unlocked"
+        }
+      ],
+      "nextNodeId": "locked"
+    },
+    {
+      "id": "locked",
+      "text": "你还没有学霸信物。胆小学生仍能躲进医务室。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "unlocked",
+      "text": "实验室封锁，医务室开始接收伤员。胆小学生慌得快哭了。",
+      "choices": [
+        {
+          "text": "告诉他广播员会点名找他",
+          "nextNodeId": "accident",
+          "staminaCost": 1
+        },
+        {
+          "text": "安慰他先别动",
+          "nextNodeId": "soft",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "soft",
+      "text": "他小声说：广播员如果真的播我的名字，我一定会从后楼梯跑。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "accident",
+      "text": "他从后楼梯逃跑，撞进堆放清洁桶的拐角。你捡到他的护身符。",
+      "rewards": [
+        {
+          "item": "minecraft:ghast_tear",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

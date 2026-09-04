@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "广播员调着麦克风：广播室的声音能让全校人移动。问题是，我只播有价值的消息。",
+      "choices": [
+        {
+          "text": "问什么叫有价值",
+          "nextNodeId": "value",
+          "staminaCost": 0
+        },
+        {
+          "text": "请求播医务室关闭",
+          "nextNodeId": "refuse",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "value",
+      "text": "广播员说：证据、筹码、或者能让我摆脱富家学生控制的把柄。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "refuse",
+      "text": "广播员摇头：空口无凭。你先让富家学生没法命令我。",
+      "nextNodeId": ""
+    }
+  ]
+}

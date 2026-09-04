@@ -1,0 +1,32 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "班长站在楼梯口核对点名册。体育生把他叫去操场，你可以制造一次点名混乱。",
+      "choices": [
+        {
+          "text": "交换点名册夹层，让他误报缺席",
+          "nextNodeId": "accident",
+          "staminaCost": 1
+        },
+        {
+          "text": "暂时离开",
+          "nextNodeId": "",
+          "staminaCost": 0
+        }
+      ]
+    },
+    {
+      "id": "accident",
+      "text": "班长冲下楼追缺席名单，踩到刚拖过的台阶。混乱之后，你从点名册里拿到班长信物。",
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    }
+  ]
+}

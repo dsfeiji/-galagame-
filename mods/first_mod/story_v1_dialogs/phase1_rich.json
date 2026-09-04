@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "富家学生靠在自动售货机旁：学校里没有什么事是零花钱解决不了的。广播员欠我一个人情。",
+      "choices": [
+        {
+          "text": "问广播员的人情",
+          "nextNodeId": "broadcast",
+          "staminaCost": 0
+        },
+        {
+          "text": "要一枚硬币",
+          "nextNodeId": "coin",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "broadcast",
+      "text": "他说：只要我开口，广播室就能播任何通知。比如某个房间临时关闭，某个学生必须立刻集合。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "coin",
+      "text": "他笑了笑：想拿我的东西，得先让我看到更有趣的混乱。",
+      "nextNodeId": ""
+    }
+  ]
+}

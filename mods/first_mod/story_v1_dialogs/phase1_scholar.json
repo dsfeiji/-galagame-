@@ -1,0 +1,31 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "学霸正在整理实验记录：化学教室的标签贴反了。老师知道，但他说今天先不要声张。",
+      "choices": [
+        {
+          "text": "问贴反的标签",
+          "nextNodeId": "label",
+          "staminaCost": 0
+        },
+        {
+          "text": "借实验记录",
+          "nextNodeId": "notes",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "label",
+      "text": "学霸说：蓝盖瓶不是蒸馏水。谁拿它去清洗器材，后果会很难解释。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "notes",
+      "text": "他把本子合上：我只相信证据。你要是真能证明操场出过事，我可以告诉你实验室的门禁规律。",
+      "nextNodeId": ""
+    }
+  ]
+}
