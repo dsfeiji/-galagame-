@@ -11,6 +11,8 @@ import com.jubensha.firstmod.network.ArmWrestleClickPayload;
 import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
+import com.jubensha.firstmod.network.DuelFinishPayload;
+import com.jubensha.firstmod.network.DuelScorePayload;
 import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
@@ -79,6 +81,7 @@ public class FirstMod implements ModInitializer {
         registerMinigameReceiver();
         registerInteractionMinigameReceiver();
         registerArmWrestleReceivers();
+        registerDuelReceivers();
         registerCommands();
         registerBlockMinigames();
         registerItemMinigames();
@@ -273,6 +276,14 @@ public class FirstMod implements ModInitializer {
             PayloadTypeRegistry.playC2S().register(ArmWrestleFinishPayload.ID, ArmWrestleFinishPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
+        try {
+            PayloadTypeRegistry.playC2S().register(DuelScorePayload.ID, DuelScorePayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(DuelFinishPayload.ID, DuelFinishPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
     }
 
     private static void registerMinigameReceiver() {
@@ -394,6 +405,81 @@ public class FirstMod implements ModInitializer {
         return node != null && node.minigame != null && "arm_wrestle".equals(node.minigame.type);
     }
 
+    private static void registerDuelReceivers() {
+        ServerPlayNetworking.registerGlobalReceiver(DuelScorePayload.ID, (payload, context) -> {
+            ServerPlayerEntity sender = context.player();
+            DialogSession session = ACTIVE_DIALOGS.get(payload.controllerPlayerId());
+            if (!isValidDialogDuel(session, payload.targetPlayerId(), payload.nodeId(), sender)) {
+                return;
+            }
+            int scoreDelta = Math.max(-5, Math.min(5, payload.scoreDelta()));
+            if (sender.getUuid().equals(payload.controllerPlayerId())) {
+                session.actorDuelScore += scoreDelta;
+            } else if (sender.getUuid().equals(payload.targetPlayerId())) {
+                session.targetDuelScore += scoreDelta;
+            }
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(DuelFinishPayload.ID, (payload, context) -> {
+            ServerPlayerEntity actor = context.player();
+            if (!actor.getUuid().equals(payload.controllerPlayerId())) {
+                return;
+            }
+            DialogSession session = ACTIVE_DIALOGS.get(actor.getUuid());
+            if (!isValidDialogDuel(session, payload.targetPlayerId(), payload.nodeId(), actor) || session.duelFinished) {
+                return;
+            }
+            session.duelFinished = true;
+
+            ServerPlayerEntity target = actor.getServer().getPlayerManager().getPlayer(payload.targetPlayerId());
+            if (target == null) {
+                closeDialog(actor, null, payload.targetPlayerId());
+                return;
+            }
+            DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
+            DialogTree.DialogNode currentNode = tree == null ? null : tree.getNode(session.currentNodeId);
+            if (currentNode == null || currentNode.minigame == null) {
+                return;
+            }
+            int targetScore = session.targetDuelScore;
+            if (targetScore == 0 && currentNode.minigame.opponentAccuracy > 0.0F) {
+                targetScore = automaticDuelScore(currentNode.minigame);
+            }
+            boolean success = session.actorDuelScore >= targetScore + currentNode.minigame.winClickLead;
+            String nextNodeId = success ? currentNode.minigame.successNodeId : currentNode.minigame.failureNodeId;
+            if (nextNodeId.isBlank() || !tree.hasNode(nextNodeId)) {
+                closeDialog(actor, target, target.getUuid());
+                return;
+            }
+            showNode(actor, target, tree, nextNodeId, session);
+        });
+    }
+
+    private static boolean isValidDialogDuel(DialogSession session, UUID targetPlayerId, String nodeId, ServerPlayerEntity sender) {
+        if (session == null || !session.targetPlayerId.equals(targetPlayerId) || !session.currentNodeId.equals(nodeId)) {
+            return false;
+        }
+        if (!sender.getUuid().equals(session.targetPlayerId) && ACTIVE_DIALOGS.get(sender.getUuid()) != session) {
+            return false;
+        }
+        DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
+        DialogTree.DialogNode node = tree == null ? null : tree.getNode(session.currentNodeId);
+        return node != null && node.minigame != null && isScoreDuelType(node.minigame.type);
+    }
+
+    private static boolean isScoreDuelType(String type) {
+        return "locker_search_duel".equals(type) || "rhythm_duel".equals(type) || "memory_flip_duel".equals(type);
+    }
+
+    private static int automaticDuelScore(DialogTree.DialogMinigame minigame) {
+        int maxScore = switch (minigame.type) {
+            case "locker_search_duel" -> 1;
+            case "memory_flip_duel" -> 2;
+            default -> minigame.rounds;
+        };
+        return Math.round(maxScore * minigame.opponentAccuracy);
+    }
+
     private static String resolveRequestedAdvance(ServerPlayerEntity actor, DialogTree tree, DialogSession session, AdvanceDialogPayload payload) {
         if (tree == null) {
             return "";
@@ -470,6 +556,7 @@ public class FirstMod implements ModInitializer {
         }
         session.currentNodeId = nodeId;
         session.resetArmWrestle();
+        session.resetDuel();
         giveRewards(actor, node, session);
         sendDialogPair(actor, target, tree, nodeId, session.roleId);
     }
@@ -913,6 +1000,9 @@ public class FirstMod implements ModInitializer {
         private int actorArmClicks;
         private int targetArmClicks;
         private boolean armWrestleFinished;
+        private int actorDuelScore;
+        private int targetDuelScore;
+        private boolean duelFinished;
 
         private DialogSession(UUID targetPlayerId, String roleId) {
             this.targetPlayerId = targetPlayerId;
@@ -923,6 +1013,12 @@ public class FirstMod implements ModInitializer {
             actorArmClicks = 0;
             targetArmClicks = 0;
             armWrestleFinished = false;
+        }
+
+        private void resetDuel() {
+            actorDuelScore = 0;
+            targetDuelScore = 0;
+            duelFinished = false;
         }
     }
 }

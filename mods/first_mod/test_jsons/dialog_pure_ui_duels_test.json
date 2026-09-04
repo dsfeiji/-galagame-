@@ -1,0 +1,119 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "这是纯 UI 双人小游戏测试。右键者和被右键者都可以参与，最终由右键者的胜负决定剧情。",
+      "choices": [
+        {
+          "text": "测试抢柜子",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "测试节奏对抗",
+          "nextNodeId": "rhythm_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "测试记忆翻牌",
+          "nextNodeId": "memory_game",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "locker_game",
+      "text": "双方抢先翻格子，找到正确格子的人更容易获胜。",
+      "minigame": {
+        "type": "locker_search_duel",
+        "title": "抢柜子",
+        "durationTicks": 120,
+        "gridSize": 9,
+        "targetIndex": 4,
+        "opponentAccuracy": 0.5,
+        "winClickLead": 1,
+        "successNodeId": "locker_win",
+        "failureNodeId": "locker_lose"
+      }
+    },
+    {
+      "id": "locker_win",
+      "text": "你先找到了关键物品。",
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    },
+    {
+      "id": "locker_lose",
+      "text": "对方先抢走了关键物品。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "rhythm_game",
+      "text": "光标进入中间绿色区域时点击。每轮只能计一次分。",
+      "minigame": {
+        "type": "rhythm_duel",
+        "title": "节奏对抗",
+        "durationTicks": 120,
+        "rounds": 6,
+        "opponentAccuracy": 0.5,
+        "winClickLead": 1,
+        "successNodeId": "rhythm_win",
+        "failureNodeId": "rhythm_lose"
+      }
+    },
+    {
+      "id": "rhythm_win",
+      "text": "你的节奏压过了对方。",
+      "rewards": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    },
+    {
+      "id": "rhythm_lose",
+      "text": "你没有跟上节奏。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "memory_game",
+      "text": "先记住发光格子，隐藏后翻出它们。",
+      "minigame": {
+        "type": "memory_flip_duel",
+        "title": "记忆翻牌",
+        "durationTicks": 140,
+        "previewTicks": 40,
+        "gridSize": 12,
+        "targetIndex": 2,
+        "opponentAccuracy": 0.5,
+        "winClickLead": 1,
+        "successNodeId": "memory_win",
+        "failureNodeId": "memory_lose"
+      }
+    },
+    {
+      "id": "memory_win",
+      "text": "你记住了正确位置。",
+      "rewards": [
+        {
+          "item": "minecraft:echo_shard",
+          "count": 1
+        }
+      ],
+      "nextNodeId": ""
+    },
+    {
+      "id": "memory_lose",
+      "text": "你翻错了位置，线索被对方盖回去了。",
+      "nextNodeId": ""
+    }
+  ]
+}

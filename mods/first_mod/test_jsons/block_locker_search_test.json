@@ -1,0 +1,31 @@
+{
+  "id": "test_locker_search_duel",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:barrel",
+    "phase": 1
+  },
+  "minigame": {
+    "type": "locker_search_duel",
+    "title": "翻找柜子",
+    "durationTicks": 120,
+    "gridSize": 9,
+    "targetIndex": 4,
+    "opponentAccuracy": 0.4,
+    "winClickLead": 1
+  },
+  "success": {
+    "message": "你抢先找到了柜子里的线索。",
+    "rewards": [
+      {
+        "item": "minecraft:paper",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "对方先拿走了柜子里的线索。"
+  }
+}

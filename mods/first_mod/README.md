@@ -158,6 +158,30 @@ In dialog nodes, arm wrestle is the right-clicking player versus the clicked pla
 
 In block or item interactions, arm wrestle is the player versus an automatic opponent controlled by `opponentAutoClicksPerSecond`.
 
+Pure UI duel minigames:
+
+```json
+"minigame": {
+  "type": "locker_search_duel",
+  "title": "抢柜子",
+  "durationTicks": 120,
+  "gridSize": 9,
+  "targetIndex": 4,
+  "opponentAccuracy": 0.5,
+  "winClickLead": 1,
+  "successNodeId": "win",
+  "failureNodeId": "lose"
+}
+```
+
+Supported pure UI duel types:
+
+- `locker_search_duel`: both players flip grid cells; finding the target gives points.
+- `rhythm_duel`: click when the marker reaches the green center zone.
+- `memory_flip_duel`: remember highlighted cells, then flip them after the preview ends.
+
+In dialog nodes, both players can participate and send scores. The right-clicking player's score decides the branch. In block or item interactions, the player competes with AI, controlled by `opponentAccuracy`.
+
 ## Roles
 
 Players claim role ids before playing:

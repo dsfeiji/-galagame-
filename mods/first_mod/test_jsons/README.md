@@ -15,6 +15,7 @@
 ```text
 dialog_full_test.json
 dialog_arm_wrestle_test.json
+dialog_pure_ui_duels_test.json
 ```
 
 建议角色 ID：`test_npc`
@@ -32,7 +33,10 @@ dialog_arm_wrestle_test.json
 ```text
 block_minigame_test.json
 block_arm_wrestle_test.json
+block_locker_search_test.json
+block_memory_flip_test.json
 item_minigame_test.json
+item_rhythm_duel_test.json
 ```
 
 测试前先设置：
@@ -45,4 +49,7 @@ item_minigame_test.json
 
 右键讲台 `minecraft:lectern` 可以测试方块小游戏。
 右键橡木木板 `minecraft:oak_planks` 可以测试方块扳手腕小游戏。
+右键木桶 `minecraft:barrel` 可以测试抢柜子。
+右键书架 `minecraft:bookshelf` 可以测试记忆翻牌。
 手持纸 `minecraft:paper` 右键可以测试物品小游戏。
+手持音符盒 `minecraft:note_block` 右键可以测试节奏对抗。

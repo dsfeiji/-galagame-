@@ -67,10 +67,18 @@ public final class MinigameStore {
         if ("use_item".equals(interaction.trigger.type) && interaction.trigger.item.isBlank()) {
             throw new IllegalArgumentException("trigger.item is required");
         }
-        if (!"timing".equals(interaction.minigame.type) && !"arm_wrestle".equals(interaction.minigame.type)) {
-            throw new IllegalArgumentException("only timing and arm_wrestle minigames are supported");
+        if (!isSupportedMinigameType(interaction.minigame.type)) {
+            throw new IllegalArgumentException("unsupported minigame type");
         }
         return interaction;
+    }
+
+    public static boolean isSupportedMinigameType(String type) {
+        return "timing".equals(type)
+                || "arm_wrestle".equals(type)
+                || "locker_search_duel".equals(type)
+                || "rhythm_duel".equals(type)
+                || "memory_flip_duel".equals(type);
     }
 
     public static void saveInteraction(MinigameInteraction interaction) {

@@ -1,0 +1,30 @@
+{
+  "id": "test_rhythm_duel",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_item",
+    "item": "minecraft:note_block",
+    "phase": 1
+  },
+  "minigame": {
+    "type": "rhythm_duel",
+    "title": "调频节奏",
+    "durationTicks": 120,
+    "rounds": 6,
+    "opponentAccuracy": 0.5,
+    "winClickLead": 1
+  },
+  "success": {
+    "message": "你抢到了正确节奏，广播设备稳定下来。",
+    "rewards": [
+      {
+        "item": "minecraft:echo_shard",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "节奏被打乱，广播里只剩杂音。"
+  }
+}

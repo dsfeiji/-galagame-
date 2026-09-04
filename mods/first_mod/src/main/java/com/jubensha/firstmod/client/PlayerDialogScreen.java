@@ -4,6 +4,8 @@ import com.jubensha.firstmod.dialog.DialogTree;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.ArmWrestleClickPayload;
 import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
+import com.jubensha.firstmod.network.DuelFinishPayload;
+import com.jubensha.firstmod.network.DuelScorePayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
@@ -39,6 +41,10 @@ public class PlayerDialogScreen extends Screen {
     private boolean minigameSubmitted;
     private boolean armWrestleFinishSent;
     private int armWrestleClicks;
+    private final boolean[] openedCells = new boolean[16];
+    private int duelScore;
+    private int rhythmScoredRound = -1;
+    private boolean duelFinishSent;
 
     public PlayerDialogScreen(UUID targetPlayerId, String targetPlayerName, String roleId, UUID controllerPlayerId, String currentNodeId, String dialogJson) {
         super(Text.literal(targetPlayerName));
@@ -72,6 +78,10 @@ public class PlayerDialogScreen extends Screen {
             submitArmWrestleClick(node);
             return true;
         }
+        if (node.minigame != null && isScoreDuelType(node.minigame.type)) {
+            handleDuelClick(node, mouseX, mouseY);
+            return true;
+        }
         if (!controller) {
             return true;
         }
@@ -99,6 +109,8 @@ public class PlayerDialogScreen extends Screen {
             if (node != null && node.minigame != null) {
                 if ("arm_wrestle".equals(node.minigame.type)) {
                     submitArmWrestleClick(node);
+                } else if (isScoreDuelType(node.minigame.type)) {
+                    handleDuelClick(node, -1, -1);
                 } else if (controller) {
                     submitMinigameResult(node);
                 }
@@ -115,6 +127,11 @@ public class PlayerDialogScreen extends Screen {
                 && !armWrestleFinishSent && elapsedTicks() >= node.minigame.durationTicks) {
             armWrestleFinishSent = true;
             ClientPlayNetworking.send(new ArmWrestleFinishPayload(controllerPlayerId, targetPlayerId, node.id));
+        }
+        if (controller && node != null && node.minigame != null && isScoreDuelType(node.minigame.type)
+                && !duelFinishSent && elapsedTicks() >= node.minigame.durationTicks) {
+            duelFinishSent = true;
+            ClientPlayNetworking.send(new DuelFinishPayload(controllerPlayerId, targetPlayerId, node.id));
         }
     }
 
@@ -133,6 +150,19 @@ public class PlayerDialogScreen extends Screen {
     private void submitArmWrestleClick(DialogTree.DialogNode node) {
         armWrestleClicks++;
         ClientPlayNetworking.send(new ArmWrestleClickPayload(controllerPlayerId, targetPlayerId, node.id));
+    }
+
+    private void handleDuelClick(DialogTree.DialogNode node, double mouseX, double mouseY) {
+        int delta = switch (node.minigame.type) {
+            case "locker_search_duel" -> clickGrid(node, mouseX, mouseY, false);
+            case "memory_flip_duel" -> elapsedTicks() < node.minigame.previewTicks ? 0 : clickGrid(node, mouseX, mouseY, true);
+            case "rhythm_duel" -> clickRhythm(node);
+            default -> 0;
+        };
+        if (delta != 0) {
+            duelScore += delta;
+            ClientPlayNetworking.send(new DuelScorePayload(controllerPlayerId, targetPlayerId, node.id, delta));
+        }
     }
 
     @Override
@@ -271,6 +301,10 @@ public class PlayerDialogScreen extends Screen {
             renderArmWrestle(context, node, panelX, panelY, panelRight);
             return;
         }
+        if (isScoreDuelType(node.minigame.type)) {
+            renderScoreDuel(context, node, panelX, panelY, panelRight);
+            return;
+        }
         if (!"timing".equals(node.minigame.type)) {
             return;
         }
@@ -328,11 +362,152 @@ public class PlayerDialogScreen extends Screen {
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("快速点击 / 空格  " + ticksLeft / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
     }
 
+    private void renderScoreDuel(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
+        if ("rhythm_duel".equals(node.minigame.type)) {
+            renderRhythmDuel(context, node, panelX, panelY, panelRight);
+            return;
+        }
+        int columns = node.minigame.gridSize <= 9 ? 3 : 4;
+        int rows = (int) Math.ceil(node.minigame.gridSize / (double) columns);
+        int cell = 22;
+        int gap = 5;
+        int gridWidth = columns * cell + (columns - 1) * gap;
+        int boxWidth = Math.min(300, Math.max(210, gridWidth + 48));
+        int boxHeight = 50 + rows * cell + (rows - 1) * gap;
+        int boxX = (this.width - boxWidth) / 2;
+        int boxY = Math.max(28, panelY - boxHeight - 24);
+        int gridX = boxX + (boxWidth - gridWidth) / 2;
+        int gridY = boxY + 30;
+
+        drawMiniBox(context, boxX, boxY, boxWidth, boxHeight);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(minigameTitle(node)), boxX + boxWidth / 2, boxY + 7, 0xFFFFF2CC);
+        for (int i = 0; i < node.minigame.gridSize; i++) {
+            int x = gridX + (i % columns) * (cell + gap);
+            int y = gridY + (i / columns) * (cell + gap);
+            boolean target = i == targetIndex(node) || ("memory_flip_duel".equals(node.minigame.type) && i == secondTargetIndex(node));
+            boolean preview = "memory_flip_duel".equals(node.minigame.type) && elapsedTicks() < node.minigame.previewTicks && target;
+            int color = openedCells[i] ? (target ? 0xFF6FD08C : 0xFF3A4050) : (preview ? 0xFFE6C879 : 0xFF151B28);
+            context.fill(x, y, x + cell, y + cell, 0xFF202638);
+            context.fill(x + 1, y + 1, x + cell - 1, y + cell - 1, color);
+        }
+        String hint = "memory_flip_duel".equals(node.minigame.type) && elapsedTicks() < node.minigame.previewTicks ? "记住发光格子" : "抢先得分";
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(hint + "  分数 " + duelScore + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 12, 0xFFD8D2C0);
+    }
+
+    private void renderRhythmDuel(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
+        int boxWidth = Math.min(300, panelRight - panelX - 80);
+        int boxHeight = 58;
+        int boxX = (this.width - boxWidth) / 2;
+        int boxY = Math.max(30, panelY - boxHeight - 26);
+        int barX = boxX + 26;
+        int barY = boxY + 33;
+        int barWidth = boxWidth - 52;
+        int centerX = barX + barWidth / 2;
+        int pulseX = barX + Math.round(rhythmProgress(node) * barWidth);
+
+        drawMiniBox(context, boxX, boxY, boxWidth, boxHeight);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(minigameTitle(node)), boxX + boxWidth / 2, boxY + 8, 0xFFFFF2CC);
+        context.fill(barX, barY, barX + barWidth, barY + 8, 0xFF121722);
+        context.fill(centerX - 18, barY - 1, centerX + 18, barY + 9, 0xFF6FD08C);
+        context.fill(pulseX - 2, barY - 7, pulseX + 3, barY + 15, 0xFFFFF2CC);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("分数 " + duelScore + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 11, 0xFFD8D2C0);
+    }
+
+    private void drawMiniBox(DrawContext context, int boxX, int boxY, int boxWidth, int boxHeight) {
+        context.fill(boxX + 3, boxY + 3, boxX + boxWidth + 3, boxY + boxHeight + 3, 0x77000000);
+        context.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE8202430);
+        context.fill(boxX + 12, boxY, boxX + boxWidth - 12, boxY + 1, 0xFFE6C879);
+    }
+
     private boolean isTimingInSuccessZone(DialogTree.DialogMinigame minigame) {
         float position = getTimingPosition();
         float start = successZoneStart(minigame.difficulty);
         float width = successZoneWidthRatio(minigame.difficulty);
         return position >= start && position <= start + width;
+    }
+
+    private int clickGrid(DialogTree.DialogNode node, double mouseX, double mouseY, boolean memoryMode) {
+        int index = cellAt(node, mouseX, mouseY);
+        if (index < 0 || openedCells[index]) {
+            return 0;
+        }
+        openedCells[index] = true;
+        if (index == targetIndex(node) || (memoryMode && index == secondTargetIndex(node))) {
+            return 1;
+        }
+        return -1;
+    }
+
+    private int clickRhythm(DialogTree.DialogNode node) {
+        int round = rhythmRound(node);
+        if (round == rhythmScoredRound || round >= node.minigame.rounds) {
+            return 0;
+        }
+        rhythmScoredRound = round;
+        return Math.abs(rhythmProgress(node) - 0.5F) <= 0.15F ? 1 : -1;
+    }
+
+    private int cellAt(DialogTree.DialogNode node, double mouseX, double mouseY) {
+        if (mouseX < 0 || mouseY < 0) {
+            return -1;
+        }
+        int columns = node.minigame.gridSize <= 9 ? 3 : 4;
+        int rows = (int) Math.ceil(node.minigame.gridSize / (double) columns);
+        int cell = 22;
+        int gap = 5;
+        int gridWidth = columns * cell + (columns - 1) * gap;
+        int boxWidth = Math.min(300, Math.max(210, gridWidth + 48));
+        int boxHeight = 50 + rows * cell + (rows - 1) * gap;
+        int boxX = (this.width - boxWidth) / 2;
+        int boxY = Math.max(28, this.height - PANEL_HEIGHT - 16 - boxHeight - 24);
+        int gridX = boxX + (boxWidth - gridWidth) / 2;
+        int gridY = boxY + 30;
+        int column = (int) ((mouseX - gridX) / (cell + gap));
+        int row = (int) ((mouseY - gridY) / (cell + gap));
+        if (column < 0 || column >= columns || row < 0 || row >= rows) {
+            return -1;
+        }
+        int index = row * columns + column;
+        int cellX = gridX + column * (cell + gap);
+        int cellY = gridY + row * (cell + gap);
+        return index < node.minigame.gridSize && mouseX >= cellX && mouseX <= cellX + cell && mouseY >= cellY && mouseY <= cellY + cell ? index : -1;
+    }
+
+    private int targetIndex(DialogTree.DialogNode node) {
+        if (node.minigame.targetIndex >= 0) {
+            return node.minigame.targetIndex;
+        }
+        return Math.floorMod(node.id.hashCode(), node.minigame.gridSize);
+    }
+
+    private int secondTargetIndex(DialogTree.DialogNode node) {
+        return (targetIndex(node) + Math.max(1, node.minigame.gridSize / 2)) % node.minigame.gridSize;
+    }
+
+    private float rhythmProgress(DialogTree.DialogNode node) {
+        float roundLength = Math.max(8.0F, node.minigame.durationTicks / (float) node.minigame.rounds);
+        return (elapsedTicks() % roundLength) / roundLength;
+    }
+
+    private int rhythmRound(DialogTree.DialogNode node) {
+        float roundLength = Math.max(8.0F, node.minigame.durationTicks / (float) node.minigame.rounds);
+        return (int) (elapsedTicks() / roundLength);
+    }
+
+    private boolean isScoreDuelType(String type) {
+        return "locker_search_duel".equals(type) || "rhythm_duel".equals(type) || "memory_flip_duel".equals(type);
+    }
+
+    private String minigameTitle(DialogTree.DialogNode node) {
+        if (!node.minigame.title.isBlank()) {
+            return node.minigame.title;
+        }
+        return switch (node.minigame.type) {
+            case "locker_search_duel" -> "抢柜子";
+            case "rhythm_duel" -> "节奏对抗";
+            case "memory_flip_duel" -> "记忆翻牌";
+            default -> "小游戏";
+        };
     }
 
     private float getTimingPosition() {

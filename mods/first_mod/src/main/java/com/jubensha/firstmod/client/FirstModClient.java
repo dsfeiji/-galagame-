@@ -7,6 +7,8 @@ import com.jubensha.firstmod.network.ArmWrestleClickPayload;
 import com.jubensha.firstmod.network.ArmWrestleFinishPayload;
 import com.jubensha.firstmod.network.CloseDialogPayload;
 import com.jubensha.firstmod.network.DialogPayload;
+import com.jubensha.firstmod.network.DuelFinishPayload;
+import com.jubensha.firstmod.network.DuelScorePayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
@@ -115,6 +117,14 @@ public class FirstModClient implements ClientModInitializer {
         }
         try {
             PayloadTypeRegistry.playC2S().register(ArmWrestleFinishPayload.ID, ArmWrestleFinishPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(DuelScorePayload.ID, DuelScorePayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(DuelFinishPayload.ID, DuelFinishPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {
