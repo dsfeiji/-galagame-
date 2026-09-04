@@ -10,7 +10,10 @@
   "minigame": {
     "type": "timing",
     "title": "偷看点名册",
-    "difficulty": 2
+    "difficulty": 2,
+    "speed": 0.78,
+    "successStart": 0.39,
+    "successWidth": 0.22
   },
   "success": {
     "message": "你成功看到了旧名单，拿到了一张点名纸。",

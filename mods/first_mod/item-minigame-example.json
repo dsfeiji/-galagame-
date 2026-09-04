@@ -1,0 +1,30 @@
+{
+  "id": "paper_note_timing",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_item",
+    "item": "minecraft:paper",
+    "phase": 1
+  },
+  "minigame": {
+    "type": "timing",
+    "title": "辨认纸条暗号",
+    "difficulty": 2,
+    "speed": 0.9,
+    "successStart": 0.42,
+    "successWidth": 0.18
+  },
+  "success": {
+    "message": "你看懂了纸条上的暗号，获得了一枚线索碎片。",
+    "rewards": [
+      {
+        "item": "minecraft:echo_shard",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "你把纸条顺序看反了，暂时没能得到有效线索。"
+  }
+}

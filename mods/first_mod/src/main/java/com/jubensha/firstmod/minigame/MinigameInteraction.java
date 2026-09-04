@@ -43,6 +43,7 @@ public class MinigameInteraction {
     public static class Trigger {
         public String type = "use_block";
         public String block = "";
+        public String item = "";
         public int phase = 0;
         public List<Integer> phases = new ArrayList<>();
         public String world = "";
@@ -56,6 +57,9 @@ public class MinigameInteraction {
             }
             if (block == null) {
                 block = "";
+            }
+            if (item == null) {
+                item = "";
             }
             if (phase < 0) {
                 phase = 0;

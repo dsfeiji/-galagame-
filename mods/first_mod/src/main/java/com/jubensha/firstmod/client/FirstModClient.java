@@ -55,7 +55,14 @@ public class FirstModClient implements ClientModInitializer {
             TransitionOverlay.show(context.client(), payload.durationTicks());
         }));
         ClientPlayNetworking.registerGlobalReceiver(StartInteractionMinigamePayload.ID, (payload, context) -> context.client().execute(() -> {
-            context.client().setScreen(new InteractionMinigameScreen(payload.interactionId(), payload.title(), payload.difficulty()));
+            context.client().setScreen(new InteractionMinigameScreen(
+                    payload.interactionId(),
+                    payload.title(),
+                    payload.difficulty(),
+                    payload.speed(),
+                    payload.successStart(),
+                    payload.successWidth()
+            ));
         }));
     }
 

@@ -188,6 +188,9 @@ public class DialogTree {
         public String type = "";
         public String title = "";
         public int difficulty = 2;
+        public float speed = 0.78F;
+        public float successStart = -1.0F;
+        public float successWidth = -1.0F;
         public String successNodeId = "";
         public String failureNodeId = "";
 
@@ -203,6 +206,15 @@ public class DialogTree {
             }
             if (difficulty > 4) {
                 difficulty = 4;
+            }
+            if (speed <= 0.0F) {
+                speed = 0.78F;
+            }
+            if (successStart > 1.0F) {
+                successStart = 1.0F;
+            }
+            if (successWidth > 1.0F) {
+                successWidth = 1.0F;
             }
             if (successNodeId == null) {
                 successNodeId = "";

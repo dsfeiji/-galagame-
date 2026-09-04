@@ -11,14 +11,20 @@ public class InteractionMinigameScreen extends Screen {
     private final String interactionId;
     private final String minigameTitle;
     private final int difficulty;
+    private final float speed;
+    private final float customSuccessStart;
+    private final float customSuccessWidth;
     private final long openedAtNanos = System.nanoTime();
     private boolean submitted;
 
-    public InteractionMinigameScreen(String interactionId, String title, int difficulty) {
+    public InteractionMinigameScreen(String interactionId, String title, int difficulty, float speed, float successStart, float successWidth) {
         super(Text.literal(title == null || title.isBlank() ? "时机判定" : title));
         this.interactionId = interactionId;
         this.minigameTitle = title == null || title.isBlank() ? "时机判定" : title;
         this.difficulty = Math.max(1, Math.min(4, difficulty));
+        this.speed = speed > 0.0F ? speed : 0.78F;
+        this.customSuccessStart = successStart >= 0.0F ? Math.min(1.0F, successStart) : -1.0F;
+        this.customSuccessWidth = successWidth >= 0.0F ? Math.min(1.0F, successWidth) : -1.0F;
     }
 
     @Override
@@ -97,11 +103,14 @@ public class InteractionMinigameScreen extends Screen {
 
     private float getTimingPosition() {
         double seconds = (System.nanoTime() - openedAtNanos) / 1_000_000_000.0;
-        double cycle = (seconds * 0.78) % 2.0;
+        double cycle = (seconds * speed) % 2.0;
         return (float) (cycle <= 1.0 ? cycle : 2.0 - cycle);
     }
 
     private float successZoneStart() {
+        if (customSuccessStart >= 0.0F) {
+            return customSuccessStart;
+        }
         return switch (difficulty) {
             case 1 -> 0.34F;
             case 2 -> 0.39F;
@@ -111,6 +120,9 @@ public class InteractionMinigameScreen extends Screen {
     }
 
     private float successZoneWidthRatio() {
+        if (customSuccessWidth >= 0.0F) {
+            return customSuccessWidth;
+        }
         return switch (difficulty) {
             case 1 -> 0.32F;
             case 2 -> 0.22F;

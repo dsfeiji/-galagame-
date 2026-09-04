@@ -58,11 +58,14 @@ public final class MinigameStore {
         if (!isValidId(interaction.id)) {
             throw new IllegalArgumentException("invalid id");
         }
-        if (!"use_block".equals(interaction.trigger.type)) {
-            throw new IllegalArgumentException("only use_block trigger is supported");
+        if (!"use_block".equals(interaction.trigger.type) && !"use_item".equals(interaction.trigger.type)) {
+            throw new IllegalArgumentException("only use_block and use_item triggers are supported");
         }
-        if (interaction.trigger.block.isBlank()) {
+        if ("use_block".equals(interaction.trigger.type) && interaction.trigger.block.isBlank()) {
             throw new IllegalArgumentException("trigger.block is required");
+        }
+        if ("use_item".equals(interaction.trigger.type) && interaction.trigger.item.isBlank()) {
+            throw new IllegalArgumentException("trigger.item is required");
         }
         if (!"timing".equals(interaction.minigame.type)) {
             throw new IllegalArgumentException("only timing minigame is supported");

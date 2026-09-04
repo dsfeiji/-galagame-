@@ -20,6 +20,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -38,6 +39,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -73,6 +75,7 @@ public class FirstMod implements ModInitializer {
         registerInteractionMinigameReceiver();
         registerCommands();
         registerBlockMinigames();
+        registerItemMinigames();
         registerRightClickDialog();
         LOGGER.info("First Mod initialized.");
     }
@@ -193,6 +196,25 @@ public class FirstMod implements ModInitializer {
                 }
             }
             return ActionResult.PASS;
+        });
+    }
+
+    private static void registerItemMinigames() {
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            ItemStack stack = player.getStackInHand(hand);
+            if (world.isClient() || hand != Hand.MAIN_HAND || !(player instanceof ServerPlayerEntity serverPlayer) || stack.isEmpty()) {
+                return TypedActionResult.pass(stack);
+            }
+
+            String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+            String worldId = world.getRegistryKey().getValue().toString();
+            for (MinigameInteraction interaction : MinigameStore.all()) {
+                if (matchesItemInteraction(interaction, serverPlayer, itemId, worldId)) {
+                    startInteractionMinigame(serverPlayer, interaction);
+                    return TypedActionResult.success(stack);
+                }
+            }
+            return TypedActionResult.pass(stack);
         });
     }
 
@@ -474,10 +496,7 @@ public class FirstMod implements ModInitializer {
         if (!"use_block".equals(interaction.trigger.type) || !interaction.trigger.block.equals(blockId)) {
             return false;
         }
-        if (interaction.protagonistOnly && !DialogStore.isProtagonist(player.getUuid())) {
-            return false;
-        }
-        if (!interaction.trigger.world.isBlank() && !interaction.trigger.world.equals(worldId)) {
+        if (!matchesCommonInteractionRules(interaction, player, worldId)) {
             return false;
         }
         if (interaction.trigger.x != null && interaction.trigger.x != pos.getX()) {
@@ -489,6 +508,25 @@ public class FirstMod implements ModInitializer {
         if (interaction.trigger.z != null && interaction.trigger.z != pos.getZ()) {
             return false;
         }
+        return matchesPhase(interaction);
+    }
+
+    private static boolean matchesItemInteraction(MinigameInteraction interaction, ServerPlayerEntity player, String itemId, String worldId) {
+        interaction.normalize();
+        if (!"use_item".equals(interaction.trigger.type) || !interaction.trigger.item.equals(itemId)) {
+            return false;
+        }
+        return matchesCommonInteractionRules(interaction, player, worldId) && matchesPhase(interaction);
+    }
+
+    private static boolean matchesCommonInteractionRules(MinigameInteraction interaction, ServerPlayerEntity player, String worldId) {
+        if (interaction.protagonistOnly && !DialogStore.isProtagonist(player.getUuid())) {
+            return false;
+        }
+        return interaction.trigger.world.isBlank() || interaction.trigger.world.equals(worldId);
+    }
+
+    private static boolean matchesPhase(MinigameInteraction interaction) {
         if (!interaction.trigger.phases.isEmpty()) {
             return interaction.trigger.phases.contains(DialogStore.getCurrentPhase());
         }
@@ -504,7 +542,14 @@ public class FirstMod implements ModInitializer {
         syncStamina(player);
         ACTIVE_INTERACTION_MINIGAMES.put(player.getUuid(), interaction.id);
         if (ServerPlayNetworking.canSend(player, StartInteractionMinigamePayload.ID)) {
-            ServerPlayNetworking.send(player, new StartInteractionMinigamePayload(interaction.id, interaction.minigame.title, interaction.minigame.difficulty));
+            ServerPlayNetworking.send(player, new StartInteractionMinigamePayload(
+                    interaction.id,
+                    interaction.minigame.title,
+                    interaction.minigame.difficulty,
+                    interaction.minigame.speed,
+                    interaction.minigame.successStart,
+                    interaction.minigame.successWidth
+            ));
         }
     }
 

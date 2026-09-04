@@ -273,11 +273,17 @@ public class PlayerDialogScreen extends Screen {
 
     private float getTimingPosition() {
         double seconds = (System.nanoTime() - openedAtNanos) / 1_000_000_000.0;
-        double cycle = (seconds * 0.78) % 2.0;
+        DialogTree.DialogNode node = currentNode();
+        float speed = node == null || node.minigame == null || node.minigame.speed <= 0.0F ? 0.78F : node.minigame.speed;
+        double cycle = (seconds * speed) % 2.0;
         return (float) (cycle <= 1.0 ? cycle : 2.0 - cycle);
     }
 
     private float successZoneStart(int difficulty) {
+        DialogTree.DialogNode node = currentNode();
+        if (node != null && node.minigame != null && node.minigame.successStart >= 0.0F) {
+            return Math.min(1.0F, node.minigame.successStart);
+        }
         return switch (Math.max(1, Math.min(4, difficulty))) {
             case 1 -> 0.34F;
             case 2 -> 0.39F;
@@ -287,6 +293,10 @@ public class PlayerDialogScreen extends Screen {
     }
 
     private float successZoneWidthRatio(int difficulty) {
+        DialogTree.DialogNode node = currentNode();
+        if (node != null && node.minigame != null && node.minigame.successWidth >= 0.0F) {
+            return Math.min(1.0F, node.minigame.successWidth);
+        }
         return switch (Math.max(1, Math.min(4, difficulty))) {
             case 1 -> 0.32F;
             case 2 -> 0.22F;

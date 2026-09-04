@@ -32,17 +32,17 @@ Choices can spend stamina:
 
 Missing `staminaCost` means `0`.
 
-## Block Minigame JSON
+## Minigame JSON
 
-Put block minigame interaction files in the game run directory:
+Put minigame interaction files in the game run directory:
 
 ```text
 ./first_mod_minigames
 ```
 
-Creative players can press `O`, switch to `小游戏JSON`, choose a JSON file, then import it. Imported minigames are stored on the server and trigger when the configured block is right-clicked.
+Creative players can press `O`, switch to `小游戏JSON`, choose a JSON file, then import it. Imported minigames are stored on the server and trigger when the configured block or item is right-clicked.
 
-Example:
+Block example:
 
 ```json
 {
@@ -57,7 +57,10 @@ Example:
   "minigame": {
     "type": "timing",
     "title": "偷看点名册",
-    "difficulty": 2
+    "difficulty": 2,
+    "speed": 0.78,
+    "successStart": 0.39,
+    "successWidth": 0.22
   },
   "success": {
     "message": "你成功看到了旧名单。",
@@ -84,6 +87,58 @@ Optional exact block position:
 ```
 
 If position is omitted, every matching block in the configured phase can trigger the minigame.
+
+Item example:
+
+```json
+{
+  "id": "paper_note_timing",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_item",
+    "item": "minecraft:paper",
+    "phase": 1
+  },
+  "minigame": {
+    "type": "timing",
+    "title": "辨认纸条暗号",
+    "difficulty": 2,
+    "speed": 0.9,
+    "successStart": 0.42,
+    "successWidth": 0.18
+  },
+  "success": {
+    "message": "你看懂了纸条上的暗号。",
+    "rewards": [
+      {
+        "item": "minecraft:echo_shard",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "你把纸条顺序看反了。"
+  }
+}
+```
+
+Dialog nodes can also include a minigame directly:
+
+```json
+"minigame": {
+  "type": "timing",
+  "title": "偷听老师讲话",
+  "difficulty": 3,
+  "speed": 1.0,
+  "successStart": 0.44,
+  "successWidth": 0.14,
+  "successNodeId": "success",
+  "failureNodeId": "failure"
+}
+```
+
+`speed`, `successStart`, and `successWidth` are optional. If omitted, the mod uses the default values for the selected `difficulty`.
 
 ## Roles
 
