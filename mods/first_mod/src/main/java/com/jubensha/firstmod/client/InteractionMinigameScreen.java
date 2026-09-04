@@ -24,6 +24,10 @@ public class InteractionMinigameScreen extends Screen {
     private int gridSecondTargetIndex = -1;
     private int memoryHitsInSet;
     private int memoryPreviewUntilTick;
+    private int rhythmRoundIndex;
+    private int rhythmRoundStartedTick;
+    private float rhythmZoneCenter = -1.0F;
+    private float rhythmZoneWidth = 0.18F;
 
     public InteractionMinigameScreen(String interactionId, DialogTree.DialogMinigame minigame) {
         super(Text.literal(minigame.title == null || minigame.title.isBlank() ? defaultTitle(minigame.type) : minigame.title));
@@ -130,20 +134,22 @@ public class InteractionMinigameScreen extends Screen {
                 chooseNextGridTargets();
             }
         } else {
-            playerScore--;
-            if (allCellsOpened()) {
+            if (memoryMode) {
+                playerScore--;
                 chooseNextGridTargets();
             }
         }
     }
 
     private void clickRhythm() {
+        ensureRhythmRound();
         int round = rhythmRound();
-        if (round == rhythmScoredRound || round >= minigame.rounds) {
+        if (round == rhythmScoredRound) {
             return;
         }
         rhythmScoredRound = round;
         playerScore += isRhythmHitWindow() ? 1 : -1;
+        nextRhythmRound();
     }
 
     private void submit(boolean success) {
@@ -238,8 +244,9 @@ public class InteractionMinigameScreen extends Screen {
         int barY = boxY + 38;
         int barWidth = boxWidth - 56;
         int pulseX = barX + Math.round(rhythmProgress() * barWidth);
-        int centerX = barX + Math.round(rhythmZoneCenter() * barWidth);
-        int zone = 18;
+        ensureRhythmRound();
+        int centerX = barX + Math.round(rhythmZoneCenter * barWidth);
+        int zone = Math.max(3, Math.round(rhythmZoneWidth * barWidth / 2.0F));
 
         renderBox(context, boxX, boxY, boxWidth, boxHeight);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(title()), boxX + boxWidth / 2, boxY + 9, 0xFFFFF2CC);
@@ -317,17 +324,18 @@ public class InteractionMinigameScreen extends Screen {
     }
 
     private float rhythmProgress() {
-        float roundLength = Math.max(8.0F, minigame.durationTicks / (float) minigame.rounds);
-        return (elapsedTicks() % roundLength) / roundLength;
+        ensureRhythmRound();
+        float roundLength = rhythmRoundLength();
+        return ((elapsedTicks() - rhythmRoundStartedTick) % roundLength) / roundLength;
     }
 
     private int rhythmRound() {
-        float roundLength = Math.max(8.0F, minigame.durationTicks / (float) minigame.rounds);
-        return (int) (elapsedTicks() / roundLength);
+        ensureRhythmRound();
+        return rhythmRoundIndex;
     }
 
     private boolean isRhythmHitWindow() {
-        return Math.abs(rhythmProgress() - rhythmZoneCenter()) <= 0.13F;
+        return Math.abs(rhythmProgress() - rhythmZoneCenter) <= rhythmZoneWidth / 2.0F;
     }
 
     private void ensureGridTargets() {
@@ -360,10 +368,23 @@ public class InteractionMinigameScreen extends Screen {
         return elapsedTicks() < memoryPreviewUntilTick;
     }
 
-    private float rhythmZoneCenter() {
-        int round = rhythmRound();
-        int seed = Math.floorMod((interactionId + ":rhythm:" + round).hashCode(), 1000);
-        return 0.25F + seed / 999.0F * 0.5F;
+    private void ensureRhythmRound() {
+        if (rhythmZoneCenter < 0.0F) {
+            nextRhythmRound();
+        }
+    }
+
+    private void nextRhythmRound() {
+        rhythmRoundIndex++;
+        rhythmRoundStartedTick = elapsedTicks();
+        int seed = Math.floorMod((interactionId + ":rhythm:" + rhythmRoundIndex + ":" + System.nanoTime()).hashCode(), 1000);
+        rhythmZoneCenter = 0.22F + seed / 999.0F * 0.56F;
+        int widthSeed = Math.floorMod(seed * 31 + rhythmRoundIndex * 17, 1000);
+        rhythmZoneWidth = 0.035F + widthSeed / 999.0F * 0.155F;
+    }
+
+    private float rhythmRoundLength() {
+        return Math.max(10.0F, 34.0F / Math.max(0.5F, minigame.speed));
     }
 
     private String localPlayerName() {

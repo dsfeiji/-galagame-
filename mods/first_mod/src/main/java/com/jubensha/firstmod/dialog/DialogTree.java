@@ -217,7 +217,9 @@ public class DialogTree {
             if (difficulty > 4) {
                 difficulty = 4;
             }
-            if (speed <= 0.0F) {
+            if ("rhythm_duel".equals(type) && speed < 1.8F) {
+                speed = 1.8F;
+            } else if (speed <= 0.0F) {
                 speed = 0.78F;
             }
             if (successStart > 1.0F) {
@@ -258,6 +260,9 @@ public class DialogTree {
             if (gridSize < 4) {
                 gridSize = 4;
             }
+            if ("memory_flip_duel".equals(type)) {
+                gridSize = 6;
+            }
             if (gridSize > 16) {
                 gridSize = 16;
             }
@@ -273,8 +278,11 @@ public class DialogTree {
             if (rounds < 1) {
                 rounds = 1;
             }
-            if (rounds > 12) {
-                rounds = 12;
+            if ("rhythm_duel".equals(type) && rounds < 60) {
+                rounds = 60;
+            }
+            if (rounds > 200) {
+                rounds = 200;
             }
             if (winClickLead < 1) {
                 winClickLead = 1;

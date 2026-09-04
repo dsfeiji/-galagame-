@@ -50,6 +50,10 @@ public class PlayerDialogScreen extends Screen {
     private int gridSecondTargetIndex = -1;
     private int memoryHitsInSet;
     private int memoryPreviewUntilTick;
+    private int rhythmRoundIndex;
+    private int rhythmRoundStartedTick;
+    private float rhythmZoneCenter = -1.0F;
+    private float rhythmZoneWidth = 0.18F;
 
     public PlayerDialogScreen(UUID targetPlayerId, String targetPlayerName, String roleId, UUID controllerPlayerId, String currentNodeId, String dialogJson) {
         super(Text.literal(targetPlayerName));
@@ -419,13 +423,15 @@ public class PlayerDialogScreen extends Screen {
         int barX = boxX + 26;
         int barY = boxY + 33;
         int barWidth = boxWidth - 52;
-        int centerX = barX + Math.round(rhythmZoneCenter(node) * barWidth);
+        ensureRhythmRound(node);
+        int centerX = barX + Math.round(rhythmZoneCenter * barWidth);
         int pulseX = barX + Math.round(rhythmProgress(node) * barWidth);
+        int zoneHalfWidth = Math.max(3, Math.round(rhythmZoneWidth * barWidth / 2.0F));
 
         drawMiniBox(context, boxX, boxY, boxWidth, boxHeight);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(minigameTitle(node)), boxX + boxWidth / 2, boxY + 8, 0xFFFFF2CC);
         context.fill(barX, barY, barX + barWidth, barY + 8, 0xFF121722);
-        context.fill(centerX - 18, barY - 1, centerX + 18, barY + 9, 0xFF6FD08C);
+        context.fill(centerX - zoneHalfWidth, barY - 1, centerX + zoneHalfWidth, barY + 9, 0xFF6FD08C);
         context.fill(pulseX - 2, barY - 7, pulseX + 3, barY + 15, 0xFFFFF2CC);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal(scoreLine() + "  " + Math.max(0, node.minigame.durationTicks - elapsedTicks()) / 20 + "s"), boxX + boxWidth / 2, boxY + boxHeight - 11, 0xFFD8D2C0);
     }
@@ -461,19 +467,26 @@ public class PlayerDialogScreen extends Screen {
             }
             return 1;
         }
+        if (memoryMode) {
+            chooseNextGridTargets(node);
+            return -1;
+        }
         if (allRelevantCellsOpened(node)) {
             chooseNextGridTargets(node);
         }
-        return -1;
+        return 0;
     }
 
     private int clickRhythm(DialogTree.DialogNode node) {
+        ensureRhythmRound(node);
         int round = rhythmRound(node);
-        if (round == rhythmScoredRound || round >= node.minigame.rounds) {
+        if (round == rhythmScoredRound) {
             return 0;
         }
         rhythmScoredRound = round;
-        return Math.abs(rhythmProgress(node) - rhythmZoneCenter(node)) <= 0.13F ? 1 : -1;
+        int score = Math.abs(rhythmProgress(node) - rhythmZoneCenter) <= rhythmZoneWidth / 2.0F ? 1 : -1;
+        nextRhythmRound(node);
+        return score;
     }
 
     private int cellAt(DialogTree.DialogNode node, double mouseX, double mouseY) {
@@ -513,13 +526,14 @@ public class PlayerDialogScreen extends Screen {
     }
 
     private float rhythmProgress(DialogTree.DialogNode node) {
-        float roundLength = Math.max(8.0F, node.minigame.durationTicks / (float) node.minigame.rounds);
-        return (elapsedTicks() % roundLength) / roundLength;
+        ensureRhythmRound(node);
+        float roundLength = rhythmRoundLength(node);
+        return ((elapsedTicks() - rhythmRoundStartedTick) % roundLength) / roundLength;
     }
 
     private int rhythmRound(DialogTree.DialogNode node) {
-        float roundLength = Math.max(8.0F, node.minigame.durationTicks / (float) node.minigame.rounds);
-        return (int) (elapsedTicks() / roundLength);
+        ensureRhythmRound(node);
+        return rhythmRoundIndex;
     }
 
     private boolean isScoreDuelType(String type) {
@@ -562,10 +576,23 @@ public class PlayerDialogScreen extends Screen {
         return elapsedTicks() < memoryPreviewUntilTick;
     }
 
-    private float rhythmZoneCenter(DialogTree.DialogNode node) {
-        int round = rhythmRound(node);
-        int seed = Math.floorMod((node.id + ":rhythm:" + round).hashCode(), 1000);
-        return 0.25F + seed / 999.0F * 0.5F;
+    private void ensureRhythmRound(DialogTree.DialogNode node) {
+        if (rhythmZoneCenter < 0.0F) {
+            nextRhythmRound(node);
+        }
+    }
+
+    private void nextRhythmRound(DialogTree.DialogNode node) {
+        rhythmRoundIndex++;
+        rhythmRoundStartedTick = elapsedTicks();
+        int seed = Math.floorMod((node.id + ":rhythm:" + rhythmRoundIndex + ":" + System.nanoTime()).hashCode(), 1000);
+        rhythmZoneCenter = 0.22F + seed / 999.0F * 0.56F;
+        int widthSeed = Math.floorMod(seed * 31 + rhythmRoundIndex * 17, 1000);
+        rhythmZoneWidth = 0.035F + widthSeed / 999.0F * 0.155F;
+    }
+
+    private float rhythmRoundLength(DialogTree.DialogNode node) {
+        return Math.max(10.0F, 34.0F / Math.max(0.5F, node.minigame.speed));
     }
 
     private String playerName(UUID playerId, String fallback) {
