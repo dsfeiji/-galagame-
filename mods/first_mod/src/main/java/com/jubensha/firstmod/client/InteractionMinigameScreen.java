@@ -209,7 +209,7 @@ public class InteractionMinigameScreen extends Screen {
     }
 
     private void renderGridGame(DrawContext context, String hint) {
-        int columns = minigame.gridSize <= 9 ? 3 : 4;
+        int columns = gridColumns();
         int rows = (int) Math.ceil(minigame.gridSize / (double) columns);
         int cell = 24;
         int gap = 5;
@@ -271,7 +271,7 @@ public class InteractionMinigameScreen extends Screen {
         if (mouseX < 0 || mouseY < 0) {
             return -1;
         }
-        int columns = minigame.gridSize <= 9 ? 3 : 4;
+        int columns = gridColumns();
         int rows = (int) Math.ceil(minigame.gridSize / (double) columns);
         int cell = 24;
         int gap = 5;
@@ -301,6 +301,10 @@ public class InteractionMinigameScreen extends Screen {
     private int secondTargetIndex() {
         ensureGridTargets();
         return gridSecondTargetIndex;
+    }
+
+    private int gridColumns() {
+        return "memory_flip_duel".equals(minigame.type) ? 5 : (minigame.gridSize <= 9 ? 3 : 4);
     }
 
     private int aiScore() {

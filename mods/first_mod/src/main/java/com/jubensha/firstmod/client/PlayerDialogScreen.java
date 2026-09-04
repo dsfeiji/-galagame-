@@ -388,7 +388,7 @@ public class PlayerDialogScreen extends Screen {
             renderRhythmDuel(context, node, panelX, panelY, panelRight);
             return;
         }
-        int columns = node.minigame.gridSize <= 9 ? 3 : 4;
+        int columns = gridColumns(node);
         int rows = (int) Math.ceil(node.minigame.gridSize / (double) columns);
         int cell = 22;
         int gap = 5;
@@ -494,7 +494,7 @@ public class PlayerDialogScreen extends Screen {
         if (mouseX < 0 || mouseY < 0) {
             return -1;
         }
-        int columns = node.minigame.gridSize <= 9 ? 3 : 4;
+        int columns = gridColumns(node);
         int rows = (int) Math.ceil(node.minigame.gridSize / (double) columns);
         int cell = 22;
         int gap = 5;
@@ -524,6 +524,10 @@ public class PlayerDialogScreen extends Screen {
     private int secondTargetIndex(DialogTree.DialogNode node) {
         ensureGridTargets(node);
         return gridSecondTargetIndex;
+    }
+
+    private int gridColumns(DialogTree.DialogNode node) {
+        return "memory_flip_duel".equals(node.minigame.type) ? 5 : (node.minigame.gridSize <= 9 ? 3 : 4);
     }
 
     private float rhythmProgress(DialogTree.DialogNode node) {
