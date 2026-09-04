@@ -158,7 +158,7 @@ public class FirstMod implements ModInitializer {
             String roleId = DialogStore.getClaimedRole(target.getUuid());
             if (roleId.isBlank()) {
                 if (actor.isCreative()) {
-                    actor.sendMessage(Text.literal("This player has not claimed a dialog role. Use /dialogrole claim <role_id> as that player."), false);
+                    actor.sendMessage(Text.literal("This player has not claimed a dialog role. Use /dialogrole claim <player> <role_id>."), false);
                     return ActionResult.SUCCESS;
                 }
                 return ActionResult.PASS;
@@ -709,7 +709,21 @@ public class FirstMod implements ModInitializer {
                                         DialogStore.claimRole(player.getUuid(), roleId);
                                         feedback(context.getSource(), player.getNameForScoreboard() + " claimed dialog role: " + roleId);
                                         return 1;
-                                    })))
+                                    }))
+                            .then(argument("player", EntityArgumentType.player())
+                                    .requires(source -> source.hasPermissionLevel(2))
+                                    .then(argument("role_id", StringArgumentType.word())
+                                            .executes(context -> {
+                                                ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
+                                                String roleId = StringArgumentType.getString(context, "role_id").trim();
+                                                if (!DialogStore.isValidRoleId(roleId)) {
+                                                    feedback(context.getSource(), "Invalid role id. Use a-z, 0-9, _, -, . or /, max 64 chars.");
+                                                    return 0;
+                                                }
+                                                DialogStore.claimRole(target.getUuid(), roleId);
+                                                feedback(context.getSource(), target.getNameForScoreboard() + " claimed dialog role: " + roleId);
+                                                return 1;
+                                            }))))
                     .then(literal("clear")
                             .executes(context -> {
                                 ServerPlayerEntity player = context.getSource().getPlayerOrThrow();

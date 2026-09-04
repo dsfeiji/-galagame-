@@ -150,11 +150,18 @@ Players claim role ids before playing:
 /dialogrole clear
 ```
 
-Operators can set or inspect another player:
+Operators can assign or inspect another player:
 
 ```mcfunction
+/dialogrole claim <player> <role_id>
 /dialogrole set <player> <role_id>
 /dialogrole get <player>
+```
+
+Recommended test NPC format:
+
+```mcfunction
+/dialogrole claim npc1 role1
 ```
 
 ## Protagonist
