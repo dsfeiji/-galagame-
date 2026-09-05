@@ -75,7 +75,7 @@
 ## NPC 扮演提示
 
 - 对话 JSON 的 `text` 字段只放玩家能看到的说话内容。
-- NPC 控场、信息边界和自由发挥规则放在 `story_v2_npc_guides/NPC扮演手册.md`。
+- NPC 控场、信息边界和自由发挥规则放在 `story_v2_npc_guides/NPC角色书.md`。
 
 ## 信物
 

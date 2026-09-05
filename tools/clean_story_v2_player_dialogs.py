@@ -192,8 +192,9 @@ def clean_dialogs():
 
 
 def write_guide():
-    GUIDE_DIR.mkdir(parents=True, exist_ok=True)
-    (GUIDE_DIR / "NPC扮演手册.md").write_text(GUIDE, encoding="utf-8")
+    from create_story_v2_npc_books import write_npc_book
+
+    write_npc_book()
 
 
 def update_readme():
@@ -202,7 +203,7 @@ def update_readme():
     insert = (
         "## NPC 扮演提示\n\n"
         "- 对话 JSON 的 `text` 字段只放玩家能看到的说话内容。\n"
-        "- NPC 控场、信息边界和自由发挥规则放在 `story_v2_npc_guides/NPC扮演手册.md`。\n\n"
+        "- NPC 控场、信息边界和自由发挥规则放在 `story_v2_npc_guides/NPC角色书.md`。\n\n"
     )
     if insert.strip() not in text and marker in text:
         text = text.replace(marker, insert + marker)
@@ -214,7 +215,7 @@ def main():
     write_guide()
     update_readme()
     print("cleaned_dialog_files", len(TEXTS))
-    print("guide", GUIDE_DIR / "NPC扮演手册.md")
+    print("guide", GUIDE_DIR / "NPC角色书.md")
 
 
 if __name__ == "__main__":
