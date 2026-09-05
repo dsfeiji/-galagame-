@@ -1,0 +1,174 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "王少栋：我刚转来，很多地方还不熟。你要问路可以，但别问我为什么知道那条近路。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:map",
+          "count": 1,
+          "nextNodeId": "has_map"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "has_bc_token"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "问空教室的近路。",
+          "nextNodeId": "route",
+          "staminaCost": 1
+        },
+        {
+          "text": "问柜子里的纸条。",
+          "nextNodeId": "note"
+        },
+        {
+          "text": "放学你准备从哪走？",
+          "nextNodeId": "after_school"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_map",
+      "text": "王少栋：你拿着我画的路线还来问我？那你应该知道，空教室的门不是我第一次推开的。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "追问第一次是谁。",
+          "nextNodeId": "route",
+          "staminaCost": 1
+        },
+        {
+          "text": "问纸条。",
+          "nextNodeId": "note"
+        }
+      ]
+    },
+    {
+      "id": "has_bc_token",
+      "text": "王少栋：BC 给你看过名单？那我也不装了。我的名字被补进去之前，名单上空着一格。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "问空着的一格。",
+          "nextNodeId": "note"
+        },
+        {
+          "text": "逼他交出纸条。",
+          "nextNodeId": "duel",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "text": "王少栋：从楼梯间绕到空教室，不会经过正门。可这条路不该只有我知道。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "让他画路线图。",
+          "nextNodeId": "map_reward",
+          "staminaCost": 1
+        },
+        {
+          "text": "问纸条。",
+          "nextNodeId": "note"
+        }
+      ]
+    },
+    {
+      "id": "map_reward",
+      "text": "王少栋：给你。别说是我画的。它只是路线，不是答案。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:map",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "note",
+      "text": "王少栋：纸条烧过一角，上面只剩半句话。要拿走可以，先证明你能比我更快找到它。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始抢柜子。",
+          "nextNodeId": "duel",
+          "staminaCost": 1
+        },
+        {
+          "text": "用路线图换。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "duel",
+      "text": "王少栋：一分钟，谁先找到有效格子谁领先。点错不扣分，但浪费时间。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "locker_search_duel",
+        "title": "空教室对抗：王少栋",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "duel_fail",
+        "rounds": 60,
+        "winClickLead": 1
+      }
+    },
+    {
+      "id": "duel_fail",
+      "text": "王少栋：你慢了。纸条我先收着。你还能从 BC 或孙悟空那里绕回来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "token",
+      "text": "王少栋：烧焦纸条给你。你别以为拿到它就懂我了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:burnt_note",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "after_school",
+      "text": "王少栋：放学我会走校门口，不走侧门。因为那时候所有人都看得见我。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

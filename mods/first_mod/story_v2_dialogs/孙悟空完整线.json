@@ -1,0 +1,153 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "孙悟空：想从我这里拿消息？可以，换。别跟我谈公平，学校里最没用的就是公平。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:emerald",
+          "count": 1,
+          "nextNodeId": "has_emerald"
+        },
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1,
+          "nextNodeId": "has_scholar_token"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "做一笔柜子交易。",
+          "nextNodeId": "deal",
+          "staminaCost": 1
+        },
+        {
+          "text": "抢柜子比一局。",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "问王少栋盯着哪个柜子。",
+          "nextNodeId": "ask_locker"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_emerald",
+      "text": "孙悟空：绿宝石？你还真懂规矩。行，少废话，柜子区我给你开一次口子。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "直接换消息。",
+          "nextNodeId": "deal"
+        },
+        {
+          "text": "还是比抢柜子。",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "has_scholar_token",
+      "text": "孙悟空：六谷的试卷都到你手里了？那我知道你不是随便问问。王少栋看的柜子在广播室转角。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "追问柜子里的东西。",
+          "nextNodeId": "ask_locker"
+        },
+        {
+          "text": "换信物。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "deal",
+      "text": "孙悟空：我给你一个位置，你给我一个保证。柜子区午休会空一小段，但广播室门口会有人经过。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "接受交易。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "不接受",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "ask_locker",
+      "text": "孙悟空：他盯的不是柜子，是柜子门缝里塞过的纸。那纸后来不在柜子里了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "继续查柜子。",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "先离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "locker_game",
+      "text": "孙悟空：一分钟。点对加分，点错不扣。谁抢到的有效柜子多，谁说了算。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "locker_search_duel",
+        "title": "抢柜子：孙悟空",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "locker_fail",
+        "rounds": 60,
+        "winClickLead": 1
+      }
+    },
+    {
+      "id": "locker_fail",
+      "text": "孙悟空：手慢了。你还能用别人的线绕过来，但今天别指望我白送。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "token",
+      "text": "孙悟空：手机挂坠裂了，但还能证明你赢过我这边。拿着。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:cracked_phone_charm",
+          "count": 1
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

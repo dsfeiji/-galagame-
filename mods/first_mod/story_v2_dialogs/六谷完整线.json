@@ -1,0 +1,176 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "六谷：你要问线索，可以。先证明你听得懂逻辑。错一次，我就不会继续浪费时间。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:book",
+          "count": 1,
+          "nextNodeId": "has_book"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "has_bc_token"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始知识问答。",
+          "nextNodeId": "q1",
+          "staminaCost": 1
+        },
+        {
+          "text": "问满分试卷。",
+          "nextNodeId": "paper"
+        },
+        {
+          "text": "放学前能不能补问？",
+          "nextNodeId": "after_school"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_book",
+      "text": "六谷：你带了资料书？那我跳过第一题。第二题开始，别靠猜。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "回答第二题。",
+          "nextNodeId": "q2",
+          "staminaCost": 1
+        },
+        {
+          "text": "问试卷。",
+          "nextNodeId": "paper"
+        }
+      ]
+    },
+    {
+      "id": "has_bc_token",
+      "text": "六谷：BC 的点名牌在你手里？那名单被改这件事就能和试卷顺序连起来了。你问吧。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "问试卷顺序。",
+          "nextNodeId": "paper"
+        },
+        {
+          "text": "直接做最后一题。",
+          "nextNodeId": "q3",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "q1",
+      "text": "六谷：第一题。点名册上后来补进去的名字，最可能说明什么？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "有人试图改掉当天的行动顺序。",
+          "nextNodeId": "q2"
+        },
+        {
+          "text": "只是老师写错了名字。",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "六谷：第二题。如果广播让所有人晚到十秒，最容易被伪装的是什么？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "一个人原本不该出现的位置。",
+          "nextNodeId": "q3"
+        },
+        {
+          "text": "一张试卷的分数。",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "六谷：最后一题。破损试卷真正能证明的，不是分数，而是什么？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "有人提前知道还没发生的顺序。",
+          "nextNodeId": "quiz_win"
+        },
+        {
+          "text": "六谷故意藏了答案。",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "quiz_win",
+      "text": "六谷：你不是来抄答案的。破掉的试卷给你，它能证明有人提前知道顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "paper",
+      "text": "六谷：满分试卷不是重点，重点是它被撕掉的那一角。那一角对应的是今天还没发生的题目顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "继续追问。",
+          "nextNodeId": "q2",
+          "staminaCost": 1
+        },
+        {
+          "text": "先离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "fail",
+      "text": "六谷：错了。你现在问下去只会制造噪音。想单独完成我这条线，下一轮先准备资料书。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "after_school",
+      "text": "六谷：放学我会把错题纸扔掉。那时还能问，但只能问最后一题。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

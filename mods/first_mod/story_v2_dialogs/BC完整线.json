@@ -1,0 +1,170 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "BC：你又迟到了？名单上每个人的位置我都记着。你想问事可以，但别挡着我点名。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:map",
+          "count": 1,
+          "nextNodeId": "has_route_map"
+        },
+        {
+          "item": "first_mod:burnt_note",
+          "count": 1,
+          "nextNodeId": "has_transfer_token"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "帮你核对名单。",
+          "nextNodeId": "help_roster",
+          "staminaCost": 1
+        },
+        {
+          "text": "我想知道谁的名字不对。",
+          "nextNodeId": "ask_name"
+        },
+        {
+          "text": "放学前我再来找你。",
+          "nextNodeId": "after_school"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_route_map",
+      "text": "BC：路线图？王少栋给你的？他刚来，却比班里很多人还清楚空教室在哪。你最好别只盯着他，也看看谁在替他改记录。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "继续查点名册。",
+          "nextNodeId": "help_roster",
+          "staminaCost": 1
+        },
+        {
+          "text": "追问改记录的人。",
+          "nextNodeId": "ask_name"
+        }
+      ]
+    },
+    {
+      "id": "has_transfer_token",
+      "text": "BC：你已经拿到王少栋那边的东西了？那我没必要继续装不知道。点名册确实被动过，动的人不是老师。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "让我看看原来的名单。",
+          "nextNodeId": "memory_intro",
+          "staminaCost": 1
+        },
+        {
+          "text": "先离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "help_roster",
+      "text": "BC：行，你念名字，我划勾。等等，随小乐这一栏被擦过，王少栋这一栏是后来补的。你看见了吗？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "看见了，继续往下核。",
+          "nextNodeId": "memory_intro",
+          "staminaCost": 1
+        },
+        {
+          "text": "这是谁补的？",
+          "nextNodeId": "ask_name"
+        }
+      ]
+    },
+    {
+      "id": "ask_name",
+      "text": "BC：我不能直接说。你要是能记住我刚才划过的顺序，我就把缺角的点名牌给你。记错了，我就当你只是在捣乱。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始记忆翻牌。",
+          "nextNodeId": "memory_intro",
+          "staminaCost": 1
+        },
+        {
+          "text": "我先去找随小乐。",
+          "nextNodeId": "hint_suixiaole"
+        }
+      ]
+    },
+    {
+      "id": "hint_suixiaole",
+      "text": "BC：随小乐怕事，但她不会乱说。别逼她，逼急了她只会躲起来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "memory_intro",
+      "text": "BC：十五个格子里有六个是我刚才点过的人。你只要把那六个找出来，我就承认你能帮上忙。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "memory_flip_duel",
+        "title": "记忆翻牌：BC",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "fail",
+        "previewTicks": 50,
+        "rounds": 6,
+        "columns": 5,
+        "targetCount": 6
+      }
+    },
+    {
+      "id": "token",
+      "text": "BC：好，你确实记住了。这个缺角点名牌你拿着。它只能证明我这条线，不会替你解决其他人的麻烦。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "BC：错了。你现在问我什么，我都会按普通迟到处理。想单独做我这条线，下一轮从点名开始重来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "after_school",
+      "text": "BC：放学门口我还会清一次名单。那时候如果你什么都没查到，我也只能把你当成普通路过的人。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

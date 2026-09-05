@@ -9,13 +9,13 @@
   },
   "minigame": {
     "type": "memory_flip_duel",
-    "title": "复盘线索记忆",
+    "title": "放学线索记忆",
     "durationTicks": 1200,
     "previewTicks": 50,
     "rounds": 6
   },
   "success": {
-    "message": "你复盘出了正确顺序。",
+    "message": "你理清了放学前的正确顺序。",
     "rewards": [
       {
         "item": "minecraft:book",
@@ -24,6 +24,6 @@
     ]
   },
   "failure": {
-    "message": "你复盘顺序出错，本轮只能普通结算。"
+    "message": "你记错了放学前的顺序，本轮只能普通结算。"
   }
 }

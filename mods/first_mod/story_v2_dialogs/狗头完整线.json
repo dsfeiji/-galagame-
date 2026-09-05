@@ -1,0 +1,175 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：找我？先说好，别绕弯。操场的事用嘴说没用，谁手稳谁说了算。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:leather",
+          "count": 1,
+          "nextNodeId": "has_grip"
+        },
+        {
+          "item": "first_mod:stained_paintbrush",
+          "count": 1,
+          "nextNodeId": "has_broadcast_token"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "扳手腕，赢了你让路。",
+          "nextNodeId": "arm_intro",
+          "staminaCost": 1
+        },
+        {
+          "text": "我想知道器材室谁动过。",
+          "nextNodeId": "equipment"
+        },
+        {
+          "text": "放学时你会去哪里？",
+          "nextNodeId": "after_school"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_grip",
+      "text": "狗头：你还留着那块护手皮？行，说明你不是第一次找我。少废话，直接来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始扳手腕。",
+          "nextNodeId": "arm_intro",
+          "staminaCost": 1
+        },
+        {
+          "text": "问器材室。",
+          "nextNodeId": "equipment"
+        }
+      ]
+    },
+    {
+      "id": "has_broadcast_token",
+      "text": "狗头：赵子龙那边你也碰过？怪不得广播一响就有人把我支开。你想查器材室，就别让广播乱响。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "让你帮我堵住器材室门。",
+          "nextNodeId": "block_door",
+          "staminaCost": 1
+        },
+        {
+          "text": "还是比一次。",
+          "nextNodeId": "arm_intro",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "equipment",
+      "text": "狗头：器材室少了一截旧绳和一个护腕。我没拿。谁拿的我不敢保证，但那人知道体育课集合前没人看门。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "我需要你帮我拖住集合。",
+          "nextNodeId": "block_door",
+          "staminaCost": 1
+        },
+        {
+          "text": "用比赛决定。",
+          "nextNodeId": "arm_intro",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "block_door",
+      "text": "狗头：可以。我站门口一分钟，够你进去看一眼。超过一分钟，我不替你背锅。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "拿走断裂护腕。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "算了",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "arm_intro",
+      "text": "狗头：规则简单，两边一起点。进度条推到对面那头就赢。别看字，看手。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：狗头",
+        "durationTicks": 1200,
+        "successNodeId": "arm_win",
+        "failureNodeId": "arm_lose",
+        "pushPerClick": 0.06,
+        "winProgress": 1.0
+      }
+    },
+    {
+      "id": "arm_win",
+      "text": "狗头：行，你手比我稳。器材室的门我替你挡一下，断掉的护腕你拿走。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "拿走断裂护腕。",
+          "nextNodeId": "token"
+        }
+      ]
+    },
+    {
+      "id": "arm_lose",
+      "text": "狗头：你输了。今天我不会给你让路，但你还能从广播或柜子那边绕。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "token",
+      "text": "狗头：这东西算我的。拿了就别到处说是我给的。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "after_school",
+      "text": "狗头：放学我走操场侧门。你要那时候找我，也行，但别指望我还陪你耗体力。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}
