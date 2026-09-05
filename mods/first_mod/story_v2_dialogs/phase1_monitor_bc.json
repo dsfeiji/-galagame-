@@ -1,0 +1,43 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】BC 在教室门口整理点名。BC 可以维持秩序、盘问主角迟到原因，但不能直接给信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "帮 BC 整理点名册",
+          "nextNodeId": "help_roster",
+          "staminaCost": 1
+        },
+        {
+          "text": "追问今天谁最反常",
+          "nextNodeId": "ask_unusual"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "help_roster",
+      "text": "【线索】主角帮忙后，BC 可以透露：王少栋的名字刚加进名单，随小乐一直在躲视线。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "ask_unusual",
+      "text": "【发挥边界】BC 可以怀疑所有人，但重点应引向王少栋、随小乐和广播室，不要直接点名凶手。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

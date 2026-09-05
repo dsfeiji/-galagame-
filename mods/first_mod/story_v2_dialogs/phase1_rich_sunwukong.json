@@ -1,0 +1,48 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】孙悟空在柜子区附近摆弄物品。他习惯谈交换，不轻易白给信息。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "谈一笔交换",
+          "nextNodeId": "deal",
+          "staminaCost": 1
+        },
+        {
+          "text": "问柜子区发生了什么",
+          "nextNodeId": "locker"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "deal",
+      "text": "【机制】主角花体力换取一次资源型帮助。孙悟空可以要求主角以后帮他保住面子。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "locker",
+      "text": "【线索】孙悟空可以透露：王少栋对某个柜子很在意，赵子龙也来过。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

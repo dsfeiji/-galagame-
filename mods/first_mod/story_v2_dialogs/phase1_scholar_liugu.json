@@ -1,0 +1,90 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】六谷在座位上整理资料。学霸线用普通对话模拟知识问答，题目由作者后续替换。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "请六谷出第一题",
+          "nextNodeId": "q1",
+          "staminaCost": 1
+        },
+        {
+          "text": "询问考试资料",
+          "nextNodeId": "materials"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "q1",
+      "text": "【知识问答占位】这里替换成作者设计的第一题。正确选项继续，错误选项锁线或浪费体力。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "正确答案占位",
+          "nextNodeId": "q2"
+        },
+        {
+          "text": "错误答案占位",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "【知识问答占位】这里替换成作者设计的第二题。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "正确答案占位",
+          "nextNodeId": "quiz_success"
+        },
+        {
+          "text": "错误答案占位",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "quiz_success",
+      "text": "【结果】六谷确认主角能跟上逻辑，允许主角查看一份资料。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:book",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "【失败】六谷认为主角只是在套话，本轮学霸线暂时难推进。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "materials",
+      "text": "【线索】六谷可以透露：有一份满分试卷被损坏，BC 和孙悟空都关注过它。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

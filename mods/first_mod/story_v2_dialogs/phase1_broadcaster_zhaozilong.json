@@ -1,0 +1,73 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】赵子龙在广播室门口调试。广播员能制造全校信息差。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "请他解释广播安排",
+          "nextNodeId": "broadcast_plan"
+        },
+        {
+          "text": "挑战广播节奏",
+          "nextNodeId": "rhythm_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "broadcast_plan",
+      "text": "【线索】赵子龙可以说明广播会影响集合时间，主角可利用广播制造错位。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "rhythm_game",
+      "text": "【小游戏】节奏对抗。点击后立刻刷新下一条，目标位置和宽度随机，一分钟结算。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "rhythm_duel",
+        "title": "节奏对抗：赵子龙",
+        "durationTicks": 1200,
+        "rounds": 60,
+        "winClickLead": 1,
+        "successNodeId": "rhythm_success",
+        "failureNodeId": "rhythm_failure"
+      }
+    },
+    {
+      "id": "rhythm_success",
+      "text": "【结果】赵子龙愿意在关键时刻插播一次提示。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "rhythm_failure",
+      "text": "【结果】赵子龙觉得主角跟不上节奏，只给普通日程信息。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

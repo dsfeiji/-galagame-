@@ -1,0 +1,85 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】楼梯间。随小乐需要确认自己记忆里的路线。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:string",
+          "count": 1,
+          "nextNodeId": "pressured"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "陪她回忆路线",
+          "nextNodeId": "memory_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "pressured",
+      "text": "【背包检测】主角之前逼问过她，随小乐更紧张；继续会更快拿到线索，但她会明显抗拒。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "继续追问",
+          "nextNodeId": "memory_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "放她离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "memory_game",
+      "text": "【小游戏】记忆翻牌：15 格找 6 个发光格。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "memory_flip_duel",
+        "title": "记忆翻牌：随小乐",
+        "durationTicks": 1200,
+        "previewTicks": 45,
+        "rounds": 6,
+        "successNodeId": "token",
+        "failureNodeId": "fail"
+      }
+    },
+    {
+      "id": "token",
+      "text": "【结果】随小乐线完成。发放胆小鬼信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:crumpled_witness_note",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "【失败】随小乐情绪崩溃，本轮无法继续提供稳定证词。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】校门口。雨哥负责开场控场：让所有人知道今天按学校日程推进，主角可以自由找人接触。不要直接透露通关路线。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "询问今天的日程",
+          "nextNodeId": "schedule"
+        },
+        {
+          "text": "要求提前进教室观察",
+          "nextNodeId": "early_classroom",
+          "staminaCost": 1
+        },
+        {
+          "text": "结束对话",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "schedule",
+      "text": "【NPC发挥】雨哥可以说明：先早自习，再课间、操场、午休、办公室检查，最后集合。只说日程，不说谁会出事。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "early_classroom",
+      "text": "【机制】主角用 1 点体力提前进教室，适合先找 BC 或六谷。雨哥可以口头提醒不要乱碰东西。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】器材室附近。狗头线进入事故准备阶段。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:leather",
+          "count": 1,
+          "nextNodeId": "trusted"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "再次扳手腕争取信任",
+          "nextNodeId": "arm_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "观察器材室",
+          "nextNodeId": "observe"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "trusted",
+      "text": "【背包检测】主角带着狗头认可过的物品，可直接要求他配合一次器材安排。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "安排器材意外",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "arm_game",
+      "text": "【小游戏】扳手腕，没有倒计时，到头结束。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：狗头决胜",
+        "pushPerClick": 0.06,
+        "winProgress": 1.0,
+        "successNodeId": "token",
+        "failureNodeId": "observe"
+      }
+    },
+    {
+      "id": "token",
+      "text": "【结果】狗头线完成。发放体育生信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "observe",
+      "text": "【线索】主角只能确认器材室可作为后续事故地点，但暂时拿不到信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

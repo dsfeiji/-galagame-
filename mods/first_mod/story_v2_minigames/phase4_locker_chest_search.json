@@ -1,0 +1,29 @@
+{
+  "id": "phase4_locker_chest_search",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:chest",
+    "phase": 4
+  },
+  "minigame": {
+    "type": "locker_search_duel",
+    "title": "抢柜子",
+    "durationTicks": 1200,
+    "rounds": 60,
+    "winClickLead": 1
+  },
+  "success": {
+    "message": "你抢先翻到了柜子里的关键线索。",
+    "rewards": [
+      {
+        "item": "minecraft:map",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "对方抢先转移了柜子里的东西。"
+  }
+}

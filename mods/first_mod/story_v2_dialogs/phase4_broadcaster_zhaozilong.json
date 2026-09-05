@@ -1,0 +1,97 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】广播室。赵子龙线需要主角争夺广播节奏。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1,
+          "nextNodeId": "trusted"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "节奏对抗",
+          "nextNodeId": "rhythm_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "请求一次广播帮助",
+          "nextNodeId": "request"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "trusted",
+      "text": "【背包检测】主角之前赢过赵子龙的信任，可以直接请求关键广播，但仍需消耗体力。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "触发关键广播",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "rhythm_game",
+      "text": "【小游戏】节奏对抗，一分钟，点击后立即刷新下一条。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "rhythm_duel",
+        "title": "节奏对抗：赵子龙决胜",
+        "durationTicks": 1200,
+        "rounds": 60,
+        "winClickLead": 1,
+        "successNodeId": "token",
+        "failureNodeId": "fail"
+      }
+    },
+    {
+      "id": "token",
+      "text": "【结果】广播员线完成。发放广播员信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:stained_paintbrush",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "【失败】广播时机错过，本轮无法通过广播制造关键错位。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "request",
+      "text": "【发挥】赵子龙可以给一次普通广播提示，但不能替主角完成路线。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

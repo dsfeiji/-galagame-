@@ -1,0 +1,29 @@
+{
+  "id": "phase2_roster_lectern_memory",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:lectern",
+    "phase": 2
+  },
+  "minigame": {
+    "type": "memory_flip_duel",
+    "title": "点名册记忆",
+    "durationTicks": 1200,
+    "previewTicks": 50,
+    "rounds": 6
+  },
+  "success": {
+    "message": "你记住了点名册的异常顺序。",
+    "rewards": [
+      {
+        "item": "minecraft:paper",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "你记错了顺序，本轮这条线索价值降低。"
+  }
+}

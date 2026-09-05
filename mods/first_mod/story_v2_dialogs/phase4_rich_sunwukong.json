@@ -1,0 +1,102 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】午休柜子区。孙悟空线需要在资源交换和抢柜子中完成。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:gold_nugget",
+          "count": 1,
+          "nextNodeId": "has_money"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "直接抢柜子",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "继续谈条件",
+          "nextNodeId": "deal"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_money",
+      "text": "【背包检测】主角带着金粒，孙悟空愿意把冲突升级到柜子对抗。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始抢柜子",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "locker_game",
+      "text": "【小游戏】抢柜子：点对加分，点错不扣分，目标每次变化，一分钟结算。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "locker_search_duel",
+        "title": "抢柜子：孙悟空",
+        "durationTicks": 1200,
+        "rounds": 60,
+        "winClickLead": 1,
+        "successNodeId": "token",
+        "failureNodeId": "fail"
+      }
+    },
+    {
+      "id": "token",
+      "text": "【结果】富家子线完成。发放富家子信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:cracked_phone_charm",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "【失败】孙悟空收回交易条件，本轮只能从其他人处补线索。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "deal",
+      "text": "【发挥】孙悟空可以开价，但只能给可保留道具或线索，不能直接发信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:emerald",
+          "count": 1
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

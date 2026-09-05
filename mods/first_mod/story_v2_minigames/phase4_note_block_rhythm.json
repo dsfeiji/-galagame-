@@ -1,0 +1,29 @@
+{
+  "id": "phase4_note_block_rhythm",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:note_block",
+    "phase": 4
+  },
+  "minigame": {
+    "type": "rhythm_duel",
+    "title": "广播节奏对抗",
+    "durationTicks": 1200,
+    "rounds": 60,
+    "winClickLead": 1
+  },
+  "success": {
+    "message": "你抢到了广播节奏，可以制造一次全校错位。",
+    "rewards": [
+      {
+        "item": "minecraft:note_block",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "广播节奏被对方控制，错位机会消失。"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】早自习后。六谷开始用题目考主角，作者可替换题面和选项。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:book",
+          "count": 1,
+          "nextNodeId": "prepared"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "进入知识问答",
+          "nextNodeId": "q1",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "prepared",
+      "text": "【背包检测】主角带着资料书，六谷降低门槛，直接进入最后一问。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "回答最后一问",
+          "nextNodeId": "q2",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "q1",
+      "text": "【题目占位】六谷提出第一道题。把这里替换成真实题目。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "正确答案占位",
+          "nextNodeId": "q2"
+        },
+        {
+          "text": "错误答案占位",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "【题目占位】六谷提出关键题。把这里替换成真实题目。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "正确答案占位",
+          "nextNodeId": "token"
+        },
+        {
+          "text": "错误答案占位",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "token",
+      "text": "【结果】学霸线完成。发放学霸信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "【失败】六谷不再提供关键资料，本轮学霸线锁定。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

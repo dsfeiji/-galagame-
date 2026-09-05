@@ -1,0 +1,97 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】课间走廊。BC 开始巡查，主角可以尝试拿到班长线核心信物。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:map",
+          "count": 1,
+          "nextNodeId": "has_route"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "挑战 BC 的巡查记忆",
+          "nextNodeId": "memory_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "请求她放松巡查",
+          "nextNodeId": "soft_request"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_route",
+      "text": "【背包检测】主角带着王少栋给的路线图，BC 意识到主角知道空教室动线。可直接进入记忆对抗。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始记忆翻牌",
+          "nextNodeId": "memory_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "memory_game",
+      "text": "【小游戏】记忆翻牌：3x5 的 15 格中找 6 个发光格，点错直接失败并只扣一次分。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "memory_flip_duel",
+        "title": "记忆翻牌：BC",
+        "durationTicks": 1200,
+        "previewTicks": 50,
+        "rounds": 6,
+        "successNodeId": "token",
+        "failureNodeId": "locked"
+      }
+    },
+    {
+      "id": "token",
+      "text": "【结果】BC 的巡查被主角突破。发放班长信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "locked",
+      "text": "【失败】BC 加强巡查，本轮班长线需要换路线或下次循环再来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "soft_request",
+      "text": "【发挥】BC 可以拒绝，也可以给一个轻微信息：午休前柜子区会短暂无监管。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

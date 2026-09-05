@@ -1,0 +1,48 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】随小乐在楼梯附近徘徊。她看见过一些路线，但害怕被卷进去。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "温和安抚随小乐",
+          "nextNodeId": "comfort"
+        },
+        {
+          "text": "逼问她看见了谁",
+          "nextNodeId": "pressure",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "comfort",
+      "text": "【线索】随小乐可以模糊提示：广播响起前，有人从空教室方向出来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "pressure",
+      "text": "【后果】逼问会让随小乐更慌，但可以让她说出“柜子区”这个地点。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:string",
+          "count": 1
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

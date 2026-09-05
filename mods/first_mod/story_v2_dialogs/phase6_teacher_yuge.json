@@ -1,0 +1,30 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】循环重置点。雨哥宣布本轮结果，主角可准备进入下一次循环。此阶段用于复盘，不发学生信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "结束本轮",
+          "nextNodeId": ""
+        },
+        {
+          "text": "询问下一轮建议",
+          "nextNodeId": "hint"
+        }
+      ]
+    },
+    {
+      "id": "hint",
+      "text": "【提示】雨哥可以提示：每阶段只有 5 点体力，全收集需要提前准备可保留道具，信物本轮有效。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "phase3_gym_button_arm_wrestle",
+  "protagonistOnly": true,
+  "staminaCost": 1,
+  "trigger": {
+    "type": "use_block",
+    "block": "minecraft:stone_button",
+    "phase": 3
+  },
+  "minigame": {
+    "type": "arm_wrestle",
+    "title": "器材室力量对抗",
+    "pushPerClick": 0.06,
+    "winProgress": 1.0
+  },
+  "success": {
+    "message": "你压过了对手，拿到器材室临时主动权。",
+    "rewards": [
+      {
+        "item": "minecraft:leather",
+        "count": 1
+      }
+    ]
+  },
+  "failure": {
+    "message": "你没有压住局面，对手暂时占据主动。"
+  }
+}

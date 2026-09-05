@@ -1,0 +1,132 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】办公室/最终集合前。雨哥检查主角是否在本轮集齐七个学生信物。",
+      "nextNodeId": "check_monitor",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_monitor",
+      "text": "【检测】检查 BC 信物。",
+      "nextNodeId": "missing",
+      "conditionJumps": [
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "check_athlete"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_athlete",
+      "text": "【检测】检查狗头信物。",
+      "nextNodeId": "missing",
+      "conditionJumps": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1,
+          "nextNodeId": "check_scholar"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_scholar",
+      "text": "【检测】检查六谷信物。",
+      "nextNodeId": "missing",
+      "conditionJumps": [
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1,
+          "nextNodeId": "check_timid"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_timid",
+      "text": "【检测】检查随小乐信物。",
+      "nextNodeId": "missing",
+      "conditionJumps": [
+        {
+          "item": "first_mod:crumpled_witness_note",
+          "count": 1,
+          "nextNodeId": "check_rich"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_rich",
+      "text": "【检测】检查孙悟空信物。",
+      "nextNodeId": "missing",
+      "conditionJumps": [
+        {
+          "item": "first_mod:cracked_phone_charm",
+          "count": 1,
+          "nextNodeId": "check_broadcaster"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_broadcaster",
+      "text": "【检测】检查赵子龙信物。",
+      "nextNodeId": "missing",
+      "conditionJumps": [
+        {
+          "item": "first_mod:stained_paintbrush",
+          "count": 1,
+          "nextNodeId": "check_transfer"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "check_transfer",
+      "text": "【检测】检查王少栋信物。",
+      "nextNodeId": "missing",
+      "conditionJumps": [
+        {
+          "item": "first_mod:burnt_note",
+          "count": 1,
+          "nextNodeId": "complete"
+        }
+      ],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "complete",
+      "text": "【结算】七个学生信物齐全。雨哥进入最终控场场景，发放老师信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:nether_star",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "missing",
+      "text": "【结算】信物不齐。雨哥只给普通结局提示，主角需要下一轮重新规划体力和顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

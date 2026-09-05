@@ -1,0 +1,97 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】空教室。王少栋线要揭开他为什么熟悉学校隐藏路线。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:map",
+          "count": 1,
+          "nextNodeId": "route_known"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "抢先翻找他的柜子线索",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "正面谈判",
+          "nextNodeId": "talk"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "route_known",
+      "text": "【背包检测】主角带着路线图，王少栋知道自己瞒不住，进入对抗。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始柜子对抗",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "locker_game",
+      "text": "【小游戏】抢柜子：目标持续变化，一分钟结算。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "locker_search_duel",
+        "title": "抢柜子：王少栋",
+        "durationTicks": 1200,
+        "rounds": 60,
+        "winClickLead": 1,
+        "successNodeId": "token",
+        "failureNodeId": "fail"
+      }
+    },
+    {
+      "id": "token",
+      "text": "【结果】转学生线完成。发放转学生信物。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:burnt_note",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "【失败】王少栋转移了关键物品，本轮转学生线锁定。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "talk",
+      "text": "【发挥】王少栋可以承认自己知道空教室，但不解释最终原因。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

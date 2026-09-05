@@ -1,0 +1,72 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】狗头在操场入口热身。狗头不爱长谈，倾向用比赛和挑衅推进关系。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "接受狗头的力量挑衅",
+          "nextNodeId": "arm_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "问体育器材室情况",
+          "nextNodeId": "equipment"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "arm_game",
+      "text": "【小游戏】扳手腕。双方同步点击，进度条推到对方方向为胜。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：狗头",
+        "pushPerClick": 0.055,
+        "winProgress": 1.0,
+        "successNodeId": "arm_success",
+        "failureNodeId": "arm_failure"
+      }
+    },
+    {
+      "id": "arm_success",
+      "text": "【结果】主角赢了。狗头认可主角，可以透露器材室今天被人借用过。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:leather",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "arm_failure",
+      "text": "【结果】主角输了。狗头只会嘲笑或敷衍，本轮仍可从别的路线补线索。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "equipment",
+      "text": "【线索】狗头可以说器材室的绳子、球网或护腕少过，但不要描述无法验证的气味。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

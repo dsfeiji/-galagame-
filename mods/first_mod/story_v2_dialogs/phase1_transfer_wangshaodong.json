@@ -1,0 +1,48 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "【场景提示】王少栋刚到学校，对很多地方不熟，但知道一个不该知道的地点。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "问他为什么盯着柜子区",
+          "nextNodeId": "ask_locker"
+        },
+        {
+          "text": "提出一起找路线",
+          "nextNodeId": "route",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "ask_locker",
+      "text": "【线索】王少栋可以说自己只是找错柜子，但反应要显得谨慎。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "route",
+      "text": "【线索】王少栋愿意指出空教室方向，但不解释为什么知道。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:map",
+          "count": 1
+        }
+      ],
+      "choices": []
+    }
+  ]
+}
