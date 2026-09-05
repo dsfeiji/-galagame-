@@ -1,12 +1,19 @@
 {
   "category.first_mod.dialog": "Dialog Roles",
   "key.first_mod.role_control_panel": "Open Role Dialog Control Panel",
-  "itemGroup.first_mod.script_tokens": "Script Tokens",
-  "item.first_mod.broken_exam_paper": "Broken Perfect Exam",
-  "item.first_mod.broken_wristband": "Broken Wristband",
-  "item.first_mod.burnt_note": "Burnt Note",
+  "itemGroup.first_mod.script_tokens": "Friday: No Dismissal",
   "item.first_mod.chipped_attendance_tag": "Chipped Attendance Tag",
-  "item.first_mod.cracked_phone_charm": "Cracked Phone Charm",
+  "item.first_mod.broken_wristband": "Broken Wristband",
+  "item.first_mod.broken_exam_paper": "Torn Exam Paper",
   "item.first_mod.crumpled_witness_note": "Crumpled Witness Note",
-  "item.first_mod.stained_paintbrush": "Stained Paintbrush"
+  "item.first_mod.cracked_phone_charm": "Cracked Phone Charm",
+  "item.first_mod.stained_paintbrush": "Stained Paintbrush",
+  "item.first_mod.burnt_note": "Burnt Note",
+  "item.first_mod.wrong_time_watch": "Wrong Time Watch",
+  "item.first_mod.equipment_hook": "Equipment Room Hook",
+  "item.first_mod.grading_rule": "Abnormal Grading Rules",
+  "item.first_mod.strange_spyglass": "Strange Spyglass",
+  "item.first_mod.time_chip": "Time Chip",
+  "item.first_mod.mirror_pigment": "Mirror Pigment",
+  "item.first_mod.evacuation_pointer": "Evacuation Pointer"
 }

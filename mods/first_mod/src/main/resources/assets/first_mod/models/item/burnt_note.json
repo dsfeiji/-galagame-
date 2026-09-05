@@ -1,28 +1,6 @@
 {
-  "credit": "Generated for first_mod",
+  "parent": "minecraft:item/generated",
   "textures": {
-    "0": "first_mod:item/burnt_note",
-    "particle": "first_mod:item/burnt_note"
-  },
-  "elements": [
-    {
-      "from": [3, 6, 7],
-      "to": [13, 14, 8],
-      "rotation": {"angle": 0, "axis": "z", "origin": [8, 10, 7.5]},
-      "faces": {
-        "north": {"uv": [3, 2, 13, 10], "texture": "#0"},
-        "south": {"uv": [3, 2, 13, 10], "texture": "#0"},
-        "east": {"uv": [7, 2, 8, 10], "texture": "#0"},
-        "west": {"uv": [7, 2, 8, 10], "texture": "#0"},
-        "up": {"uv": [3, 7, 13, 8], "texture": "#0"},
-        "down": {"uv": [3, 7, 13, 8], "texture": "#0"}
-      }
-    }
-  ],
-  "display": {
-    "thirdperson_righthand": {"rotation": [70, 0, 0], "translation": [0, 2.5, 1], "scale": [0.55, 0.55, 0.55]},
-    "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.62, 0.62, 0.62]},
-    "gui": {"rotation": [30, 225, 0], "scale": [0.85, 0.85, 0.85]},
-    "ground": {"translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]}
+    "layer0": "first_mod:item/burnt_note"
   }
 }
