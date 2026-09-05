@@ -28,6 +28,11 @@ public class PlayerDialogScreen extends Screen {
     private static final int MODEL_WIDTH = 68;
     private static final int MAX_PANEL_WIDTH = 540;
     private static final int CHOICE_HEIGHT = 12;
+    private static final int CHOICE_MIN_WIDTH = 128;
+    private static final int CHOICE_MAX_WIDTH = 220;
+    private static final int CHOICE_PADDING_X = 8;
+    private static final int CHOICE_PADDING_Y = 4;
+    private static final int CHOICE_LINE_HEIGHT = 10;
 
     private final UUID targetPlayerId;
     private final String targetPlayerName;
@@ -286,34 +291,56 @@ public class PlayerDialogScreen extends Screen {
             return;
         }
 
-        int choiceWidth = Math.min(108, panelRight - panelX - MODEL_WIDTH - 28);
+        int choiceWidth = Math.min(CHOICE_MAX_WIDTH, Math.max(CHOICE_MIN_WIDTH, panelRight - panelX - MODEL_WIDTH - 28));
         int x = panelRight - choiceWidth - 2;
-        int y = panelY - node.choices.size() * (CHOICE_HEIGHT + 3) - 5;
+        List<List<OrderedText>> wrappedChoices = new ArrayList<>();
+        List<Integer> choiceHeights = new ArrayList<>();
+        int totalHeight = 0;
+        for (DialogTree.DialogChoice choice : node.choices) {
+            int height = choiceHeight(choice, choiceWidth, wrappedChoices);
+            choiceHeights.add(height);
+            totalHeight += height;
+        }
+        totalHeight += Math.max(0, node.choices.size() - 1) * 3;
+        int y = Math.max(8, panelY - totalHeight - 5);
         for (int i = 0; i < node.choices.size(); i++) {
             DialogTree.DialogChoice choice = node.choices.get(i);
-            ChoiceHitbox hitbox = new ChoiceHitbox(x, y, choiceWidth, CHOICE_HEIGHT, choice, i);
+            int choiceHeight = choiceHeights.get(i);
+            ChoiceHitbox hitbox = new ChoiceHitbox(x, y, choiceWidth, choiceHeight, choice, i);
             choiceHitboxes.add(hitbox);
             boolean hovered = controller && hitbox.contains(mouseX, mouseY);
             int bg = hovered ? 0xF0383446 : 0xD81E2535;
             int line = hovered ? 0xFFFFE0A3 : 0xAAE6C16A;
-            context.fill(x + 2, y + 2, x + choiceWidth + 2, y + CHOICE_HEIGHT + 2, 0x55000000);
-            context.fill(x, y, x + choiceWidth, y + CHOICE_HEIGHT, bg);
+            context.fill(x + 2, y + 2, x + choiceWidth + 2, y + choiceHeight + 2, 0x55000000);
+            context.fill(x, y, x + choiceWidth, y + choiceHeight, bg);
             context.fill(x + 8, y, x + choiceWidth - 8, y + 1, line);
-            context.fill(x + 8, y + CHOICE_HEIGHT - 1, x + choiceWidth - 8, y + CHOICE_HEIGHT, line);
+            context.fill(x + 8, y + choiceHeight - 1, x + choiceWidth - 8, y + choiceHeight, line);
 
-            String answer = choice.text.isBlank() ? "..." : choice.text;
             int textOffset = choice.staminaCost > 0 ? 10 : 0;
             if (choice.staminaCost > 0) {
-                drawStaminaBolt(context, x + 8, y + 2, hovered ? 0xFFFFE0A3 : 0xFFE85252);
+                drawStaminaBolt(context, x + 8, y + CHOICE_PADDING_Y + 1, hovered ? 0xFFFFE0A3 : 0xFFE85252);
             }
 
-            int maxTextWidth = choiceWidth - 16 - textOffset;
-            if (this.textRenderer.getWidth(answer) > maxTextWidth) {
-                answer = this.textRenderer.trimToWidth(answer, maxTextWidth - this.textRenderer.getWidth("> "));
+            List<OrderedText> lines = wrappedChoices.get(i);
+            int textX = x + CHOICE_PADDING_X + textOffset;
+            int textY = y + CHOICE_PADDING_Y;
+            for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+                context.drawTextWithShadow(this.textRenderer, lines.get(lineIndex), textX, textY + lineIndex * CHOICE_LINE_HEIGHT, hovered ? 0xFFFFF2CC : 0xFFF7F4EA);
             }
-            context.drawTextWithShadow(this.textRenderer, Text.literal("> " + answer), x + 7 + textOffset, y + 2, hovered ? 0xFFFFF2CC : 0xFFF7F4EA);
-            y += CHOICE_HEIGHT + 3;
+            y += choiceHeight + 3;
         }
+    }
+
+    private int choiceHeight(DialogTree.DialogChoice choice, int choiceWidth, List<List<OrderedText>> wrappedChoices) {
+        int textOffset = choice.staminaCost > 0 ? 10 : 0;
+        int maxTextWidth = Math.max(24, choiceWidth - CHOICE_PADDING_X * 2 - textOffset);
+        String answer = choice.text.isBlank() ? "..." : choice.text;
+        List<OrderedText> lines = this.textRenderer.wrapLines(Text.literal("> " + answer), maxTextWidth);
+        if (lines.isEmpty()) {
+            lines = List.of(Text.literal("> ...").asOrderedText());
+        }
+        wrappedChoices.add(lines);
+        return Math.max(CHOICE_HEIGHT, CHOICE_PADDING_Y * 2 + lines.size() * CHOICE_LINE_HEIGHT);
     }
 
     private void renderMinigame(DrawContext context, DialogTree.DialogNode node, int panelX, int panelY, int panelRight) {
