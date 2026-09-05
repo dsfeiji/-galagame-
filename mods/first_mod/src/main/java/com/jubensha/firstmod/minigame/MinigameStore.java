@@ -12,6 +12,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +23,8 @@ public final class MinigameStore {
     private static final Type LIST_TYPE = new TypeToken<Collection<MinigameInteraction>>() {
     }.getType();
     private static final Pattern ID_PATTERN = Pattern.compile("[a-z0-9_./-]{1,64}");
-    private static final Path STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_minigames.json");
+    private static final Path CONFIG_STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_minigames.json");
+    private static Path storePath = CONFIG_STORE_PATH;
     private static final Map<String, MinigameInteraction> interactions = new LinkedHashMap<>();
 
     private MinigameStore() {
@@ -30,11 +32,12 @@ public final class MinigameStore {
 
     public static void load() {
         interactions.clear();
-        if (!Files.exists(STORE_PATH)) {
+        migrateConfigToWorldStore();
+        if (!Files.exists(storePath)) {
             return;
         }
         try {
-            JsonObject object = JsonParser.parseString(Files.readString(STORE_PATH, StandardCharsets.UTF_8)).getAsJsonObject();
+            JsonObject object = JsonParser.parseString(Files.readString(storePath, StandardCharsets.UTF_8)).getAsJsonObject();
             if (!object.has("interactions")) {
                 return;
             }
@@ -47,6 +50,11 @@ public final class MinigameStore {
         } catch (IOException | RuntimeException ignored) {
             interactions.clear();
         }
+    }
+
+    public static void useWorldDirectory(Path worldDirectory) {
+        storePath = worldDirectory.resolve("first_mod").resolve("first_mod_minigames.json");
+        load();
     }
 
     public static MinigameInteraction fromJsonStrict(String json) {
@@ -110,10 +118,21 @@ public final class MinigameStore {
 
     private static void saveAll() {
         try {
-            Files.createDirectories(STORE_PATH.getParent());
+            Files.createDirectories(storePath.getParent());
             JsonObject root = new JsonObject();
             root.add("interactions", GSON.toJsonTree(interactions.values()));
-            Files.writeString(STORE_PATH, GSON.toJson(root), StandardCharsets.UTF_8);
+            Files.writeString(storePath, GSON.toJson(root), StandardCharsets.UTF_8);
+        } catch (IOException ignored) {
+        }
+    }
+
+    private static void migrateConfigToWorldStore() {
+        if (CONFIG_STORE_PATH.equals(storePath) || Files.exists(storePath) || !Files.exists(CONFIG_STORE_PATH)) {
+            return;
+        }
+        try {
+            Files.createDirectories(storePath.getParent());
+            Files.copy(CONFIG_STORE_PATH, storePath, StandardCopyOption.COPY_ATTRIBUTES);
         } catch (IOException ignored) {
         }
     }

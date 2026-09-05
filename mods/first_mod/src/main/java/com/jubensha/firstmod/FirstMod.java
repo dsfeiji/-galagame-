@@ -29,6 +29,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
@@ -55,12 +56,14 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -91,6 +94,17 @@ public class FirstMod implements ModInitializer {
         RoomLockStore.load();
         EliminationStore.load();
         registerPayloadTypes();
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            Path worldDirectory = server.getSavePath(WorldSavePath.ROOT);
+            DialogStore.useWorldDirectory(worldDirectory);
+            MinigameStore.useWorldDirectory(worldDirectory);
+            RoomLockStore.useWorldDirectory(worldDirectory);
+            EliminationStore.useWorldDirectory(worldDirectory);
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                syncStamina(player);
+                applyExistingElimination(player);
+            }
+        });
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             syncStamina(handler.player);
             applyExistingElimination(handler.player);
@@ -193,7 +207,7 @@ public class FirstMod implements ModInitializer {
                 return ActionResult.SUCCESS;
             }
 
-            String roleId = DialogStore.getClaimedRole(target.getUuid());
+            String roleId = DialogStore.getClaimedRole(target);
             if (roleId.isBlank()) {
                 if (actor.isCreative()) {
                     actor.sendMessage(Text.literal("This player has not claimed a dialog role. Use /dialogrole claim <player> <role_id>."), false);
@@ -678,7 +692,7 @@ public class FirstMod implements ModInitializer {
         if (actor.getServer() == null) {
             return false;
         }
-        if (!DialogStore.isProtagonist(actor.getUuid())) {
+        if (!DialogStore.isProtagonist(actor)) {
             actor.sendMessage(Text.literal("体力已耗尽，但只有主角可以推动剧情阶段。"), false);
             return false;
         }
@@ -786,8 +800,8 @@ public class FirstMod implements ModInitializer {
     }
 
     private static void teleportForCurrentRole(MinecraftServer server, ServerPlayerEntity player, int phase) {
-        String roleId = DialogStore.getClaimedRole(player.getUuid());
-        DialogStore.TeleportPoint point = DialogStore.isProtagonist(player.getUuid())
+        String roleId = DialogStore.getClaimedRole(player);
+        DialogStore.TeleportPoint point = DialogStore.isProtagonist(player)
                 ? DialogStore.getTeleportExact(phase, PROTAGONIST_TELEPORT_ROLE_ID)
                 : null;
         if (point == null) {
@@ -909,7 +923,7 @@ public class FirstMod implements ModInitializer {
     }
 
     private static boolean matchesCommonInteractionRules(MinigameInteraction interaction, ServerPlayerEntity player, String worldId) {
-        if (interaction.protagonistOnly && !DialogStore.isProtagonist(player.getUuid())) {
+        if (interaction.protagonistOnly && !DialogStore.isProtagonist(player)) {
             return false;
         }
         return interaction.trigger.world.isBlank() || interaction.trigger.world.equals(worldId);
@@ -956,7 +970,7 @@ public class FirstMod implements ModInitializer {
     private static boolean applyInteractionElimination(ServerPlayerEntity player, MinigameInteraction.Result result) {
         String roleId = "";
         if (result.eliminateSelf) {
-            roleId = DialogStore.getClaimedRole(player.getUuid());
+            roleId = DialogStore.getClaimedRole(player);
         } else if (!result.eliminateRole.isBlank()) {
             roleId = result.eliminateRole.trim();
         }
@@ -973,7 +987,7 @@ public class FirstMod implements ModInitializer {
         }
         EliminationStore.eliminate(roleId, reason);
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            if (roleId.equals(DialogStore.getClaimedRole(player.getUuid()))) {
+            if (roleId.equals(DialogStore.getClaimedRole(player))) {
                 eliminatePlayer(player, reason);
             }
         }
@@ -1000,14 +1014,14 @@ public class FirstMod implements ModInitializer {
     }
 
     private static void applyExistingElimination(ServerPlayerEntity player) {
-        String roleId = DialogStore.getClaimedRole(player.getUuid());
+        String roleId = DialogStore.getClaimedRole(player);
         if (!roleId.isBlank() && EliminationStore.isEliminated(roleId)) {
             eliminatePlayer(player, EliminationStore.getReason(roleId));
         }
     }
 
     private static boolean isEliminatedPlayer(ServerPlayerEntity player) {
-        String roleId = DialogStore.getClaimedRole(player.getUuid());
+        String roleId = DialogStore.getClaimedRole(player);
         return !roleId.isBlank() && EliminationStore.isEliminated(roleId);
     }
 
@@ -1165,7 +1179,7 @@ public class FirstMod implements ModInitializer {
                                             feedback(context.getSource(), "Invalid role id. Use a-z, 0-9, _, -, . or /, max 64 chars.");
                                             return 0;
                                         }
-                                        DialogStore.claimRole(player.getUuid(), roleId);
+                                        DialogStore.claimRole(player, roleId);
                                         applyExistingElimination(player);
                                         feedback(context.getSource(), player.getNameForScoreboard() + " claimed dialog role: " + roleId);
                                         return 1;
@@ -1180,7 +1194,7 @@ public class FirstMod implements ModInitializer {
                                                     feedback(context.getSource(), "Invalid role id. Use a-z, 0-9, _, -, . or /, max 64 chars.");
                                                     return 0;
                                                 }
-                                                DialogStore.claimRole(target.getUuid(), roleId);
+                                                DialogStore.claimRole(target, roleId);
                                                 applyExistingElimination(target);
                                                 feedback(context.getSource(), target.getNameForScoreboard() + " claimed dialog role: " + roleId);
                                                 return 1;
@@ -1188,14 +1202,14 @@ public class FirstMod implements ModInitializer {
                     .then(literal("clear")
                             .executes(context -> {
                                 ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
-                                DialogStore.clearRole(player.getUuid());
+                                DialogStore.clearRole(player);
                                 feedback(context.getSource(), player.getNameForScoreboard() + " cleared their dialog role.");
                                 return 1;
                             }))
                     .then(literal("whoami")
                             .executes(context -> {
                                 ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
-                                String roleId = DialogStore.getClaimedRole(player.getUuid());
+                                String roleId = DialogStore.getClaimedRole(player);
                                 feedback(context.getSource(), roleId.isBlank() ? "You have not claimed a dialog role." : "Your dialog role: " + roleId);
                                 return roleId.isBlank() ? 0 : 1;
                             }))
@@ -1210,7 +1224,7 @@ public class FirstMod implements ModInitializer {
                                                     feedback(context.getSource(), "Invalid role id. Use a-z, 0-9, _, -, . or /, max 64 chars.");
                                                     return 0;
                                                 }
-                                                DialogStore.claimRole(target.getUuid(), roleId);
+                                                DialogStore.claimRole(target, roleId);
                                                 applyExistingElimination(target);
                                                 feedback(context.getSource(), target.getNameForScoreboard() + " dialog role set to " + roleId);
                                                 return 1;
@@ -1220,7 +1234,7 @@ public class FirstMod implements ModInitializer {
                             .then(argument("player", EntityArgumentType.player())
                                     .executes(context -> {
                                         ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
-                                        String roleId = DialogStore.getClaimedRole(target.getUuid());
+                                        String roleId = DialogStore.getClaimedRole(target);
                                         feedback(context.getSource(), roleId.isBlank() ? target.getNameForScoreboard() + " has no dialog role." : target.getNameForScoreboard() + " dialog role: " + roleId);
                                         return roleId.isBlank() ? 0 : 1;
                                     }))));
@@ -1231,7 +1245,7 @@ public class FirstMod implements ModInitializer {
                             .then(argument("player", EntityArgumentType.player())
                                     .executes(context -> {
                                         ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
-                                        DialogStore.setProtagonist(target.getUuid());
+                                        DialogStore.setProtagonist(target);
                                         feedback(context.getSource(), target.getNameForScoreboard() + " is now the protagonist. Protagonist teleport role id: " + PROTAGONIST_TELEPORT_ROLE_ID);
                                         return 1;
                                     })))

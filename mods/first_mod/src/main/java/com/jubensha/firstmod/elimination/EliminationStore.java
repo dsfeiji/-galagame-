@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,7 +19,8 @@ public final class EliminationStore {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type STORE_TYPE = new TypeToken<LinkedHashMap<String, String>>() {
     }.getType();
-    private static final Path STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_eliminations.json");
+    private static final Path CONFIG_STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_eliminations.json");
+    private static Path storePath = CONFIG_STORE_PATH;
     private static final Map<String, String> eliminatedRoles = new LinkedHashMap<>();
 
     private EliminationStore() {
@@ -26,11 +28,12 @@ public final class EliminationStore {
 
     public static void load() {
         eliminatedRoles.clear();
-        if (!Files.exists(STORE_PATH)) {
+        migrateConfigToWorldStore();
+        if (!Files.exists(storePath)) {
             return;
         }
         try {
-            Map<String, String> loaded = GSON.fromJson(Files.readString(STORE_PATH, StandardCharsets.UTF_8), STORE_TYPE);
+            Map<String, String> loaded = GSON.fromJson(Files.readString(storePath, StandardCharsets.UTF_8), STORE_TYPE);
             if (loaded != null) {
                 loaded.forEach((roleId, reason) -> {
                     if (DialogStore.isValidRoleId(roleId)) {
@@ -41,6 +44,11 @@ public final class EliminationStore {
         } catch (IOException | RuntimeException ignored) {
             eliminatedRoles.clear();
         }
+    }
+
+    public static void useWorldDirectory(Path worldDirectory) {
+        storePath = worldDirectory.resolve("first_mod").resolve("first_mod_eliminations.json");
+        load();
     }
 
     public static boolean isEliminated(String roleId) {
@@ -77,8 +85,19 @@ public final class EliminationStore {
 
     private static void saveAll() {
         try {
-            Files.createDirectories(STORE_PATH.getParent());
-            Files.writeString(STORE_PATH, GSON.toJson(eliminatedRoles), StandardCharsets.UTF_8);
+            Files.createDirectories(storePath.getParent());
+            Files.writeString(storePath, GSON.toJson(eliminatedRoles), StandardCharsets.UTF_8);
+        } catch (IOException ignored) {
+        }
+    }
+
+    private static void migrateConfigToWorldStore() {
+        if (CONFIG_STORE_PATH.equals(storePath) || Files.exists(storePath) || !Files.exists(CONFIG_STORE_PATH)) {
+            return;
+        }
+        try {
+            Files.createDirectories(storePath.getParent());
+            Files.copy(CONFIG_STORE_PATH, storePath, StandardCopyOption.COPY_ATTRIBUTES);
         } catch (IOException ignored) {
         }
     }

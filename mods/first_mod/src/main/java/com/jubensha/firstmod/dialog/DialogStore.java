@@ -6,12 +6,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +26,8 @@ public final class DialogStore {
     private static final Type OLD_STORE_TYPE = new TypeToken<LinkedHashMap<String, DialogTree>>() {
     }.getType();
     private static final Pattern ROLE_ID_PATTERN = Pattern.compile("[a-z0-9_./-]{1,64}");
-    private static final Path STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_dialogs.json");
+    private static final Path CONFIG_STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_dialogs.json");
+    private static Path storePath = CONFIG_STORE_PATH;
     private static StoreData data = new StoreData();
 
     private DialogStore() {
@@ -32,11 +35,12 @@ public final class DialogStore {
 
     public static void load() {
         data = new StoreData();
-        if (!Files.exists(STORE_PATH)) {
+        migrateConfigToWorldStore();
+        if (!Files.exists(storePath)) {
             return;
         }
         try {
-            String json = Files.readString(STORE_PATH, StandardCharsets.UTF_8);
+            String json = Files.readString(storePath, StandardCharsets.UTF_8);
             JsonObject object = JsonParser.parseString(json).getAsJsonObject();
             if (object.has("dialogs")) {
                 StoreData loaded = GSON.fromJson(object, StoreData.class);
@@ -54,6 +58,11 @@ public final class DialogStore {
         } catch (IOException | RuntimeException ignored) {
             data = new StoreData();
         }
+    }
+
+    public static void useWorldDirectory(Path worldDirectory) {
+        storePath = worldDirectory.resolve("first_mod").resolve("first_mod_dialogs.json");
+        load();
     }
 
     public static DialogTree getDialogForCurrentPhase(String roleId) {
@@ -84,14 +93,39 @@ public final class DialogStore {
         saveAll();
     }
 
+    public static void claimRole(ServerPlayerEntity player, String roleId) {
+        data.playerRoles.put(player.getUuid().toString(), roleId);
+        data.playerRoleNames.put(normalizePlayerName(player.getNameForScoreboard()), roleId);
+        saveAll();
+    }
+
     public static void clearRole(UUID playerId) {
         data.playerRoles.remove(playerId.toString());
+        saveAll();
+    }
+
+    public static void clearRole(ServerPlayerEntity player) {
+        data.playerRoles.remove(player.getUuid().toString());
+        data.playerRoleNames.remove(normalizePlayerName(player.getNameForScoreboard()));
         saveAll();
     }
 
     public static String getClaimedRole(UUID playerId) {
         String roleId = data.playerRoles.get(playerId.toString());
         return roleId == null || roleId.isBlank() ? "" : roleId;
+    }
+
+    public static String getClaimedRole(ServerPlayerEntity player) {
+        String roleId = data.playerRoleNames.get(normalizePlayerName(player.getNameForScoreboard()));
+        if (roleId != null && !roleId.isBlank()) {
+            return roleId;
+        }
+        roleId = getClaimedRole(player.getUuid());
+        if (!roleId.isBlank()) {
+            data.playerRoleNames.put(normalizePlayerName(player.getNameForScoreboard()), roleId);
+            saveAll();
+        }
+        return roleId;
     }
 
     public static int getStamina(UUID playerId) {
@@ -128,13 +162,32 @@ public final class DialogStore {
         saveAll();
     }
 
+    public static void setProtagonist(ServerPlayerEntity player) {
+        data.protagonistPlayer = player.getUuid().toString();
+        data.protagonistPlayerName = normalizePlayerName(player.getNameForScoreboard());
+        saveAll();
+    }
+
     public static void clearProtagonist() {
         data.protagonistPlayer = "";
+        data.protagonistPlayerName = "";
         saveAll();
     }
 
     public static boolean isProtagonist(UUID playerId) {
         return !data.protagonistPlayer.isBlank() && data.protagonistPlayer.equals(playerId.toString());
+    }
+
+    public static boolean isProtagonist(ServerPlayerEntity player) {
+        if (!data.protagonistPlayerName.isBlank() && data.protagonistPlayerName.equals(normalizePlayerName(player.getNameForScoreboard()))) {
+            return true;
+        }
+        if (isProtagonist(player.getUuid())) {
+            data.protagonistPlayerName = normalizePlayerName(player.getNameForScoreboard());
+            saveAll();
+            return true;
+        }
+        return false;
     }
 
     public static String getProtagonistPlayerId() {
@@ -243,10 +296,25 @@ public final class DialogStore {
         return Math.max(0, Math.min(MAX_STAMINA, stamina));
     }
 
+    private static String normalizePlayerName(String playerName) {
+        return playerName == null ? "" : playerName.trim().toLowerCase();
+    }
+
     private static void saveAll() {
         try {
-            Files.createDirectories(STORE_PATH.getParent());
-            Files.writeString(STORE_PATH, GSON.toJson(data.normalize()), StandardCharsets.UTF_8);
+            Files.createDirectories(storePath.getParent());
+            Files.writeString(storePath, GSON.toJson(data.normalize()), StandardCharsets.UTF_8);
+        } catch (IOException ignored) {
+        }
+    }
+
+    private static void migrateConfigToWorldStore() {
+        if (CONFIG_STORE_PATH.equals(storePath) || Files.exists(storePath) || !Files.exists(CONFIG_STORE_PATH)) {
+            return;
+        }
+        try {
+            Files.createDirectories(storePath.getParent());
+            Files.copy(CONFIG_STORE_PATH, storePath, StandardCopyOption.COPY_ATTRIBUTES);
         } catch (IOException ignored) {
         }
     }
@@ -255,8 +323,10 @@ public final class DialogStore {
         int phaseCount = 1;
         int currentPhase = 1;
         String protagonistPlayer = "";
+        String protagonistPlayerName = "";
         Map<String, Map<String, DialogTree>> dialogs = new LinkedHashMap<>();
         Map<String, String> playerRoles = new LinkedHashMap<>();
+        Map<String, String> playerRoleNames = new LinkedHashMap<>();
         Map<String, Integer> playerStamina = new LinkedHashMap<>();
         Map<String, Map<String, TeleportPoint>> phaseTeleports = new LinkedHashMap<>();
 
@@ -273,11 +343,17 @@ public final class DialogStore {
             if (playerRoles == null) {
                 playerRoles = new LinkedHashMap<>();
             }
+            if (playerRoleNames == null) {
+                playerRoleNames = new LinkedHashMap<>();
+            }
             if (playerStamina == null) {
                 playerStamina = new LinkedHashMap<>();
             }
             if (protagonistPlayer == null) {
                 protagonistPlayer = "";
+            }
+            if (protagonistPlayerName == null) {
+                protagonistPlayerName = "";
             }
             try {
                 if (!protagonistPlayer.isBlank()) {
@@ -290,6 +366,7 @@ public final class DialogStore {
                 phaseTeleports = new LinkedHashMap<>();
             }
             playerRoles.entrySet().removeIf(entry -> !DialogStore.isValidRoleId(entry.getValue()));
+            playerRoleNames.entrySet().removeIf(entry -> entry.getKey() == null || entry.getKey().isBlank() || !DialogStore.isValidRoleId(entry.getValue()));
             playerStamina.replaceAll((playerId, stamina) -> normalizeStamina(stamina));
             dialogs.values().forEach(phases -> phases.replaceAll((phase, tree) -> tree.normalize()));
             phaseTeleports.values().forEach(teleports -> {

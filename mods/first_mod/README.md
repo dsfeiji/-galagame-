@@ -20,6 +20,16 @@ Put dialog files in the game run directory:
 
 Creative players can press `O` to open the role dialog control panel, choose a JSON file, then import it to a role and phase.
 
+Imported dialog, phase, role teleport, minigame, room-lock, and elimination data is saved inside the current world save:
+
+```text
+<world>/first_mod/
+```
+
+This means a finished map can be moved to another computer and keep its configured roles, phase dialogs, teleports, minigames, and locks. Players only need to claim or be assigned one of the existing role ids again.
+
+Old files from the global Fabric `config` directory are copied into the world folder once if the world folder does not already have its own data.
+
 Choices can spend stamina:
 
 ```json
