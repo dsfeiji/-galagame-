@@ -59,7 +59,7 @@ def write_json(path, data):
 
 def dialog_files():
     return {
-        "phase1_teacher_yuge.json": tree([
+        "阶段1_雨哥_校门开场.json": tree([
             node("start", "【场景提示】校门口。雨哥负责开场控场：让所有人知道今天按学校日程推进，主角可以自由找人接触。不要直接透露通关路线。",
                  choices=[
                      choice("询问今天的日程", "schedule"),
@@ -69,7 +69,7 @@ def dialog_files():
             node("schedule", "【NPC发挥】雨哥可以说明：先早自习，再课间、操场、午休、办公室检查，最后集合。只说日程，不说谁会出事。", ""),
             node("early_classroom", "【机制】主角用 1 点体力提前进教室，适合先找 BC 或六谷。雨哥可以口头提醒不要乱碰东西。", ""),
         ]),
-        "phase1_monitor_bc.json": tree([
+        "阶段1_BC_点名开场.json": tree([
             node("start", "【场景提示】BC 在教室门口整理点名。BC 可以维持秩序、盘问主角迟到原因，但不能直接给信物。",
                  choices=[
                      choice("帮 BC 整理点名册", "help_roster", 1),
@@ -79,7 +79,7 @@ def dialog_files():
             node("help_roster", "【线索】主角帮忙后，BC 可以透露：王少栋的名字刚加进名单，随小乐一直在躲视线。", ""),
             node("ask_unusual", "【发挥边界】BC 可以怀疑所有人，但重点应引向王少栋、随小乐和广播室，不要直接点名凶手。", ""),
         ]),
-        "phase1_athlete_goutou.json": tree([
+        "阶段1_狗头_操场热身.json": tree([
             node("start", "【场景提示】狗头在操场入口热身。狗头不爱长谈，倾向用比赛和挑衅推进关系。",
                  choices=[
                      choice("接受狗头的力量挑衅", "arm_game", 1),
@@ -98,7 +98,7 @@ def dialog_files():
             node("arm_failure", "【结果】主角输了。狗头只会嘲笑或敷衍，本轮仍可从别的路线补线索。"),
             node("equipment", "【线索】狗头可以说器材室的绳子、球网或护腕少过，但不要描述无法验证的气味。", ""),
         ]),
-        "phase1_scholar_liugu.json": tree([
+        "阶段1_六谷_知识问答开场.json": tree([
             node("start", "【场景提示】六谷在座位上整理资料。学霸线用普通对话模拟知识问答，题目由作者后续替换。",
                  choices=[
                      choice("请六谷出第一题", "q1", 1),
@@ -119,7 +119,7 @@ def dialog_files():
             node("fail", "【失败】六谷认为主角只是在套话，本轮学霸线暂时难推进。"),
             node("materials", "【线索】六谷可以透露：有一份满分试卷被损坏，BC 和孙悟空都关注过它。", ""),
         ]),
-        "phase1_timid_suixiaole.json": tree([
+        "阶段1_随小乐_楼梯目击.json": tree([
             node("start", "【场景提示】随小乐在楼梯附近徘徊。她看见过一些路线，但害怕被卷进去。",
                  choices=[
                      choice("温和安抚随小乐", "comfort"),
@@ -129,7 +129,7 @@ def dialog_files():
             node("comfort", "【线索】随小乐可以模糊提示：广播响起前，有人从空教室方向出来。"),
             node("pressure", "【后果】逼问会让随小乐更慌，但可以让她说出“柜子区”这个地点。", rewards=[reward("minecraft:string")]),
         ]),
-        "phase1_rich_sunwukong.json": tree([
+        "阶段1_孙悟空_柜子交易.json": tree([
             node("start", "【场景提示】孙悟空在柜子区附近摆弄物品。他习惯谈交换，不轻易白给信息。",
                  choices=[
                      choice("谈一笔交换", "deal", 1),
@@ -139,7 +139,7 @@ def dialog_files():
             node("deal", "【机制】主角花体力换取一次资源型帮助。孙悟空可以要求主角以后帮他保住面子。", rewards=[reward("minecraft:gold_nugget")]),
             node("locker", "【线索】孙悟空可以透露：王少栋对某个柜子很在意，赵子龙也来过。"),
         ]),
-        "phase1_broadcaster_zhaozilong.json": tree([
+        "阶段1_赵子龙_广播安排.json": tree([
             node("start", "【场景提示】赵子龙在广播室门口调试。广播员能制造全校信息差。",
                  choices=[
                      choice("请他解释广播安排", "broadcast_plan"),
@@ -159,7 +159,7 @@ def dialog_files():
             node("rhythm_success", "【结果】赵子龙愿意在关键时刻插播一次提示。", rewards=[reward("minecraft:note_block")]),
             node("rhythm_failure", "【结果】赵子龙觉得主角跟不上节奏，只给普通日程信息。"),
         ]),
-        "phase1_transfer_wangshaodong.json": tree([
+        "阶段1_王少栋_转学生路线.json": tree([
             node("start", "【场景提示】王少栋刚到学校，对很多地方不熟，但知道一个不该知道的地点。",
                  choices=[
                      choice("问他为什么盯着柜子区", "ask_locker"),
@@ -170,7 +170,7 @@ def dialog_files():
             node("route", "【线索】王少栋愿意指出空教室方向，但不解释为什么知道。", rewards=[reward("minecraft:map")]),
         ]),
 
-        "phase2_monitor_bc.json": tree([
+        "阶段2_BC_巡查记忆.json": tree([
             node("start", "【场景提示】课间走廊。BC 开始巡查，主角可以尝试拿到班长线核心信物。",
                  condition_jumps=[jump("minecraft:map", "has_route")],
                  choices=[
@@ -193,7 +193,7 @@ def dialog_files():
             node("locked", "【失败】BC 加强巡查，本轮班长线需要换路线或下次循环再来。"),
             node("soft_request", "【发挥】BC 可以拒绝，也可以给一个轻微信息：午休前柜子区会短暂无监管。"),
         ]),
-        "phase2_athlete_goutou.json": tree([
+        "阶段2_狗头_器材室决胜.json": tree([
             node("start", "【场景提示】器材室附近。狗头线进入事故准备阶段。",
                  condition_jumps=[jump("minecraft:leather", "trusted")],
                  choices=[choice("再次扳手腕争取信任", "arm_game", 1), choice("观察器材室", "observe"), choice("离开", "")]),
@@ -211,7 +211,7 @@ def dialog_files():
             node("observe", "【线索】主角只能确认器材室可作为后续事故地点，但暂时拿不到信物。"),
         ]),
 
-        "phase3_scholar_liugu.json": tree([
+        "阶段3_六谷_知识问答.json": tree([
             node("start", "【场景提示】早自习后。六谷开始用题目考主角，作者可替换题面和选项。",
                  condition_jumps=[jump("minecraft:book", "prepared")],
                  choices=[choice("进入知识问答", "q1", 1), choice("离开", "")]),
@@ -224,7 +224,7 @@ def dialog_files():
             node("token", "【结果】学霸线完成。发放学霸信物。", rewards=[reward(TOKENS["scholar"])]),
             node("fail", "【失败】六谷不再提供关键资料，本轮学霸线锁定。"),
         ]),
-        "phase3_timid_suixiaole.json": tree([
+        "阶段3_随小乐_记忆证词.json": tree([
             node("start", "【场景提示】楼梯间。随小乐需要确认自己记忆里的路线。",
                  condition_jumps=[jump("minecraft:string", "pressured")],
                  choices=[choice("陪她回忆路线", "memory_game", 1), choice("离开", "")]),
@@ -243,7 +243,7 @@ def dialog_files():
             node("fail", "【失败】随小乐情绪崩溃，本轮无法继续提供稳定证词。"),
         ]),
 
-        "phase4_rich_sunwukong.json": tree([
+        "阶段4_孙悟空_抢柜子.json": tree([
             node("start", "【场景提示】午休柜子区。孙悟空线需要在资源交换和抢柜子中完成。",
                  condition_jumps=[jump("minecraft:gold_nugget", "has_money")],
                  choices=[choice("直接抢柜子", "locker_game", 1), choice("继续谈条件", "deal"), choice("离开", "")]),
@@ -262,7 +262,7 @@ def dialog_files():
             node("fail", "【失败】孙悟空收回交易条件，本轮只能从其他人处补线索。"),
             node("deal", "【发挥】孙悟空可以开价，但只能给可保留道具或线索，不能直接发信物。", rewards=[reward("minecraft:emerald")]),
         ]),
-        "phase4_broadcaster_zhaozilong.json": tree([
+        "阶段4_赵子龙_广播节奏.json": tree([
             node("start", "【场景提示】广播室。赵子龙线需要主角争夺广播节奏。",
                  condition_jumps=[jump("minecraft:note_block", "trusted")],
                  choices=[choice("节奏对抗", "rhythm_game", 1), choice("请求一次广播帮助", "request"), choice("离开", "")]),
@@ -281,7 +281,7 @@ def dialog_files():
             node("fail", "【失败】广播时机错过，本轮无法通过广播制造关键错位。"),
             node("request", "【发挥】赵子龙可以给一次普通广播提示，但不能替主角完成路线。"),
         ]),
-        "phase4_transfer_wangshaodong.json": tree([
+        "阶段4_王少栋_空教室对抗.json": tree([
             node("start", "【场景提示】空教室。王少栋线要揭开他为什么熟悉学校隐藏路线。",
                  condition_jumps=[jump("minecraft:map", "route_known")],
                  choices=[choice("抢先翻找他的柜子线索", "locker_game", 1), choice("正面谈判", "talk"), choice("离开", "")]),
@@ -300,7 +300,7 @@ def dialog_files():
             node("talk", "【发挥】王少栋可以承认自己知道空教室，但不解释最终原因。"),
         ]),
 
-        "phase5_teacher_yuge.json": tree([
+        "阶段5_雨哥_最终检查.json": tree([
             node("start", "【场景提示】办公室/最终集合前。雨哥检查主角是否在本轮集齐七个学生信物。",
                  next_id="check_monitor"),
             node("check_monitor", "【检测】检查 BC 信物。", next_id="missing",
@@ -321,7 +321,7 @@ def dialog_files():
             node("missing", "【结算】信物不齐。雨哥只给普通结局提示，主角需要下一轮重新规划体力和顺序。"),
         ]),
 
-        "phase6_teacher_yuge.json": tree([
+        "阶段6_雨哥_循环复盘.json": tree([
             node("start", "【场景提示】循环重置点。雨哥宣布本轮结果，主角可准备进入下一次循环。此阶段用于复盘，不发学生信物。",
                  choices=[choice("结束本轮", ""), choice("询问下一轮建议", "hint")]),
             node("hint", "【提示】雨哥可以提示：每阶段只有 5 点体力，全收集需要提前准备可保留道具，信物本轮有效。"),
@@ -331,7 +331,7 @@ def dialog_files():
 
 def minigame_files():
     return {
-        "phase2_roster_lectern_memory.json": {
+        "阶段2_方块_讲台点名册记忆.json": {
             "id": "phase2_roster_lectern_memory",
             "protagonistOnly": True,
             "staminaCost": 1,
@@ -346,7 +346,7 @@ def minigame_files():
             "success": {"message": "你记住了点名册的异常顺序。", "rewards": [reward("minecraft:paper")]},
             "failure": {"message": "你记错了顺序，本轮这条线索价值降低。"},
         },
-        "phase3_gym_button_arm_wrestle.json": {
+        "阶段3_方块_器材室按钮扳手腕.json": {
             "id": "phase3_gym_button_arm_wrestle",
             "protagonistOnly": True,
             "staminaCost": 1,
@@ -360,7 +360,7 @@ def minigame_files():
             "success": {"message": "你压过了对手，拿到器材室临时主动权。", "rewards": [reward("minecraft:leather")]},
             "failure": {"message": "你没有压住局面，对手暂时占据主动。"},
         },
-        "phase4_locker_chest_search.json": {
+        "阶段4_方块_箱子抢柜子.json": {
             "id": "phase4_locker_chest_search",
             "protagonistOnly": True,
             "staminaCost": 1,
@@ -375,7 +375,7 @@ def minigame_files():
             "success": {"message": "你抢先翻到了柜子里的关键线索。", "rewards": [reward("minecraft:map")]},
             "failure": {"message": "对方抢先转移了柜子里的东西。"},
         },
-        "phase4_note_block_rhythm.json": {
+        "阶段4_方块_音符盒广播节奏.json": {
             "id": "phase4_note_block_rhythm",
             "protagonistOnly": True,
             "staminaCost": 1,
@@ -390,7 +390,7 @@ def minigame_files():
             "success": {"message": "你抢到了广播节奏，可以制造一次全校错位。", "rewards": [reward("minecraft:note_block")]},
             "failure": {"message": "广播节奏被对方控制，错位机会消失。"},
         },
-        "phase5_paper_review_memory.json": {
+        "阶段5_物品_纸张复盘记忆.json": {
             "id": "phase5_paper_review_memory",
             "protagonistOnly": True,
             "staminaCost": 1,
@@ -465,23 +465,23 @@ def readme():
 
 | 文件 | 角色ID | 阶段 |
 | --- | --- | --- |
-| `phase1_teacher_yuge.json` | `teacher_yuge` | 1 |
-| `phase1_monitor_bc.json` | `monitor_bc` | 1 |
-| `phase1_athlete_goutou.json` | `athlete_goutou` | 1 |
-| `phase1_scholar_liugu.json` | `scholar_liugu` | 1 |
-| `phase1_timid_suixiaole.json` | `timid_suixiaole` | 1 |
-| `phase1_rich_sunwukong.json` | `rich_sunwukong` | 1 |
-| `phase1_broadcaster_zhaozilong.json` | `broadcaster_zhaozilong` | 1 |
-| `phase1_transfer_wangshaodong.json` | `transfer_wangshaodong` | 1 |
-| `phase2_monitor_bc.json` | `monitor_bc` | 2 |
-| `phase2_athlete_goutou.json` | `athlete_goutou` | 2 |
-| `phase3_scholar_liugu.json` | `scholar_liugu` | 3 |
-| `phase3_timid_suixiaole.json` | `timid_suixiaole` | 3 |
-| `phase4_rich_sunwukong.json` | `rich_sunwukong` | 4 |
-| `phase4_broadcaster_zhaozilong.json` | `broadcaster_zhaozilong` | 4 |
-| `phase4_transfer_wangshaodong.json` | `transfer_wangshaodong` | 4 |
-| `phase5_teacher_yuge.json` | `teacher_yuge` | 5 |
-| `phase6_teacher_yuge.json` | `teacher_yuge` | 6 |
+| `阶段1_雨哥_校门开场.json` | `teacher_yuge` | 1 |
+| `阶段1_BC_点名开场.json` | `monitor_bc` | 1 |
+| `阶段1_狗头_操场热身.json` | `athlete_goutou` | 1 |
+| `阶段1_六谷_知识问答开场.json` | `scholar_liugu` | 1 |
+| `阶段1_随小乐_楼梯目击.json` | `timid_suixiaole` | 1 |
+| `阶段1_孙悟空_柜子交易.json` | `rich_sunwukong` | 1 |
+| `阶段1_赵子龙_广播安排.json` | `broadcaster_zhaozilong` | 1 |
+| `阶段1_王少栋_转学生路线.json` | `transfer_wangshaodong` | 1 |
+| `阶段2_BC_巡查记忆.json` | `monitor_bc` | 2 |
+| `阶段2_狗头_器材室决胜.json` | `athlete_goutou` | 2 |
+| `阶段3_六谷_知识问答.json` | `scholar_liugu` | 3 |
+| `阶段3_随小乐_记忆证词.json` | `timid_suixiaole` | 3 |
+| `阶段4_孙悟空_抢柜子.json` | `rich_sunwukong` | 4 |
+| `阶段4_赵子龙_广播节奏.json` | `broadcaster_zhaozilong` | 4 |
+| `阶段4_王少栋_空教室对抗.json` | `transfer_wangshaodong` | 4 |
+| `阶段5_雨哥_最终检查.json` | `teacher_yuge` | 5 |
+| `阶段6_雨哥_循环复盘.json` | `teacher_yuge` | 6 |
 
 ## 信物
 

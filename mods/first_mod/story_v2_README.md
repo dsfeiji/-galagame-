@@ -54,23 +54,23 @@
 
 | 文件 | 角色ID | 阶段 |
 | --- | --- | --- |
-| `phase1_teacher_yuge.json` | `teacher_yuge` | 1 |
-| `phase1_monitor_bc.json` | `monitor_bc` | 1 |
-| `phase1_athlete_goutou.json` | `athlete_goutou` | 1 |
-| `phase1_scholar_liugu.json` | `scholar_liugu` | 1 |
-| `phase1_timid_suixiaole.json` | `timid_suixiaole` | 1 |
-| `phase1_rich_sunwukong.json` | `rich_sunwukong` | 1 |
-| `phase1_broadcaster_zhaozilong.json` | `broadcaster_zhaozilong` | 1 |
-| `phase1_transfer_wangshaodong.json` | `transfer_wangshaodong` | 1 |
-| `phase2_monitor_bc.json` | `monitor_bc` | 2 |
-| `phase2_athlete_goutou.json` | `athlete_goutou` | 2 |
-| `phase3_scholar_liugu.json` | `scholar_liugu` | 3 |
-| `phase3_timid_suixiaole.json` | `timid_suixiaole` | 3 |
-| `phase4_rich_sunwukong.json` | `rich_sunwukong` | 4 |
-| `phase4_broadcaster_zhaozilong.json` | `broadcaster_zhaozilong` | 4 |
-| `phase4_transfer_wangshaodong.json` | `transfer_wangshaodong` | 4 |
-| `phase5_teacher_yuge.json` | `teacher_yuge` | 5 |
-| `phase6_teacher_yuge.json` | `teacher_yuge` | 6 |
+| `阶段1_雨哥_校门开场.json` | `teacher_yuge` | 1 |
+| `阶段1_BC_点名开场.json` | `monitor_bc` | 1 |
+| `阶段1_狗头_操场热身.json` | `athlete_goutou` | 1 |
+| `阶段1_六谷_知识问答开场.json` | `scholar_liugu` | 1 |
+| `阶段1_随小乐_楼梯目击.json` | `timid_suixiaole` | 1 |
+| `阶段1_孙悟空_柜子交易.json` | `rich_sunwukong` | 1 |
+| `阶段1_赵子龙_广播安排.json` | `broadcaster_zhaozilong` | 1 |
+| `阶段1_王少栋_转学生路线.json` | `transfer_wangshaodong` | 1 |
+| `阶段2_BC_巡查记忆.json` | `monitor_bc` | 2 |
+| `阶段2_狗头_器材室决胜.json` | `athlete_goutou` | 2 |
+| `阶段3_六谷_知识问答.json` | `scholar_liugu` | 3 |
+| `阶段3_随小乐_记忆证词.json` | `timid_suixiaole` | 3 |
+| `阶段4_孙悟空_抢柜子.json` | `rich_sunwukong` | 4 |
+| `阶段4_赵子龙_广播节奏.json` | `broadcaster_zhaozilong` | 4 |
+| `阶段4_王少栋_空教室对抗.json` | `transfer_wangshaodong` | 4 |
+| `阶段5_雨哥_最终检查.json` | `teacher_yuge` | 5 |
+| `阶段6_雨哥_循环复盘.json` | `teacher_yuge` | 6 |
 
 ## 信物
 
