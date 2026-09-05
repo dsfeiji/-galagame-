@@ -88,6 +88,9 @@ public class DialogTree {
         public List<ItemReward> rewards = new ArrayList<>();
         public List<DialogChoice> choices = new ArrayList<>();
         public DialogMinigame minigame = null;
+        public String eliminateRole = "";
+        public String eliminateReason = "";
+        public boolean eliminateTarget = false;
 
         public void normalize() {
             if (id == null || id.isBlank()) {
@@ -107,6 +110,12 @@ public class DialogTree {
             }
             if (choices == null) {
                 choices = new ArrayList<>();
+            }
+            if (eliminateRole == null) {
+                eliminateRole = "";
+            }
+            if (eliminateReason == null) {
+                eliminateReason = "";
             }
             for (ItemConditionJump conditionJump : conditionJumps) {
                 conditionJump.normalize();

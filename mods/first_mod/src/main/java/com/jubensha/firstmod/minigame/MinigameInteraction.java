@@ -77,6 +77,9 @@ public class MinigameInteraction {
     public static class Result {
         public String message = "";
         public List<DialogTree.ItemReward> rewards = new ArrayList<>();
+        public String eliminateRole = "";
+        public String eliminateReason = "";
+        public boolean eliminateSelf = false;
 
         public void normalize() {
             if (message == null) {
@@ -87,6 +90,12 @@ public class MinigameInteraction {
             }
             for (DialogTree.ItemReward reward : rewards) {
                 reward.normalize();
+            }
+            if (eliminateRole == null) {
+                eliminateRole = "";
+            }
+            if (eliminateReason == null) {
+                eliminateReason = "";
             }
         }
     }

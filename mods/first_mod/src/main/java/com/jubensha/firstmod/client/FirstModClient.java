@@ -10,6 +10,7 @@ import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.DuelFinishPayload;
 import com.jubensha.firstmod.network.DuelScorePayload;
 import com.jubensha.firstmod.network.DuelStatePayload;
+import com.jubensha.firstmod.network.EliminationPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
@@ -62,6 +63,9 @@ public class FirstModClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(StaminaPayload.ID, (payload, context) -> context.client().execute(() -> StaminaHud.update(payload.stamina(), payload.maxStamina())));
         ClientPlayNetworking.registerGlobalReceiver(TransitionPayload.ID, (payload, context) -> context.client().execute(() -> {
             TransitionOverlay.show(context.client(), payload.durationTicks());
+        }));
+        ClientPlayNetworking.registerGlobalReceiver(EliminationPayload.ID, (payload, context) -> context.client().execute(() -> {
+            TransitionOverlay.show(context.client(), payload.durationTicks(), payload.reason());
         }));
         ClientPlayNetworking.registerGlobalReceiver(StartInteractionMinigamePayload.ID, (payload, context) -> context.client().execute(() -> {
             DialogTree.DialogMinigame minigame = GSON.fromJson(payload.minigameJson(), DialogTree.DialogMinigame.class);
@@ -144,6 +148,10 @@ public class FirstModClient implements ClientModInitializer {
         }
         try {
             PayloadTypeRegistry.playS2C().register(StartInteractionMinigamePayload.ID, StartInteractionMinigamePayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playS2C().register(EliminationPayload.ID, EliminationPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
     }

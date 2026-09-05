@@ -184,6 +184,63 @@ Supported pure UI duel types:
 
 In dialog nodes, both players can participate and send scores. The right-clicking player's score decides the branch. In block or item interactions, the player competes with AI, controlled by `opponentAccuracy`.
 
+## Elimination JSON
+
+Dialog nodes can eliminate a role when the node is reached. The eliminated player is switched to spectator mode and sees a black fade screen with the configured reason.
+
+Eliminate the player who was right-clicked:
+
+```json
+{
+  "id": "bc_exit",
+  "text": "这段对话结束后，当前被右键的角色退场。",
+  "nextNodeId": "",
+  "eliminateTarget": true,
+  "eliminateReason": "班长疯了之后跑走了"
+}
+```
+
+Eliminate a specific role id:
+
+```json
+{
+  "id": "specific_exit",
+  "text": "这段对话结束后，指定角色退场。",
+  "nextNodeId": "",
+  "eliminateRole": "bc",
+  "eliminateReason": "BC 意识到时间线已经无法挽回，冲出教室后失踪了。"
+}
+```
+
+Minigame interaction results can also eliminate a role:
+
+```json
+"success": {
+  "message": "小游戏成功。",
+  "eliminateRole": "bc",
+  "eliminateReason": "BC 离开了这次循环。"
+}
+```
+
+Or eliminate the player who triggered the item/block minigame:
+
+```json
+"failure": {
+  "message": "小游戏失败。",
+  "eliminateSelf": true,
+  "eliminateReason": "你被迫退出了当前行动线。"
+}
+```
+
+Operator test commands:
+
+```mcfunction
+/dialogeliminate role <role_id> <reason>
+/dialogeliminate revive <role_id>
+/dialogeliminate reset
+/dialogeliminate info
+```
+
 ## Roles
 
 Players claim role ids before playing:

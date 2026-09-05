@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jubensha.firstmod.dialog.DialogStore;
 import com.jubensha.firstmod.dialog.DialogTree;
+import com.jubensha.firstmod.elimination.EliminationStore;
 import com.jubensha.firstmod.minigame.MinigameInteraction;
 import com.jubensha.firstmod.minigame.MinigameStore;
 import com.jubensha.firstmod.network.AdvanceDialogPayload;
@@ -14,6 +15,7 @@ import com.jubensha.firstmod.network.DialogPayload;
 import com.jubensha.firstmod.network.DuelFinishPayload;
 import com.jubensha.firstmod.network.DuelScorePayload;
 import com.jubensha.firstmod.network.DuelStatePayload;
+import com.jubensha.firstmod.network.EliminationPayload;
 import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
@@ -54,6 +56,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,8 +89,12 @@ public class FirstMod implements ModInitializer {
         DialogStore.load();
         MinigameStore.load();
         RoomLockStore.load();
+        EliminationStore.load();
         registerPayloadTypes();
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncStamina(handler.player));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            syncStamina(handler.player);
+            applyExistingElimination(handler.player);
+        });
         registerSaveReceiver();
         registerSaveMinigameReceiver();
         registerAdvanceReceiver();
@@ -148,6 +155,10 @@ public class FirstMod implements ModInitializer {
     private static void registerAdvanceReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(AdvanceDialogPayload.ID, (payload, context) -> {
             ServerPlayerEntity actor = context.player();
+            if (isEliminatedPlayer(actor)) {
+                ACTIVE_DIALOGS.remove(actor.getUuid());
+                return;
+            }
             DialogSession session = ACTIVE_DIALOGS.get(actor.getUuid());
             if (session == null || !payload.targetPlayerId().equals(session.targetPlayerId)) {
                 return;
@@ -177,6 +188,10 @@ public class FirstMod implements ModInitializer {
             if (!(player instanceof ServerPlayerEntity actor) || !(entity instanceof ServerPlayerEntity target)) {
                 return ActionResult.PASS;
             }
+            if (isEliminatedPlayer(actor)) {
+                actor.sendMessage(Text.literal("你已退场，无法发起对话。"), false);
+                return ActionResult.SUCCESS;
+            }
 
             String roleId = DialogStore.getClaimedRole(target.getUuid());
             if (roleId.isBlank()) {
@@ -185,6 +200,10 @@ public class FirstMod implements ModInitializer {
                     return ActionResult.SUCCESS;
                 }
                 return ActionResult.PASS;
+            }
+            if (EliminationStore.isEliminated(roleId)) {
+                actor.sendMessage(Text.literal("该角色已退场。"), false);
+                return ActionResult.SUCCESS;
             }
 
             DialogTree tree = actor.isCreative()
@@ -280,6 +299,10 @@ public class FirstMod implements ModInitializer {
             if (world.isClient() || hand != Hand.MAIN_HAND || !(player instanceof ServerPlayerEntity serverPlayer)) {
                 return ActionResult.PASS;
             }
+            if (isEliminatedPlayer(serverPlayer)) {
+                serverPlayer.sendMessage(Text.literal("你已退场，无法进行互动。"), false);
+                return ActionResult.SUCCESS;
+            }
 
             BlockPos pos = hitResult.getBlockPos();
             Block block = world.getBlockState(pos).getBlock();
@@ -301,6 +324,10 @@ public class FirstMod implements ModInitializer {
             ItemStack stack = player.getStackInHand(hand);
             if (world.isClient() || hand != Hand.MAIN_HAND || !(player instanceof ServerPlayerEntity serverPlayer) || stack.isEmpty()) {
                 return TypedActionResult.pass(stack);
+            }
+            if (isEliminatedPlayer(serverPlayer)) {
+                serverPlayer.sendMessage(Text.literal("你已退场，无法进行互动。"), false);
+                return TypedActionResult.success(stack);
             }
 
             String itemId = Registries.ITEM.getId(stack.getItem()).toString();
@@ -330,6 +357,10 @@ public class FirstMod implements ModInitializer {
         }
         try {
             PayloadTypeRegistry.playS2C().register(TransitionPayload.ID, TransitionPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playS2C().register(EliminationPayload.ID, EliminationPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {
@@ -381,6 +412,10 @@ public class FirstMod implements ModInitializer {
     private static void registerMinigameReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(MinigameResultPayload.ID, (payload, context) -> {
             ServerPlayerEntity actor = context.player();
+            if (isEliminatedPlayer(actor)) {
+                ACTIVE_DIALOGS.remove(actor.getUuid());
+                return;
+            }
             DialogSession session = ACTIVE_DIALOGS.get(actor.getUuid());
             if (session == null || !payload.targetPlayerId().equals(session.targetPlayerId) || !payload.nodeId().equals(session.currentNodeId)) {
                 return;
@@ -414,6 +449,10 @@ public class FirstMod implements ModInitializer {
     private static void registerInteractionMinigameReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(InteractionMinigameResultPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
+            if (isEliminatedPlayer(player)) {
+                ACTIVE_INTERACTION_MINIGAMES.remove(player.getUuid());
+                return;
+            }
             String activeId = ACTIVE_INTERACTION_MINIGAMES.get(player.getUuid());
             if (activeId == null || !activeId.equals(payload.interactionId())) {
                 return;
@@ -431,6 +470,9 @@ public class FirstMod implements ModInitializer {
     private static void registerArmWrestleReceivers() {
         ServerPlayNetworking.registerGlobalReceiver(ArmWrestleClickPayload.ID, (payload, context) -> {
             ServerPlayerEntity sender = context.player();
+            if (isEliminatedPlayer(sender)) {
+                return;
+            }
             DialogSession session = ACTIVE_DIALOGS.get(payload.controllerPlayerId());
             if (!isValidDialogArmWrestle(session, payload.targetPlayerId(), payload.nodeId(), sender)) {
                 return;
@@ -496,6 +538,9 @@ public class FirstMod implements ModInitializer {
     private static void registerDuelReceivers() {
         ServerPlayNetworking.registerGlobalReceiver(DuelScorePayload.ID, (payload, context) -> {
             ServerPlayerEntity sender = context.player();
+            if (isEliminatedPlayer(sender)) {
+                return;
+            }
             DialogSession session = ACTIVE_DIALOGS.get(payload.controllerPlayerId());
             if (!isValidDialogDuel(session, payload.targetPlayerId(), payload.nodeId(), sender)) {
                 return;
@@ -515,6 +560,10 @@ public class FirstMod implements ModInitializer {
 
         ServerPlayNetworking.registerGlobalReceiver(DuelFinishPayload.ID, (payload, context) -> {
             ServerPlayerEntity actor = context.player();
+            if (isEliminatedPlayer(actor)) {
+                ACTIVE_DIALOGS.remove(actor.getUuid());
+                return;
+            }
             if (!actor.getUuid().equals(payload.controllerPlayerId())) {
                 return;
             }
@@ -651,6 +700,9 @@ public class FirstMod implements ModInitializer {
             closeAllDialogs(server);
             DialogStore.setCurrentPhase(targetPhase);
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                if (isEliminatedPlayer(player)) {
+                    continue;
+                }
                 sendTransition(player, PHASE_TRANSITION_BLACKOUT_TICKS);
                 teleportForCurrentRole(server, player, targetPhase);
                 DialogStore.resetStamina(player.getUuid());
@@ -672,6 +724,10 @@ public class FirstMod implements ModInitializer {
         session.resetArmWrestle();
         session.resetDuel();
         giveRewards(actor, node, session);
+        if (applyDialogNodeElimination(actor, target, node, session)) {
+            closeDialog(actor, target, target.getUuid());
+            return;
+        }
         sendDialogPair(actor, target, tree, nodeId, session.roleId);
     }
 
@@ -693,6 +749,12 @@ public class FirstMod implements ModInitializer {
     private static void sendTransition(ServerPlayerEntity player, int durationTicks) {
         if (ServerPlayNetworking.canSend(player, TransitionPayload.ID)) {
             ServerPlayNetworking.send(player, new TransitionPayload(durationTicks));
+        }
+    }
+
+    private static void sendElimination(ServerPlayerEntity player, String reason) {
+        if (ServerPlayNetworking.canSend(player, EliminationPayload.ID)) {
+            ServerPlayNetworking.send(player, new EliminationPayload(reason, 100));
         }
     }
 
@@ -861,6 +923,10 @@ public class FirstMod implements ModInitializer {
     }
 
     private static void startInteractionMinigame(ServerPlayerEntity player, MinigameInteraction interaction) {
+        if (isEliminatedPlayer(player)) {
+            player.sendMessage(Text.literal("你已退场，无法进行互动。"), false);
+            return;
+        }
         if (!DialogStore.spendStamina(player.getUuid(), interaction.staminaCost)) {
             player.sendMessage(Text.literal("体力不足，无法进行这个行动。"), false);
             syncStamina(player);
@@ -871,6 +937,78 @@ public class FirstMod implements ModInitializer {
         if (ServerPlayNetworking.canSend(player, StartInteractionMinigamePayload.ID)) {
             ServerPlayNetworking.send(player, new StartInteractionMinigamePayload(interaction.id, GSON.toJson(interaction.minigame)));
         }
+    }
+
+    private static boolean applyDialogNodeElimination(ServerPlayerEntity actor, ServerPlayerEntity target, DialogTree.DialogNode node, DialogSession session) {
+        String roleId = "";
+        if (node.eliminateTarget) {
+            roleId = session.roleId;
+        } else if (!node.eliminateRole.isBlank()) {
+            roleId = node.eliminateRole.trim();
+        }
+        if (roleId.isBlank()) {
+            return false;
+        }
+        String reason = node.eliminateReason.isBlank() ? "该角色已退场。" : node.eliminateReason;
+        return eliminateRole(actor.getServer(), roleId, reason);
+    }
+
+    private static boolean applyInteractionElimination(ServerPlayerEntity player, MinigameInteraction.Result result) {
+        String roleId = "";
+        if (result.eliminateSelf) {
+            roleId = DialogStore.getClaimedRole(player.getUuid());
+        } else if (!result.eliminateRole.isBlank()) {
+            roleId = result.eliminateRole.trim();
+        }
+        if (roleId.isBlank()) {
+            return false;
+        }
+        String reason = result.eliminateReason.isBlank() ? "该角色已退场。" : result.eliminateReason;
+        return eliminateRole(player.getServer(), roleId, reason);
+    }
+
+    private static boolean eliminateRole(MinecraftServer server, String roleId, String reason) {
+        if (server == null || !DialogStore.isValidRoleId(roleId)) {
+            return false;
+        }
+        EliminationStore.eliminate(roleId, reason);
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            if (roleId.equals(DialogStore.getClaimedRole(player.getUuid()))) {
+                eliminatePlayer(player, reason);
+            }
+        }
+        Map<UUID, DialogSession> sessions = new HashMap<>(ACTIVE_DIALOGS);
+        for (Map.Entry<UUID, DialogSession> entry : sessions.entrySet()) {
+            if (!roleId.equals(entry.getValue().roleId)) {
+                continue;
+            }
+            ServerPlayerEntity controller = server.getPlayerManager().getPlayer(entry.getKey());
+            if (controller == null) {
+                ACTIVE_DIALOGS.remove(entry.getKey());
+                continue;
+            }
+            ServerPlayerEntity dialogTarget = server.getPlayerManager().getPlayer(entry.getValue().targetPlayerId);
+            closeDialog(controller, dialogTarget, entry.getValue().targetPlayerId);
+        }
+        return true;
+    }
+
+    private static void eliminatePlayer(ServerPlayerEntity player, String reason) {
+        player.changeGameMode(GameMode.SPECTATOR);
+        sendElimination(player, reason);
+        ACTIVE_INTERACTION_MINIGAMES.remove(player.getUuid());
+    }
+
+    private static void applyExistingElimination(ServerPlayerEntity player) {
+        String roleId = DialogStore.getClaimedRole(player.getUuid());
+        if (!roleId.isBlank() && EliminationStore.isEliminated(roleId)) {
+            eliminatePlayer(player, EliminationStore.getReason(roleId));
+        }
+    }
+
+    private static boolean isEliminatedPlayer(ServerPlayerEntity player) {
+        String roleId = DialogStore.getClaimedRole(player.getUuid());
+        return !roleId.isBlank() && EliminationStore.isEliminated(roleId);
     }
 
     private static boolean hasItem(ServerPlayerEntity player, String itemId, int count) {
@@ -914,6 +1052,7 @@ public class FirstMod implements ModInitializer {
                 player.giveItemStack(new ItemStack(item, reward.count));
             }
         }
+        applyInteractionElimination(player, result);
     }
 
     private static Item getItem(String itemId) {
@@ -1027,6 +1166,7 @@ public class FirstMod implements ModInitializer {
                                             return 0;
                                         }
                                         DialogStore.claimRole(player.getUuid(), roleId);
+                                        applyExistingElimination(player);
                                         feedback(context.getSource(), player.getNameForScoreboard() + " claimed dialog role: " + roleId);
                                         return 1;
                                     }))
@@ -1041,6 +1181,7 @@ public class FirstMod implements ModInitializer {
                                                     return 0;
                                                 }
                                                 DialogStore.claimRole(target.getUuid(), roleId);
+                                                applyExistingElimination(target);
                                                 feedback(context.getSource(), target.getNameForScoreboard() + " claimed dialog role: " + roleId);
                                                 return 1;
                                             }))))
@@ -1070,6 +1211,7 @@ public class FirstMod implements ModInitializer {
                                                     return 0;
                                                 }
                                                 DialogStore.claimRole(target.getUuid(), roleId);
+                                                applyExistingElimination(target);
                                                 feedback(context.getSource(), target.getNameForScoreboard() + " dialog role set to " + roleId);
                                                 return 1;
                                             }))))
@@ -1114,6 +1256,47 @@ public class FirstMod implements ModInitializer {
                                 String name = player == null ? "UUID: " + protagonistId : player.getNameForScoreboard();
                                 feedback(context.getSource(), "Protagonist: " + name + ". Teleport role id: " + PROTAGONIST_TELEPORT_ROLE_ID);
                                 return 1;
+                            })));
+
+            dispatcher.register(literal("dialogeliminate")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(literal("role")
+                            .then(argument("role_id", StringArgumentType.word())
+                                    .then(argument("reason", StringArgumentType.greedyString())
+                                            .executes(context -> {
+                                                String roleId = StringArgumentType.getString(context, "role_id").trim();
+                                                if (!DialogStore.isValidRoleId(roleId)) {
+                                                    feedback(context.getSource(), "Invalid role id. Use a-z, 0-9, _, -, . or /, max 64 chars.");
+                                                    return 0;
+                                                }
+                                                String reason = StringArgumentType.getString(context, "reason").trim();
+                                                eliminateRole(context.getSource().getServer(), roleId, reason);
+                                                feedback(context.getSource(), "Eliminated role " + roleId + ".");
+                                                return 1;
+                                            }))))
+                    .then(literal("revive")
+                            .then(argument("role_id", StringArgumentType.word())
+                                    .executes(context -> {
+                                        String roleId = StringArgumentType.getString(context, "role_id").trim();
+                                        EliminationStore.revive(roleId);
+                                        feedback(context.getSource(), "Revived role " + roleId + ".");
+                                        return 1;
+                                    })))
+                    .then(literal("reset")
+                            .executes(context -> {
+                                EliminationStore.reset();
+                                feedback(context.getSource(), "All eliminated roles have been cleared.");
+                                return 1;
+                            }))
+                    .then(literal("info")
+                            .executes(context -> {
+                                Map<String, String> eliminated = EliminationStore.all();
+                                if (eliminated.isEmpty()) {
+                                    feedback(context.getSource(), "No eliminated roles.");
+                                    return 0;
+                                }
+                                feedback(context.getSource(), "Eliminated roles: " + String.join(", ", eliminated.keySet()));
+                                return eliminated.size();
                             })));
 
             dispatcher.register(literal("dialogstamina")

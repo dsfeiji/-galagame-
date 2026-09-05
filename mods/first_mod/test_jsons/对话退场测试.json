@@ -1,0 +1,40 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "这是一段退场测试对话。选择后会进入退场节点。",
+      "nextNodeId": "",
+      "choices": [
+        {
+          "text": "让被右键的角色退场",
+          "nextNodeId": "target_exit"
+        },
+        {
+          "text": "让指定角色 BC 退场",
+          "nextNodeId": "bc_exit"
+        }
+      ]
+    },
+    {
+      "id": "target_exit",
+      "text": "这段话结束后，被右键的角色会退场。",
+      "nextNodeId": "",
+      "rewards": [
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1
+        }
+      ],
+      "eliminateTarget": true,
+      "eliminateReason": "班长疯了之后跑走了"
+    },
+    {
+      "id": "bc_exit",
+      "text": "这段话结束后，角色 ID 为 bc 的玩家会退场。",
+      "nextNodeId": "",
+      "eliminateRole": "bc",
+      "eliminateReason": "BC 意识到时间线已经无法挽回，冲出教室后失踪了。"
+    }
+  ]
+}
