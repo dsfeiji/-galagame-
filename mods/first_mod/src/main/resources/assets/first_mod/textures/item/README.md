@@ -1,6 +1,6 @@
-# Item Texture TODO
+# Item Textures
 
-Prepare pixel-art PNG textures with transparent backgrounds. Use 16x16 or 32x32 resolution.
+All 14 story item textures are present as 16x16 RGBA pixel-art PNG files with transparent backgrounds.
 
 Student tokens:
 
@@ -21,3 +21,5 @@ Loop remnants:
 - `time_chip.png`
 - `mirror_pigment.png`
 - `evacuation_pointer.png`
+
+These files can be replaced later with more detailed 16x16 or 32x32 transparent PNG textures without changing item IDs or model JSON files.
