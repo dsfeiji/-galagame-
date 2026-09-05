@@ -261,7 +261,7 @@ public class FirstMod implements ModInitializer {
                     }
                     serverPlayer.sendMessage(Text.literal("已安装房间上锁器。请手持开门物品右键这扇铁门进行设置。"), false);
                 } else if (lock.hasRequiredItem()) {
-                    serverPlayer.sendMessage(Text.literal("这扇门已经设置了开门物品：" + lock.requiredItem), false);
+                    serverPlayer.sendMessage(Text.literal("这扇门已经设置了开门物品：").append(itemDisplayName(lock.requiredItem)), false);
                 } else {
                     serverPlayer.sendMessage(Text.literal("这扇门已安装房间上锁器。请手持开门物品右键设置。"), false);
                 }
@@ -279,12 +279,12 @@ public class FirstMod implements ModInitializer {
                 }
                 String itemId = Registries.ITEM.getId(handStack.getItem()).toString();
                 RoomLockStore.setRequiredItem(worldId, doorPos, itemId);
-                serverPlayer.sendMessage(Text.literal("已设置开门物品：" + itemId), false);
+                serverPlayer.sendMessage(Text.literal("已设置开门物品：").append(handStack.getName()), false);
                 return ActionResult.SUCCESS;
             }
 
             if (!hasItem(serverPlayer, lock.requiredItem, 1)) {
-                serverPlayer.sendMessage(Text.literal("你没有该物品：" + lock.requiredItem), false);
+                serverPlayer.sendMessage(Text.literal("你没有该物品：").append(itemDisplayName(lock.requiredItem)), false);
                 return ActionResult.SUCCESS;
             }
 
@@ -1079,6 +1079,11 @@ public class FirstMod implements ModInitializer {
         }
         Item item = Registries.ITEM.get(identifier);
         return item == Registries.ITEM.get(Identifier.of("minecraft", "air")) ? null : item;
+    }
+
+    private static Text itemDisplayName(String itemId) {
+        Item item = getItem(itemId);
+        return item == null ? Text.literal(itemId == null ? "" : itemId) : new ItemStack(item).getName();
     }
 
     private static void registerCommands() {
