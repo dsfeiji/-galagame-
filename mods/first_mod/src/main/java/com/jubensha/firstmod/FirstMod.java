@@ -711,11 +711,20 @@ public class FirstMod implements ModInitializer {
         }
         phaseAdvancing = true;
         try {
+            boolean loopRestart = isLoopRestart(targetPhase);
+            Set<String> returningRoles = loopRestart ? new HashSet<>(EliminationStore.all().keySet()) : Set.of();
+            if (loopRestart) {
+                EliminationStore.reset();
+            }
             closeAllDialogs(server);
             DialogStore.setCurrentPhase(targetPhase);
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-                if (isEliminatedPlayer(player)) {
+                String roleId = DialogStore.getClaimedRole(player);
+                if (!loopRestart && !roleId.isBlank() && EliminationStore.isEliminated(roleId)) {
                     continue;
+                }
+                if (returningRoles.contains(roleId)) {
+                    player.changeGameMode(server.getDefaultGameMode());
                 }
                 sendTransition(player, PHASE_TRANSITION_BLACKOUT_TICKS);
                 teleportForCurrentRole(server, player, targetPhase);
@@ -725,6 +734,10 @@ public class FirstMod implements ModInitializer {
         } finally {
             phaseAdvancing = false;
         }
+    }
+
+    private static boolean isLoopRestart(int targetPhase) {
+        return targetPhase == 1 && DialogStore.getCurrentPhase() == DialogStore.getPhaseCount();
     }
 
     private static void showNode(ServerPlayerEntity actor, ServerPlayerEntity target, DialogTree tree, String requestedNodeId, DialogSession session) {
@@ -964,7 +977,7 @@ public class FirstMod implements ModInitializer {
             return false;
         }
         String reason = node.eliminateReason.isBlank() ? "该角色已退场。" : node.eliminateReason;
-        return eliminateRole(actor.getServer(), roleId, reason);
+        return eliminateRole(actor.getServer(), roleId, reason, actor);
     }
 
     private static boolean applyInteractionElimination(ServerPlayerEntity player, MinigameInteraction.Result result) {
@@ -978,18 +991,29 @@ public class FirstMod implements ModInitializer {
             return false;
         }
         String reason = result.eliminateReason.isBlank() ? "该角色已退场。" : result.eliminateReason;
-        return eliminateRole(player.getServer(), roleId, reason);
+        return eliminateRole(player.getServer(), roleId, reason, player);
     }
 
     private static boolean eliminateRole(MinecraftServer server, String roleId, String reason) {
+        return eliminateRole(server, roleId, reason, null);
+    }
+
+    private static boolean eliminateRole(MinecraftServer server, String roleId, String reason, ServerPlayerEntity witness) {
         if (server == null || !DialogStore.isValidRoleId(roleId)) {
             return false;
         }
         EliminationStore.eliminate(roleId, reason);
+        boolean witnessEliminated = false;
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             if (roleId.equals(DialogStore.getClaimedRole(player))) {
                 eliminatePlayer(player, reason);
+                if (witness != null && player.getUuid().equals(witness.getUuid())) {
+                    witnessEliminated = true;
+                }
             }
+        }
+        if (witness != null && !witnessEliminated) {
+            sendElimination(witness, reason);
         }
         Map<UUID, DialogSession> sessions = new HashMap<>(ACTIVE_DIALOGS);
         for (Map.Entry<UUID, DialogSession> entry : sessions.entrySet()) {
