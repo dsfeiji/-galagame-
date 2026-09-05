@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】空教室。王少栋线要揭开他为什么熟悉学校隐藏路线。",
+      "text": "你跟到这里，是不是已经知道了什么？",
       "nextNodeId": "",
       "conditionJumps": [
         {
@@ -31,7 +31,7 @@
     },
     {
       "id": "route_known",
-      "text": "【背包检测】主角带着路线图，王少栋知道自己瞒不住，进入对抗。",
+      "text": "你拿着那张路线图……看来我瞒不住了。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -49,7 +49,7 @@
     },
     {
       "id": "locker_game",
-      "text": "【小游戏】抢柜子：目标持续变化，一分钟结算。",
+      "text": "想知道我藏了什么？那就看谁更快。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -66,7 +66,7 @@
     },
     {
       "id": "token",
-      "text": "【结果】转学生线完成。发放转学生信物。",
+      "text": "你找到了。信物给你，但别以为你已经知道全部。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -79,7 +79,7 @@
     },
     {
       "id": "fail",
-      "text": "【失败】王少栋转移了关键物品，本轮转学生线锁定。",
+      "text": "太慢了。我已经把重要的东西转走了。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -87,7 +87,7 @@
     },
     {
       "id": "talk",
-      "text": "【发挥】王少栋可以承认自己知道空教室，但不解释最终原因。",
+      "text": "我承认我知道空教室，但原因现在不能告诉你。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

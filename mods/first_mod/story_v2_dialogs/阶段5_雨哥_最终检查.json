@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】办公室/最终集合前。雨哥检查主角是否在本轮集齐七个学生信物。",
+      "text": "到这里就别再绕了。把你这一轮拿到的东西给我看。",
       "nextNodeId": "check_monitor",
       "conditionJumps": [],
       "rewards": [],
@@ -11,7 +11,7 @@
     },
     {
       "id": "check_monitor",
-      "text": "【检测】检查 BC 信物。",
+      "text": "先看 BC 的信物。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -25,7 +25,7 @@
     },
     {
       "id": "check_athlete",
-      "text": "【检测】检查狗头信物。",
+      "text": "再看狗头的信物。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -39,7 +39,7 @@
     },
     {
       "id": "check_scholar",
-      "text": "【检测】检查六谷信物。",
+      "text": "六谷的信物呢？",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -53,7 +53,7 @@
     },
     {
       "id": "check_timid",
-      "text": "【检测】检查随小乐信物。",
+      "text": "随小乐的信物也要有。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -67,7 +67,7 @@
     },
     {
       "id": "check_rich",
-      "text": "【检测】检查孙悟空信物。",
+      "text": "孙悟空那边，你处理完了吗？",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -81,7 +81,7 @@
     },
     {
       "id": "check_broadcaster",
-      "text": "【检测】检查赵子龙信物。",
+      "text": "赵子龙的信物拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -95,7 +95,7 @@
     },
     {
       "id": "check_transfer",
-      "text": "【检测】检查王少栋信物。",
+      "text": "最后，王少栋的信物。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -109,7 +109,7 @@
     },
     {
       "id": "complete",
-      "text": "【结算】七个学生信物齐全。雨哥进入最终控场场景，发放老师信物。",
+      "text": "七个都齐了。你这一轮确实走到底了，这个给你。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -122,7 +122,7 @@
     },
     {
       "id": "missing",
-      "text": "【结算】信物不齐。雨哥只给普通结局提示，主角需要下一轮重新规划体力和顺序。",
+      "text": "还不够。少一个都不算完成，下一轮重新安排顺序。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

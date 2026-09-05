@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】早自习后。六谷开始用题目考主角，作者可替换题面和选项。",
+      "text": "现在轮到关键题了。答不出来，就别继续追问。",
       "nextNodeId": "",
       "conditionJumps": [
         {
@@ -27,7 +27,7 @@
     },
     {
       "id": "prepared",
-      "text": "【背包检测】主角带着资料书，六谷降低门槛，直接进入最后一问。",
+      "text": "你带了资料？那我直接问最后一题。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -45,7 +45,7 @@
     },
     {
       "id": "q1",
-      "text": "【题目占位】六谷提出第一道题。把这里替换成真实题目。",
+      "text": "第一题内容待填写。认真选。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -62,7 +62,7 @@
     },
     {
       "id": "q2",
-      "text": "【题目占位】六谷提出关键题。把这里替换成真实题目。",
+      "text": "最后一题内容待填写。答对，这条线就结束。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -79,7 +79,7 @@
     },
     {
       "id": "token",
-      "text": "【结果】学霸线完成。发放学霸信物。",
+      "text": "答案成立。信物给你，别浪费这条线索。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -92,7 +92,7 @@
     },
     {
       "id": "fail",
-      "text": "【失败】六谷不再提供关键资料，本轮学霸线锁定。",
+      "text": "错了。本轮到此为止。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

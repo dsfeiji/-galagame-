@@ -510,6 +510,12 @@ def main():
         write_json(MINIGAME_DIR / name, data)
     (ROOT / "mods" / "first_mod" / "story_v2_README.md").write_text(readme(), encoding="utf-8")
 
+    from clean_story_v2_player_dialogs import clean_dialogs, update_readme, write_guide
+
+    clean_dialogs()
+    write_guide()
+    update_readme()
+
     print(f"dialogs={len(list(DIALOG_DIR.glob('*.json')))}")
     print(f"minigames={len(list(MINIGAME_DIR.glob('*.json')))}")
 

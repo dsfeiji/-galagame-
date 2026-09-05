@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】BC 在教室门口整理点名。BC 可以维持秩序、盘问主角迟到原因，但不能直接给信物。",
+      "text": "你来得正好。我在核点名册，别挡门口。有什么事快说。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -25,7 +25,7 @@
     },
     {
       "id": "help_roster",
-      "text": "【线索】主角帮忙后，BC 可以透露：王少栋的名字刚加进名单，随小乐一直在躲视线。",
+      "text": "名单有点乱。王少栋是刚加进来的，随小乐今天也一直不敢看人。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -33,7 +33,7 @@
     },
     {
       "id": "ask_unusual",
-      "text": "【发挥边界】BC 可以怀疑所有人，但重点应引向王少栋、随小乐和广播室，不要直接点名凶手。",
+      "text": "反常的人不止一个。王少栋、随小乐，还有广播室那边，我都觉得不对。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】六谷在座位上整理资料。学霸线用普通对话模拟知识问答，题目由作者后续替换。",
+      "text": "你想从我这里拿信息，就先证明你不是乱猜。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -25,7 +25,7 @@
     },
     {
       "id": "q1",
-      "text": "【知识问答占位】这里替换成作者设计的第一题。正确选项继续，错误选项锁线或浪费体力。",
+      "text": "第一题内容待填写。选错的话，我就当你是在套话。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -42,7 +42,7 @@
     },
     {
       "id": "q2",
-      "text": "【知识问答占位】这里替换成作者设计的第二题。",
+      "text": "第二题内容待填写。这一题答对，我才给你看资料。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -59,7 +59,7 @@
     },
     {
       "id": "quiz_success",
-      "text": "【结果】六谷确认主角能跟上逻辑，允许主角查看一份资料。",
+      "text": "可以，你至少跟得上逻辑。这份资料你拿去看。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -72,7 +72,7 @@
     },
     {
       "id": "fail",
-      "text": "【失败】六谷认为主角只是在套话，本轮学霸线暂时难推进。",
+      "text": "不对。你不是在推理，只是在碰运气。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -80,7 +80,7 @@
     },
     {
       "id": "materials",
-      "text": "【线索】六谷可以透露：有一份满分试卷被损坏，BC 和孙悟空都关注过它。",
+      "text": "有一份满分试卷被损坏了。BC 和孙悟空都关注过它。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

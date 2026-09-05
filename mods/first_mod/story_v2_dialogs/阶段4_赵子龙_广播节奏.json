@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】广播室。赵子龙线需要主角争夺广播节奏。",
+      "text": "广播室现在归我管。你要抢时间，就得抢过我的节奏。",
       "nextNodeId": "",
       "conditionJumps": [
         {
@@ -31,7 +31,7 @@
     },
     {
       "id": "trusted",
-      "text": "【背包检测】主角之前赢过赵子龙的信任，可以直接请求关键广播，但仍需消耗体力。",
+      "text": "我记得你之前赢过。给我一个理由，我就帮你播。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -49,7 +49,7 @@
     },
     {
       "id": "rhythm_game",
-      "text": "【小游戏】节奏对抗，一分钟，点击后立即刷新下一条。",
+      "text": "准备好，跟上每一个节拍。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -66,7 +66,7 @@
     },
     {
       "id": "token",
-      "text": "【结果】广播员线完成。发放广播员信物。",
+      "text": "你抢到节奏了。广播这次听你的。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -79,7 +79,7 @@
     },
     {
       "id": "fail",
-      "text": "【失败】广播时机错过，本轮无法通过广播制造关键错位。",
+      "text": "时机过了。现在播什么都晚了。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -87,7 +87,7 @@
     },
     {
       "id": "request",
-      "text": "【发挥】赵子龙可以给一次普通广播提示，但不能替主角完成路线。",
+      "text": "我可以给你一次普通提醒，但别指望我替你完成整件事。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】赵子龙在广播室门口调试。广播员能制造全校信息差。",
+      "text": "广播不是谁想用就能用的。你要问安排，先说清楚你想干什么。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -25,7 +25,7 @@
     },
     {
       "id": "broadcast_plan",
-      "text": "【线索】赵子龙可以说明广播会影响集合时间，主角可利用广播制造错位。",
+      "text": "广播会影响集合时间。只要时间错开，人就会去错地方。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -33,7 +33,7 @@
     },
     {
       "id": "rhythm_game",
-      "text": "【小游戏】节奏对抗。点击后立刻刷新下一条，目标位置和宽度随机，一分钟结算。",
+      "text": "想让我帮你插播？那就看你跟不跟得上节奏。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -50,7 +50,7 @@
     },
     {
       "id": "rhythm_success",
-      "text": "【结果】赵子龙愿意在关键时刻插播一次提示。",
+      "text": "行，我可以在关键时候帮你插一次广播。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -63,7 +63,7 @@
     },
     {
       "id": "rhythm_failure",
-      "text": "【结果】赵子龙觉得主角跟不上节奏，只给普通日程信息。",
+      "text": "你这个节奏太乱了。广播交给你，只会坏事。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

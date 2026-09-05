@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】课间走廊。BC 开始巡查，主角可以尝试拿到班长线核心信物。",
+      "text": "课间别乱跑。我现在开始巡查，你最好有正当理由。",
       "nextNodeId": "",
       "conditionJumps": [
         {
@@ -31,7 +31,7 @@
     },
     {
       "id": "has_route",
-      "text": "【背包检测】主角带着王少栋给的路线图，BC 意识到主角知道空教室动线。可直接进入记忆对抗。",
+      "text": "你知道空教室那条路？那我更不能随便放你过去。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -49,7 +49,7 @@
     },
     {
       "id": "memory_game",
-      "text": "【小游戏】记忆翻牌：3x5 的 15 格中找 6 个发光格，点错直接失败并只扣一次分。",
+      "text": "你说你记得清楚，那就证明给我看。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -66,7 +66,7 @@
     },
     {
       "id": "token",
-      "text": "【结果】BC 的巡查被主角突破。发放班长信物。",
+      "text": "这次算你赢。这个给你，别让我后悔。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -79,7 +79,7 @@
     },
     {
       "id": "locked",
-      "text": "【失败】BC 加强巡查，本轮班长线需要换路线或下次循环再来。",
+      "text": "不行，你的说法对不上。我会盯紧这条走廊。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -87,7 +87,7 @@
     },
     {
       "id": "soft_request",
-      "text": "【发挥】BC 可以拒绝，也可以给一个轻微信息：午休前柜子区会短暂无监管。",
+      "text": "午休前柜子区会有一小段空档。其他的别问。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】王少栋刚到学校，对很多地方不熟，但知道一个不该知道的地点。",
+      "text": "我刚转来，不太熟。你一直看我干什么？",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -25,7 +25,7 @@
     },
     {
       "id": "ask_locker",
-      "text": "【线索】王少栋可以说自己只是找错柜子，但反应要显得谨慎。",
+      "text": "我只是找错柜子了。你别把普通事情想得太复杂。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -33,7 +33,7 @@
     },
     {
       "id": "route",
-      "text": "【线索】王少栋愿意指出空教室方向，但不解释为什么知道。",
+      "text": "空教室在那边。别问我为什么知道，我不想解释。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [

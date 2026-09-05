@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】随小乐在楼梯附近徘徊。她看见过一些路线，但害怕被卷进去。",
+      "text": "你别突然靠这么近……我只是路过，真的只是路过。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -25,7 +25,7 @@
     },
     {
       "id": "comfort",
-      "text": "【线索】随小乐可以模糊提示：广播响起前，有人从空教室方向出来。",
+      "text": "广播响起来之前，我好像看见有人从空教室那边出来。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -33,7 +33,7 @@
     },
     {
       "id": "pressure",
-      "text": "【后果】逼问会让随小乐更慌，但可以让她说出“柜子区”这个地点。",
+      "text": "别问了……柜子区，你去柜子区看看，别说是我说的。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [

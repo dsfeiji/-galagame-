@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】器材室附近。狗头线进入事故准备阶段。",
+      "text": "器材室这边别乱碰。你要真想插手，就拿出点本事。",
       "nextNodeId": "",
       "conditionJumps": [
         {
@@ -31,7 +31,7 @@
     },
     {
       "id": "trusted",
-      "text": "【背包检测】主角带着狗头认可过的物品，可直接要求他配合一次器材安排。",
+      "text": "你上次赢过，我记得。说吧，你想让我怎么配合？",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -49,7 +49,7 @@
     },
     {
       "id": "arm_game",
-      "text": "【小游戏】扳手腕，没有倒计时，到头结束。",
+      "text": "废话少说，再比一次。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -65,7 +65,7 @@
     },
     {
       "id": "token",
-      "text": "【结果】狗头线完成。发放体育生信物。",
+      "text": "行，服了。这个给你，器材室的事我会按你说的做。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -78,7 +78,7 @@
     },
     {
       "id": "observe",
-      "text": "【线索】主角只能确认器材室可作为后续事故地点，但暂时拿不到信物。",
+      "text": "你现在只能看，别想直接拿走东西。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

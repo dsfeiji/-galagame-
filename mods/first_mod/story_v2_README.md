@@ -72,6 +72,11 @@
 | `阶段5_雨哥_最终检查.json` | `teacher_yuge` | 5 |
 | `阶段6_雨哥_循环复盘.json` | `teacher_yuge` | 6 |
 
+## NPC 扮演提示
+
+- 对话 JSON 的 `text` 字段只放玩家能看到的说话内容。
+- NPC 控场、信息边界和自由发挥规则放在 `story_v2_npc_guides/NPC扮演手册.md`。
+
 ## 信物
 
 - BC：`first_mod:chipped_attendance_tag`

@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "start",
-      "text": "【场景提示】午休柜子区。孙悟空线需要在资源交换和抢柜子中完成。",
+      "text": "午休时间最适合谈条件。你想拿什么，就看你抢不抢得到。",
       "nextNodeId": "",
       "conditionJumps": [
         {
@@ -31,7 +31,7 @@
     },
     {
       "id": "has_money",
-      "text": "【背包检测】主角带着金粒，孙悟空愿意把冲突升级到柜子对抗。",
+      "text": "带了东西来？那就别绕弯子，直接开始。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -49,7 +49,7 @@
     },
     {
       "id": "locker_game",
-      "text": "【小游戏】抢柜子：点对加分，点错不扣分，目标每次变化，一分钟结算。",
+      "text": "柜子里的东西，谁先翻到算谁的。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -66,7 +66,7 @@
     },
     {
       "id": "token",
-      "text": "【结果】富家子线完成。发放富家子信物。",
+      "text": "你赢了。东西归你，信物也给你。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -79,7 +79,7 @@
     },
     {
       "id": "fail",
-      "text": "【失败】孙悟空收回交易条件，本轮只能从其他人处补线索。",
+      "text": "慢了。柜子里的东西已经不在这里了。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -87,7 +87,7 @@
     },
     {
       "id": "deal",
-      "text": "【发挥】孙悟空可以开价，但只能给可保留道具或线索，不能直接发信物。",
+      "text": "这颗绿宝石先给你。别以为这就算两清。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
