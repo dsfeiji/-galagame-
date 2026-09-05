@@ -24,6 +24,7 @@ public final class ModItems {
     public static final Item TIME_CHIP = registerItem("time_chip");
     public static final Item MIRROR_PIGMENT = registerItem("mirror_pigment");
     public static final Item EVACUATION_POINTER = registerItem("evacuation_pointer");
+    public static final Item ROOM_LOCKER = registerItem("room_locker");
 
     private ModItems() {
     }
@@ -55,6 +56,7 @@ public final class ModItems {
                     entries.add(TIME_CHIP);
                     entries.add(MIRROR_PIGMENT);
                     entries.add(EVACUATION_POINTER);
+                    entries.add(ROOM_LOCKER);
                 })
                 .build();
     }

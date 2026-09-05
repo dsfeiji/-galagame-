@@ -22,4 +22,8 @@ Loop remnants:
 - `mirror_pigment.png`
 - `evacuation_pointer.png`
 
+Utility items:
+
+- `room_locker.png`
+
 These files can be replaced later with more detailed 16x16 or 32x32 transparent PNG textures without changing item IDs or model JSON files.

@@ -21,10 +21,12 @@ import com.jubensha.firstmod.network.SaveMinigamePayload;
 import com.jubensha.firstmod.network.StartInteractionMinigamePayload;
 import com.jubensha.firstmod.network.StaminaPayload;
 import com.jubensha.firstmod.network.TransitionPayload;
+import com.jubensha.firstmod.roomlock.RoomLockStore;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
@@ -32,6 +34,10 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.DoorBlock;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -69,6 +75,9 @@ public class FirstMod implements ModInitializer {
     private static final Gson GSON = new GsonBuilder().create();
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
     private static final Map<UUID, String> ACTIVE_INTERACTION_MINIGAMES = new HashMap<>();
+    private static final Map<DoorKey, Long> PENDING_DOOR_CLOSES = new HashMap<>();
+    private static final int ROOM_LOCK_CLOSE_TICKS = 40;
+    private static long serverTicks;
     private static boolean phaseAdvancing;
 
     @Override
@@ -76,6 +85,7 @@ public class FirstMod implements ModInitializer {
         ModItems.register();
         DialogStore.load();
         MinigameStore.load();
+        RoomLockStore.load();
         registerPayloadTypes();
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncStamina(handler.player));
         registerSaveReceiver();
@@ -86,6 +96,7 @@ public class FirstMod implements ModInitializer {
         registerArmWrestleReceivers();
         registerDuelReceivers();
         registerCommands();
+        registerRoomLocks();
         registerBlockMinigames();
         registerItemMinigames();
         registerRightClickDialog();
@@ -187,6 +198,80 @@ public class FirstMod implements ModInitializer {
             ACTIVE_DIALOGS.put(actor.getUuid(), session);
             showNode(actor, target, tree, tree.startNodeId, session);
             return ActionResult.SUCCESS;
+        });
+    }
+
+    private static void registerRoomLocks() {
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClient() || hand != Hand.MAIN_HAND || !(world instanceof ServerWorld serverWorld) || !(player instanceof ServerPlayerEntity serverPlayer)) {
+                return ActionResult.PASS;
+            }
+
+            BlockPos doorPos = normalizedIronDoorPos(world.getBlockState(hitResult.getBlockPos()), hitResult.getBlockPos());
+            if (doorPos == null) {
+                return ActionResult.PASS;
+            }
+
+            String worldId = world.getRegistryKey().getValue().toString();
+            ItemStack handStack = serverPlayer.getStackInHand(hand);
+            RoomLockStore.LockData lock = RoomLockStore.get(worldId, doorPos);
+            if (handStack.isOf(ModItems.ROOM_LOCKER)) {
+                if (serverPlayer.isCreative() && serverPlayer.isSneaking() && lock != null) {
+                    RoomLockStore.remove(worldId, doorPos);
+                    serverPlayer.sendMessage(Text.literal("已移除这扇铁门上的房间上锁器。"), false);
+                    return ActionResult.SUCCESS;
+                }
+                if (lock == null) {
+                    RoomLockStore.install(worldId, doorPos);
+                    if (!serverPlayer.isCreative()) {
+                        handStack.decrement(1);
+                    }
+                    serverPlayer.sendMessage(Text.literal("已安装房间上锁器。请手持开门物品右键这扇铁门进行设置。"), false);
+                } else if (lock.hasRequiredItem()) {
+                    serverPlayer.sendMessage(Text.literal("这扇门已经设置了开门物品：" + lock.requiredItem), false);
+                } else {
+                    serverPlayer.sendMessage(Text.literal("这扇门已安装房间上锁器。请手持开门物品右键设置。"), false);
+                }
+                return ActionResult.SUCCESS;
+            }
+
+            if (lock == null) {
+                return ActionResult.PASS;
+            }
+            lock.normalize();
+            if (!lock.hasRequiredItem()) {
+                if (handStack.isEmpty()) {
+                    serverPlayer.sendMessage(Text.literal("请手持要设置的开门物品右键这扇铁门。"), false);
+                    return ActionResult.SUCCESS;
+                }
+                String itemId = Registries.ITEM.getId(handStack.getItem()).toString();
+                RoomLockStore.setRequiredItem(worldId, doorPos, itemId);
+                serverPlayer.sendMessage(Text.literal("已设置开门物品：" + itemId), false);
+                return ActionResult.SUCCESS;
+            }
+
+            if (!hasItem(serverPlayer, lock.requiredItem, 1)) {
+                serverPlayer.sendMessage(Text.literal("你没有该物品：" + lock.requiredItem), false);
+                return ActionResult.SUCCESS;
+            }
+
+            openIronDoor(serverWorld, doorPos);
+            PENDING_DOOR_CLOSES.put(new DoorKey(worldId, doorPos), serverTicks + ROOM_LOCK_CLOSE_TICKS);
+            return ActionResult.SUCCESS;
+        });
+
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            serverTicks++;
+            PENDING_DOOR_CLOSES.entrySet().removeIf(entry -> {
+                if (entry.getValue() > serverTicks) {
+                    return false;
+                }
+                ServerWorld world = getServerWorld(server, entry.getKey().worldId);
+                if (world != null) {
+                    closeIronDoor(world, entry.getKey().pos);
+                }
+                return true;
+            });
         });
     }
 
@@ -714,6 +799,45 @@ public class FirstMod implements ModInitializer {
         return matchesPhase(interaction);
     }
 
+    private static BlockPos normalizedIronDoorPos(BlockState state, BlockPos pos) {
+        if (!state.isOf(Blocks.IRON_DOOR)) {
+            return null;
+        }
+        return state.get(DoorBlock.HALF) == DoubleBlockHalf.UPPER ? pos.down() : pos;
+    }
+
+    private static void openIronDoor(ServerWorld world, BlockPos lowerPos) {
+        setIronDoorOpen(world, lowerPos, true);
+    }
+
+    private static void closeIronDoor(ServerWorld world, BlockPos lowerPos) {
+        setIronDoorOpen(world, lowerPos, false);
+    }
+
+    private static void setIronDoorOpen(ServerWorld world, BlockPos lowerPos, boolean open) {
+        BlockState lowerState = world.getBlockState(lowerPos);
+        if (!lowerState.isOf(Blocks.IRON_DOOR)) {
+            return;
+        }
+        if (lowerState.get(DoorBlock.OPEN) == open) {
+            return;
+        }
+        world.setBlockState(lowerPos, lowerState.with(DoorBlock.OPEN, open), 3);
+        BlockPos upperPos = lowerPos.up();
+        BlockState upperState = world.getBlockState(upperPos);
+        if (upperState.isOf(Blocks.IRON_DOOR)) {
+            world.setBlockState(upperPos, upperState.with(DoorBlock.OPEN, open), 3);
+        }
+    }
+
+    private static ServerWorld getServerWorld(MinecraftServer server, String worldId) {
+        Identifier identifier = Identifier.tryParse(worldId);
+        if (identifier == null) {
+            return null;
+        }
+        return server.getWorld(RegistryKey.of(RegistryKeys.WORLD, identifier));
+    }
+
     private static boolean matchesItemInteraction(MinigameInteraction interaction, ServerPlayerEntity player, String itemId, String worldId) {
         interaction.normalize();
         if (!"use_item".equals(interaction.trigger.type) || !interaction.trigger.item.equals(itemId)) {
@@ -1022,6 +1146,9 @@ public class FirstMod implements ModInitializer {
 
     private static void feedback(ServerCommandSource source, String message) {
         source.sendFeedback(() -> Text.literal(message), false);
+    }
+
+    private record DoorKey(String worldId, BlockPos pos) {
     }
 
     private static class DialogSession {
