@@ -1,0 +1,177 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "现在是午休柜子区与广播室。我是六谷，我这边能聊的是满分试卷、题目顺序、逻辑漏洞。你想从哪问起？",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:book",
+          "count": 1,
+          "nextNodeId": "special_item"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "cross_0"
+        },
+        {
+          "item": "first_mod:cracked_phone_charm",
+          "count": 1,
+          "nextNodeId": "cross_1"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "普通问话",
+          "nextNodeId": "normal_talk"
+        },
+        {
+          "text": "消耗体力直接推进这条线",
+          "nextNodeId": "push_route",
+          "staminaCost": 1
+        },
+        {
+          "text": "尝试用当前阶段完成这条线",
+          "nextNodeId": "route_action",
+          "staminaCost": 1
+        },
+        {
+          "text": "结束对话",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "normal_talk",
+      "text": "我现在在做的是：用题目确认主角是否真的理解线索。你要是想查，就别只问一句。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "push_route",
+      "text": "你愿意花体力继续问，那我就给你更明确的方向：试卷不是分数问题，而是证明有人提前知道顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "special_item",
+      "text": "你带着这个东西来，说明你不是空口问我。那我可以多说一句：试卷不是分数问题，而是证明有人提前知道顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "顺着特殊线索继续",
+          "nextNodeId": "route_action"
+        },
+        {
+          "text": "先拿普通道具",
+          "nextNodeId": "push_route"
+        }
+      ]
+    },
+    {
+      "id": "cross_0",
+      "text": "你连 first_mod:chipped_attendance_tag 都拿到了？看来你已经接触过别的线了。那我只补我知道的部分：试卷不是分数问题，而是证明有人提前知道顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "把线索接到当前路线",
+          "nextNodeId": "route_action",
+          "staminaCost": 1
+        },
+        {
+          "text": "先离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "cross_1",
+      "text": "你连 first_mod:cracked_phone_charm 都拿到了？看来你已经接触过别的线了。那我只补我知道的部分：试卷不是分数问题，而是证明有人提前知道顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "把线索接到当前路线",
+          "nextNodeId": "route_action",
+          "staminaCost": 1
+        },
+        {
+          "text": "先离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "route_action",
+      "text": "那就答题。第一题内容你后面自己填，答对就继续，答错这条线本轮锁住。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "正确答案占位",
+          "nextNodeId": "quiz_2"
+        },
+        {
+          "text": "错误答案占位",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "quiz_2",
+      "text": "第二题内容你后面自己填。这题答对，我就认你这条线完成。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "正确答案占位",
+          "nextNodeId": "token"
+        },
+        {
+          "text": "错误答案占位",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "token",
+      "text": "行，这条线算你完成。学霸信物给你。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "这次不行。你还有别的路线能走，但我这条线暂时不会再往下说。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

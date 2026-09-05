@@ -1,0 +1,42 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "这一轮到复盘了。我是六谷，你可以问我这轮哪里断了，但信物不会带到下一轮。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "问本轮这条线怎么更快",
+          "nextNodeId": "route_hint"
+        },
+        {
+          "text": "问能保留什么",
+          "nextNodeId": "keep_hint"
+        },
+        {
+          "text": "结束对话",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "route_hint",
+      "text": "下轮你可以直接从满分试卷、题目顺序、逻辑漏洞切入。别等阶段，见到我就能推进。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "keep_hint",
+      "text": "信物不会保留，但像 minecraft:paper 这种普通道具可以作为前置准备。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

@@ -3,110 +3,99 @@
   "nodes": [
     {
       "id": "start",
-      "text": "到这里就别再绕了。把你这一轮拿到的东西给我看。",
-      "nextNodeId": "check_monitor",
-      "conditionJumps": [
-        {
-          "item": "minecraft:book",
-          "count": 1,
-          "nextNodeId": "prepared_review"
-        },
-        {
-          "item": "minecraft:redstone",
-          "count": 1,
-          "nextNodeId": "broadcast_proof"
-        }
-      ],
+      "text": "到办公室检查了。你说自己这一轮走完了，那就把七个学生信物逐个拿出来。",
+      "nextNodeId": "check_0",
+      "conditionJumps": [],
       "rewards": [],
       "choices": []
     },
     {
-      "id": "check_monitor",
-      "text": "先看 BC 的信物。",
+      "id": "check_0",
+      "text": "第 1 个信物，拿出来给我看。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
           "item": "first_mod:chipped_attendance_tag",
           "count": 1,
-          "nextNodeId": "check_athlete"
+          "nextNodeId": "check_1"
         }
       ],
       "rewards": [],
       "choices": []
     },
     {
-      "id": "check_athlete",
-      "text": "再看狗头的信物。",
+      "id": "check_1",
+      "text": "第 2 个信物，拿出来给我看。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
           "item": "first_mod:broken_wristband",
           "count": 1,
-          "nextNodeId": "check_scholar"
+          "nextNodeId": "check_2"
         }
       ],
       "rewards": [],
       "choices": []
     },
     {
-      "id": "check_scholar",
-      "text": "六谷的信物呢？",
+      "id": "check_2",
+      "text": "第 3 个信物，拿出来给我看。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
           "item": "first_mod:broken_exam_paper",
           "count": 1,
-          "nextNodeId": "check_timid"
+          "nextNodeId": "check_3"
         }
       ],
       "rewards": [],
       "choices": []
     },
     {
-      "id": "check_timid",
-      "text": "随小乐的信物也要有。",
+      "id": "check_3",
+      "text": "第 4 个信物，拿出来给我看。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
           "item": "first_mod:crumpled_witness_note",
           "count": 1,
-          "nextNodeId": "check_rich"
+          "nextNodeId": "check_4"
         }
       ],
       "rewards": [],
       "choices": []
     },
     {
-      "id": "check_rich",
-      "text": "孙悟空那边，你处理完了吗？",
+      "id": "check_4",
+      "text": "第 5 个信物，拿出来给我看。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
           "item": "first_mod:cracked_phone_charm",
           "count": 1,
-          "nextNodeId": "check_broadcaster"
+          "nextNodeId": "check_5"
         }
       ],
       "rewards": [],
       "choices": []
     },
     {
-      "id": "check_broadcaster",
-      "text": "赵子龙的信物拿出来。",
+      "id": "check_5",
+      "text": "第 6 个信物，拿出来给我看。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
           "item": "first_mod:stained_paintbrush",
           "count": 1,
-          "nextNodeId": "check_transfer"
+          "nextNodeId": "check_6"
         }
       ],
       "rewards": [],
       "choices": []
     },
     {
-      "id": "check_transfer",
-      "text": "最后，王少栋的信物。",
+      "id": "check_6",
+      "text": "第 7 个信物，拿出来给我看。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -120,7 +109,7 @@
     },
     {
       "id": "complete",
-      "text": "七个都齐了。你这一轮确实走到底了，这个给你。",
+      "text": "七个学生信物都齐了。这一轮你确实完整走到底了，老师信物给你。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -133,36 +122,20 @@
     },
     {
       "id": "missing",
-      "text": "还不够。少一个都不算完成，下一轮重新安排顺序。",
+      "text": "还不够。少一个都不算完成。下一轮别只想着单条线，顺序也要算进去。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
       "choices": [
         {
-          "text": "询问还缺什么方向",
-          "nextNodeId": "missing_hint"
+          "text": "询问下一轮怎么规划",
+          "nextNodeId": "hint"
         }
       ]
     },
     {
-      "id": "prepared_review",
-      "text": "你带着整理好的资料来，说明这一轮不是乱撞。现在开始逐个检查信物。",
-      "nextNodeId": "check_monitor",
-      "conditionJumps": [],
-      "rewards": [],
-      "choices": []
-    },
-    {
-      "id": "broadcast_proof",
-      "text": "广播误导的证据也在？那我会按完整流程查，不会只听某一个人的说法。",
-      "nextNodeId": "check_monitor",
-      "conditionJumps": [],
-      "rewards": [],
-      "choices": []
-    },
-    {
-      "id": "missing_hint",
-      "text": "你缺的不是一句话，是顺序。回想谁需要前置道具，谁必须在午休前解决。",
+      "id": "hint",
+      "text": "先找能给普通道具的人，再用普通道具换特殊对话。信物最后一起结算，不要指望它们跨循环。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
