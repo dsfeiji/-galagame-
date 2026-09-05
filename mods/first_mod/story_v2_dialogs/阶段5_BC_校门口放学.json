@@ -1,0 +1,62 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "BC：放学门口我在清最后一遍名单。你之前没拿到信物，现在是最后补救。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "already"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "最后核对一次。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "问全收集顺序。",
+          "nextNodeId": "hint"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "already",
+      "text": "BC：你已经拿过我的点名牌了。放学阶段别在我这里浪费体力，去补没完成的人。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "token",
+      "text": "BC：行，最后这次算你跟上了。缺角点名牌拿着。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "hint",
+      "text": "BC：全收集别先乱花体力。点名、路线、广播、柜子这四件事要连着看。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "雨哥：现在是第 1 阶段，地点是校门与早自习。每个人这阶段都有自己的对话，不要等到后面才找人。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "问这个阶段怎么推进。",
+          "nextNodeId": "phase"
+        },
+        {
+          "text": "问体力。",
+          "nextNodeId": "stamina"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "phase",
+      "text": "雨哥：单独做线，就盯住一个人把本阶段证据拿到；想全收集，就按点名、路线、广播、柜子的顺序少走重复路。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "stamina",
+      "text": "雨哥：每阶段五点体力。体力空了不是立刻切，当前对话结束后再进下一阶段。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

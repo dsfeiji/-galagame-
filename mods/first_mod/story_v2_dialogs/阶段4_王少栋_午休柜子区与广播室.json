@@ -1,0 +1,129 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "王少栋：柜子里的纸条被人换过位置。你要拿，就和我比谁找得快。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:map",
+          "count": 1,
+          "nextNodeId": "has_map"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "bc_link"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "问空教室路线。",
+          "nextNodeId": "route",
+          "staminaCost": 1
+        },
+        {
+          "text": "问烧焦纸条。",
+          "nextNodeId": "note"
+        },
+        {
+          "text": "抢柜子比一局。",
+          "nextNodeId": "game",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_map",
+      "text": "王少栋：你拿着我画的图还来问？那你应该知道，有人比我更早走过这条路。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "bc_link",
+      "text": "王少栋：BC 的点名牌在你手里？那我承认，我的名字确实不是一开始就在名单上。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "route",
+      "text": "王少栋：从楼梯间绕过去，不经过正门。给你路线图，但别说是我画的。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:map",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "note",
+      "text": "王少栋：纸条烧过一角，剩下的半句话指向柜子区。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "要走纸条。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "比一局。",
+          "nextNodeId": "game",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "game",
+      "text": "王少栋：一分钟，谁先找到更多有效格子，谁拿纸条。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "locker_search_duel",
+        "title": "空教室对抗：王少栋",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "lose",
+        "rounds": 60,
+        "winClickLead": 1
+      }
+    },
+    {
+      "id": "token",
+      "text": "王少栋：烧焦纸条给你。你别以为拿到它就懂我了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:burnt_note",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "王少栋：这次我先收着。你还能从 BC 或孙悟空那边绕回来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

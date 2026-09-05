@@ -1,0 +1,92 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "BC：午休柜子区没人看着，但这不代表没人记得。你要我的信物，现在还有机会。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:compass",
+          "count": 1,
+          "nextNodeId": "ready"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "帮你重新清一次名单。",
+          "nextNodeId": "memory",
+          "staminaCost": 1
+        },
+        {
+          "text": "我已经知道柜子区空档。",
+          "nextNodeId": "ready"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "ready",
+      "text": "BC：那就不用绕了。你说出六个被调动过的人，我给你缺角点名牌。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始记忆翻牌。",
+          "nextNodeId": "memory",
+          "staminaCost": 1
+        },
+        {
+          "text": "直接说明顺序。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "text": "BC：最后一次。还是十五格，六个发光格。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "memory_flip_duel",
+        "title": "记忆翻牌：BC",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "lose",
+        "previewTicks": 50,
+        "rounds": 6,
+        "columns": 5,
+        "targetCount": 6
+      }
+    },
+    {
+      "id": "token",
+      "text": "BC：缺角点名牌给你。它证明班长线完成，但不会带到下一轮。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "BC：这次错了，我不会再让你碰名单。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

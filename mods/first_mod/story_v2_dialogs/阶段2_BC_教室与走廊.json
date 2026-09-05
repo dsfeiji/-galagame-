@@ -1,0 +1,95 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "BC：走廊现在最乱。你要查我这条线，就记住我刚才巡过的六个人。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:paper",
+          "count": 1,
+          "nextNodeId": "prepared"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "我现在记。",
+          "nextNodeId": "memory",
+          "staminaCost": 1
+        },
+        {
+          "text": "我想问王少栋。",
+          "nextNodeId": "transfer"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "prepared",
+      "text": "BC：你还留着点名册纸角？好，那你不是临时起意。直接开始记忆翻牌，赢了我给你看原名单。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始。",
+          "nextNodeId": "memory",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "transfer",
+      "text": "BC：王少栋不是最大的问题，最大的问题是谁给他留了位置。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "memory",
+      "text": "BC：十五个格子里有六个发光格子。找出来，别点错。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "memory_flip_duel",
+        "title": "记忆翻牌：BC",
+        "durationTicks": 1200,
+        "successNodeId": "win",
+        "failureNodeId": "lose",
+        "previewTicks": 50,
+        "rounds": 6,
+        "columns": 5,
+        "targetCount": 6
+      }
+    },
+    {
+      "id": "win",
+      "text": "BC：你记得比我想得清楚。原名单确实少了一格，午休前去柜子区能接上。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:compass",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "BC：错了。你这阶段还能继续查别人，我这边等下一次机会。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

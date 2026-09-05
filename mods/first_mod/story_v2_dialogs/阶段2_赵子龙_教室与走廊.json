@@ -1,0 +1,118 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "赵子龙：走廊乱，是因为大家都在等广播。等声音的人，会暴露习惯。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1,
+          "nextNodeId": "has_note"
+        },
+        {
+          "item": "first_mod:crumpled_witness_note",
+          "count": 1,
+          "nextNodeId": "witness_link"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "挑战节奏对抗。",
+          "nextNodeId": "rhythm",
+          "staminaCost": 1
+        },
+        {
+          "text": "请你晚播十秒。",
+          "nextNodeId": "delay",
+          "staminaCost": 1
+        },
+        {
+          "text": "问广播前后谁动了。",
+          "nextNodeId": "timing"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_note",
+      "text": "赵子龙：音符盒在你手上？那你知道节奏比内容重要。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "witness_link",
+      "text": "赵子龙：随小乐愿意写证词？那广播遮住脚步这件事就坐实了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "timing",
+      "text": "赵子龙：试音前没人动，试音后有人从楼梯间出来。正式广播只是把怀疑打散。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "delay",
+      "text": "赵子龙：我可以晚播十秒。十秒不多，但够一条线接上。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:note_block",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "rhythm",
+      "text": "赵子龙：点中有效区就换下一条，位置和宽度都随机。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "rhythm_duel",
+        "title": "节奏对抗：赵子龙",
+        "durationTicks": 1200,
+        "successNodeId": "win",
+        "failureNodeId": "lose",
+        "rounds": 60,
+        "winClickLead": 1
+      }
+    },
+    {
+      "id": "win",
+      "text": "赵子龙：跟上了。带痕画笔给你，别问它为什么在广播室。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:stained_paintbrush",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "赵子龙：慢了。听见声音和抓住节奏是两回事。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

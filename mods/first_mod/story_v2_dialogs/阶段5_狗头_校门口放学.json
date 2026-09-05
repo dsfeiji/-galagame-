@@ -1,0 +1,80 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：放学了。你还没拿护腕？最后一次，不绕。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1,
+          "nextNodeId": "already"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "最后扳一次。",
+          "nextNodeId": "arm",
+          "staminaCost": 1
+        },
+        {
+          "text": "直接要护腕。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "already",
+      "text": "狗头：护腕已经给你了，别在我这拖时间。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "arm",
+      "text": "狗头：最后一次。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：放学",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "lose",
+        "pushPerClick": 0.06,
+        "winProgress": 1.0
+      }
+    },
+    {
+      "id": "token",
+      "text": "狗头：拿着。今天就到这。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "狗头：到点了，下一轮再来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

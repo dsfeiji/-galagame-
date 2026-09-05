@@ -1,0 +1,48 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "BC：你来得正好。今天点名册有两处擦痕，我一个人查不完。你要帮，就从名字顺序开始。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "我帮你核对点名册。",
+          "nextNodeId": "help",
+          "staminaCost": 1
+        },
+        {
+          "text": "哪两处不对？",
+          "nextNodeId": "ask"
+        },
+        {
+          "text": "先不管。",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "help",
+      "text": "BC：随小乐的名字旁边被擦过，王少栋的名字像是后来补上去的。这个纸角你拿着，之后查到东西再回来对。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "ask",
+      "text": "BC：我只能说，名单不是今天早上才出问题。有人希望大家以为顺序从一开始就是这样。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

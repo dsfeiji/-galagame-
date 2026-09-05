@@ -1,0 +1,112 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "六谷：第 4 阶段，你还能继续问我。我的线不等别人，但你必须答对逻辑。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:book",
+          "count": 1,
+          "nextNodeId": "prepared"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "bc_link"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始答题。",
+          "nextNodeId": "q",
+          "staminaCost": 1
+        },
+        {
+          "text": "问破损试卷。",
+          "nextNodeId": "paper"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "prepared",
+      "text": "六谷：资料书还在，说明你记得前面的题。那就直接问关键题。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "回答关键题。",
+          "nextNodeId": "q",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "bc_link",
+      "text": "六谷：BC 的点名牌能证明顺序被动过，这和我的试卷能接上。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "paper",
+      "text": "六谷：试卷被撕掉的一角，对应的是还没发生的顺序。你要拿它，就先答题。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "答题。",
+          "nextNodeId": "q",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "q",
+      "text": "六谷：第四题。柜子区和广播室同时异常，说明什么？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "有人把人流和物品放在一起设计。",
+          "nextNodeId": "win"
+        },
+        {
+          "text": "午休太吵了。",
+          "nextNodeId": "fail"
+        }
+      ]
+    },
+    {
+      "id": "win",
+      "text": "六谷：答对了。这个证据给你。越到后面，它越能直接指向完整答案。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "六谷：错。我的线可以单独完成，但不能靠猜。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

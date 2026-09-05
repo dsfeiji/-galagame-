@@ -1,0 +1,86 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：走廊别挡我。体育课前器材室会开，那时候才是真机会。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:leather",
+          "count": 1,
+          "nextNodeId": "trusted"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "让你帮我看门。",
+          "nextNodeId": "guard",
+          "staminaCost": 1
+        },
+        {
+          "text": "再比一次。",
+          "nextNodeId": "arm",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "trusted",
+      "text": "狗头：护手皮还在？行，我信你一次。器材室开门时我能替你挡一分钟。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "拜托你看门。",
+          "nextNodeId": "guard",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "text": "狗头：一分钟。你进去只能拿一个东西，别贪。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:string",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "arm",
+      "text": "狗头：赢我，我就不问你为什么要进器材室。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：器材室",
+        "durationTicks": 1200,
+        "successNodeId": "guard",
+        "failureNodeId": "lose",
+        "pushPerClick": 0.06,
+        "winProgress": 1.0
+      }
+    },
+    {
+      "id": "lose",
+      "text": "狗头：今天这阶段你别想从我这边进器材室。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

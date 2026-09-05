@@ -1,0 +1,119 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "随小乐：放学门口人多，我终于敢把证词交给你。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:string",
+          "count": 1,
+          "nextNodeId": "gentle"
+        },
+        {
+          "item": "first_mod:stained_paintbrush",
+          "count": 1,
+          "nextNodeId": "broadcast_link"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "慢慢说，我不逼你。",
+          "nextNodeId": "comfort"
+        },
+        {
+          "text": "直接问你看见谁。",
+          "nextNodeId": "pressure",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "gentle",
+      "text": "随小乐：你还留着那根线？那我知道你真的查过楼梯。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "broadcast_link",
+      "text": "随小乐：赵子龙也说了广播？那我没记错，声音确实遮住了脚步。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "comfort",
+      "text": "随小乐：我可以写下来，但你别把我的名字说出去。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "请她写证词。",
+          "nextNodeId": "note",
+          "staminaCost": 1
+        },
+        {
+          "text": "继续问细节。",
+          "nextNodeId": "detail"
+        }
+      ]
+    },
+    {
+      "id": "pressure",
+      "text": "随小乐：你这样问我会乱。再逼我，我什么都不会说。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "道歉。",
+          "nextNodeId": "comfort"
+        },
+        {
+          "text": "继续逼问。",
+          "nextNodeId": "fail",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "detail",
+      "text": "随小乐：顺序是脚步、试音、关门。这个顺序很重要。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "note",
+      "text": "随小乐：给你。纸有点皱，但我写的是真的。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:crumpled_witness_note",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "fail",
+      "text": "随小乐：别问了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

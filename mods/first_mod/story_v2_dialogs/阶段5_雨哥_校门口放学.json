@@ -3,22 +3,18 @@
   "nodes": [
     {
       "id": "start",
-      "text": "雨哥：今天按五个阶段走：校门、教室、操场、午休、放学。你可以单独查任何一条线，也可以试着一轮全收。",
+      "text": "雨哥：放学了。单独完成的线，到这里可以最后补信物；如果你说自己全收集，那就交七个学生信物。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
       "choices": [
         {
-          "text": "询问五个阶段。",
-          "nextNodeId": "phase_info"
-        },
-        {
-          "text": "我已经集齐七个学生信物。",
+          "text": "提交七个学生信物。",
           "nextNodeId": "check_0"
         },
         {
-          "text": "询问体力安排。",
-          "nextNodeId": "stamina"
+          "text": "问放学补线。",
+          "nextNodeId": "hint"
         },
         {
           "text": "离开",
@@ -27,16 +23,8 @@
       ]
     },
     {
-      "id": "phase_info",
-      "text": "雨哥：最后不是办公室检查，是校门口放学。放学阶段仍然能补线，但信物不会留到下一轮。",
-      "nextNodeId": "",
-      "conditionJumps": [],
-      "rewards": [],
-      "choices": []
-    },
-    {
-      "id": "stamina",
-      "text": "雨哥：每个阶段五点体力。单独做一条线够用，想全收就要少走重复选择。体力空了，当前对话结束后才进下一阶段。",
+      "id": "hint",
+      "text": "雨哥：放学是最后阶段。没完成的人现在还能补，但出了校门就进入下一轮。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
@@ -44,7 +32,7 @@
     },
     {
       "id": "check_0",
-      "text": "雨哥：第 1 个信物，拿出来。少一个都不算你走完这一轮。",
+      "text": "雨哥：第 1 个学生信物，拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -58,7 +46,7 @@
     },
     {
       "id": "check_1",
-      "text": "雨哥：第 2 个信物，拿出来。少一个都不算你走完这一轮。",
+      "text": "雨哥：第 2 个学生信物，拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -72,7 +60,7 @@
     },
     {
       "id": "check_2",
-      "text": "雨哥：第 3 个信物，拿出来。少一个都不算你走完这一轮。",
+      "text": "雨哥：第 3 个学生信物，拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -86,7 +74,7 @@
     },
     {
       "id": "check_3",
-      "text": "雨哥：第 4 个信物，拿出来。少一个都不算你走完这一轮。",
+      "text": "雨哥：第 4 个学生信物，拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -100,7 +88,7 @@
     },
     {
       "id": "check_4",
-      "text": "雨哥：第 5 个信物，拿出来。少一个都不算你走完这一轮。",
+      "text": "雨哥：第 5 个学生信物，拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -114,7 +102,7 @@
     },
     {
       "id": "check_5",
-      "text": "雨哥：第 6 个信物，拿出来。少一个都不算你走完这一轮。",
+      "text": "雨哥：第 6 个学生信物，拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -128,7 +116,7 @@
     },
     {
       "id": "check_6",
-      "text": "雨哥：第 7 个信物，拿出来。少一个都不算你走完这一轮。",
+      "text": "雨哥：第 7 个学生信物，拿出来。",
       "nextNodeId": "missing",
       "conditionJumps": [
         {
@@ -142,7 +130,7 @@
     },
     {
       "id": "complete",
-      "text": "雨哥：七个学生信物都在同一轮里集齐了。现在给你老师信物。下一轮开始前，记住哪些普通道具能保留。",
+      "text": "雨哥：七个学生信物都在同一轮里集齐了。老师信物给你。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [
@@ -155,7 +143,7 @@
     },
     {
       "id": "missing",
-      "text": "雨哥：还不够。你可以单独完成其中一条学生线，但要拿我的信物，必须这一轮七条线都成。",
+      "text": "雨哥：还差。单条线完成不等于全收集，少一个都不能拿老师信物。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

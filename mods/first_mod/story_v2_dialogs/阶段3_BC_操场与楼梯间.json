@@ -1,0 +1,76 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "BC：操场集合时，我会离开教室门口。有人就是等这个空档。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:compass",
+          "count": 1,
+          "nextNodeId": "has_compass"
+        },
+        {
+          "item": "first_mod:burnt_note",
+          "count": 1,
+          "nextNodeId": "has_transfer"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "我去确认空档。",
+          "nextNodeId": "gap",
+          "staminaCost": 1
+        },
+        {
+          "text": "谁会利用空档？",
+          "nextNodeId": "who"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_compass",
+      "text": "BC：你拿着巡查指针，就能知道我什么时候不在门口。别浪费，这阶段就能把线推进到底。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "锁定空档。",
+          "nextNodeId": "gap",
+          "staminaCost": 1
+        }
+      ]
+    },
+    {
+      "id": "has_transfer",
+      "text": "BC：王少栋那张烧焦纸条说明他知道空教室，但改名单的人还没露面。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "gap",
+      "text": "BC：广播试音后，我会去操场清人。那一分钟，教室和柜子区都没人盯。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "who",
+      "text": "BC：能利用空档的人，必须同时知道点名、广播和柜子。你已经碰到不止一条线了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

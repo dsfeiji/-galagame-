@@ -1,0 +1,92 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：操场集合了。你现在查我这条线正合适，错过就只能放学补。",
+      "nextNodeId": "",
+      "conditionJumps": [
+        {
+          "item": "minecraft:string",
+          "count": 1,
+          "nextNodeId": "has_string"
+        },
+        {
+          "item": "first_mod:stained_paintbrush",
+          "count": 1,
+          "nextNodeId": "broadcast"
+        }
+      ],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "安排器材意外。",
+          "nextNodeId": "setup",
+          "staminaCost": 1
+        },
+        {
+          "text": "问广播为什么支开你。",
+          "nextNodeId": "broadcast"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "has_string",
+      "text": "狗头：你拿到旧绳了？那就能知道器材不是自然断的。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "broadcast",
+      "text": "狗头：广播一响，我会去操场另一边。有人知道我的习惯。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "setup",
+      "text": "狗头：你要我承认这条线，就再赢我一次。赢了，断裂护腕归你。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：最终",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "lose",
+        "pushPerClick": 0.06,
+        "winProgress": 1.0
+      }
+    },
+    {
+      "id": "token",
+      "text": "狗头：断裂护腕给你。别说是我输给你的。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "狗头：输了就别提护腕。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

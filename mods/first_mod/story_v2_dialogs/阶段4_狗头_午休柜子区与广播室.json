@@ -1,0 +1,66 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：午休我不在柜子区，但器材室的事已经能收尾。你要补，就现在补。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "最后比一次。",
+          "nextNodeId": "arm",
+          "staminaCost": 1
+        },
+        {
+          "text": "用旧绳说明问题。",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "arm",
+      "text": "狗头：来，到头结束。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：补救",
+        "durationTicks": 1200,
+        "successNodeId": "token",
+        "failureNodeId": "lose",
+        "pushPerClick": 0.06,
+        "winProgress": 1.0
+      }
+    },
+    {
+      "id": "token",
+      "text": "狗头：行，护腕给你。这条线算你完成。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "狗头：这阶段没了。放学还可以最后问一次。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}

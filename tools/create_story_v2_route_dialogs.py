@@ -13,13 +13,13 @@ README = MOD_DIR / "story_v2_README.md"
 ZIP_PATH = MOD_DIR / "story_v2_json_pack.zip"
 
 
-PHASES = [
-    "校门与早自习",
-    "教室与走廊",
-    "操场与楼梯间",
-    "午休柜子区与广播室",
-    "校门口放学",
-]
+PHASES = {
+    1: "校门与早自习",
+    2: "教室与走廊",
+    3: "操场与楼梯间",
+    4: "午休柜子区与广播室",
+    5: "校门口放学",
+}
 
 TOKENS = {
     "monitor_bc": "first_mod:chipped_attendance_tag",
@@ -32,7 +32,18 @@ TOKENS = {
     "teacher_yuge": "minecraft:nether_star",
 }
 
-ROLE_NAMES = {
+VANILLA = {
+    "monitor_bc": "minecraft:paper",
+    "athlete_goutou": "minecraft:leather",
+    "scholar_liugu": "minecraft:book",
+    "timid_suixiaole": "minecraft:string",
+    "rich_sunwukong": "minecraft:emerald",
+    "broadcaster_zhaozilong": "minecraft:note_block",
+    "transfer_wangshaodong": "minecraft:map",
+}
+
+ROLES = {
+    "teacher_yuge": "雨哥",
     "monitor_bc": "BC",
     "athlete_goutou": "狗头",
     "scholar_liugu": "六谷",
@@ -40,7 +51,6 @@ ROLE_NAMES = {
     "rich_sunwukong": "孙悟空",
     "broadcaster_zhaozilong": "赵子龙",
     "transfer_wangshaodong": "王少栋",
-    "teacher_yuge": "雨哥",
 }
 
 
@@ -78,7 +88,7 @@ def tree(nodes):
 
 
 def minigame(kind, title, success, failure):
-    base = {
+    data = {
         "type": kind,
         "title": title,
         "durationTicks": 1200,
@@ -86,213 +96,258 @@ def minigame(kind, title, success, failure):
         "failureNodeId": failure,
     }
     if kind == "arm_wrestle":
-        base.update({"pushPerClick": 0.06, "winProgress": 1.0})
+        data.update({"pushPerClick": 0.06, "winProgress": 1.0})
     elif kind == "memory_flip_duel":
-        base.update({"previewTicks": 50, "rounds": 6, "columns": 5, "targetCount": 6})
-    elif kind == "locker_search_duel":
-        base.update({"rounds": 60, "winClickLead": 1})
-    elif kind == "rhythm_duel":
-        base.update({"rounds": 60, "winClickLead": 1})
-    return base
+        data.update({"previewTicks": 50, "rounds": 6, "columns": 5, "targetCount": 6})
+    elif kind in {"locker_search_duel", "rhythm_duel"}:
+        data.update({"rounds": 60, "winClickLead": 1})
+    return data
 
 
-def monitor_bc():
+def student_dialog(role_id, phase):
+    name = ROLES[role_id]
+    if role_id == "monitor_bc":
+        return bc_dialog(phase)
+    if role_id == "athlete_goutou":
+        return goutou_dialog(phase)
+    if role_id == "scholar_liugu":
+        return liugu_dialog(phase)
+    if role_id == "timid_suixiaole":
+        return suixiaole_dialog(phase)
+    if role_id == "rich_sunwukong":
+        return sunwukong_dialog(phase)
+    if role_id == "broadcaster_zhaozilong":
+        return zhaozilong_dialog(phase)
+    if role_id == "transfer_wangshaodong":
+        return wangshaodong_dialog(phase)
+    raise ValueError(f"unknown role {name}")
+
+
+def bc_dialog(phase):
+    if phase == 1:
+        return tree([
+            node("start", "BC：你来得正好。今天点名册有两处擦痕，我一个人查不完。你要帮，就从名字顺序开始。",
+                 choices=[choice("我帮你核对点名册。", "help", 1), choice("哪两处不对？", "ask"), choice("先不管。", "")]),
+            node("help", "BC：随小乐的名字旁边被擦过，王少栋的名字像是后来补上去的。这个纸角你拿着，之后查到东西再回来对。", rewards=[reward(VANILLA["monitor_bc"])]),
+            node("ask", "BC：我只能说，名单不是今天早上才出问题。有人希望大家以为顺序从一开始就是这样。"),
+        ])
+    if phase == 2:
+        return tree([
+            node("start", "BC：走廊现在最乱。你要查我这条线，就记住我刚才巡过的六个人。",
+                 jumps=[jump(VANILLA["monitor_bc"], "prepared")],
+                 choices=[choice("我现在记。", "memory", 1), choice("我想问王少栋。", "transfer"), choice("离开", "")]),
+            node("prepared", "BC：你还留着点名册纸角？好，那你不是临时起意。直接开始记忆翻牌，赢了我给你看原名单。", choices=[choice("开始。", "memory", 1)]),
+            node("transfer", "BC：王少栋不是最大的问题，最大的问题是谁给他留了位置。"),
+            node("memory", "BC：十五个格子里有六个发光格子。找出来，别点错。", minigame=minigame("memory_flip_duel", "记忆翻牌：BC", "win", "lose")),
+            node("win", "BC：你记得比我想得清楚。原名单确实少了一格，午休前去柜子区能接上。", rewards=[reward("minecraft:compass")]),
+            node("lose", "BC：错了。你这阶段还能继续查别人，我这边等下一次机会。"),
+        ])
+    if phase == 3:
+        return tree([
+            node("start", "BC：操场集合时，我会离开教室门口。有人就是等这个空档。",
+                 jumps=[jump("minecraft:compass", "has_compass"), jump(TOKENS["transfer_wangshaodong"], "has_transfer")],
+                 choices=[choice("我去确认空档。", "gap", 1), choice("谁会利用空档？", "who"), choice("离开", "")]),
+            node("has_compass", "BC：你拿着巡查指针，就能知道我什么时候不在门口。别浪费，这阶段就能把线推进到底。", choices=[choice("锁定空档。", "gap", 1)]),
+            node("has_transfer", "BC：王少栋那张烧焦纸条说明他知道空教室，但改名单的人还没露面。"),
+            node("gap", "BC：广播试音后，我会去操场清人。那一分钟，教室和柜子区都没人盯。"),
+            node("who", "BC：能利用空档的人，必须同时知道点名、广播和柜子。你已经碰到不止一条线了。"),
+        ])
+    if phase == 4:
+        return tree([
+            node("start", "BC：午休柜子区没人看着，但这不代表没人记得。你要我的信物，现在还有机会。",
+                 jumps=[jump("minecraft:compass", "ready")],
+                 choices=[choice("帮你重新清一次名单。", "memory", 1), choice("我已经知道柜子区空档。", "ready"), choice("离开", "")]),
+            node("ready", "BC：那就不用绕了。你说出六个被调动过的人，我给你缺角点名牌。", choices=[choice("开始记忆翻牌。", "memory", 1), choice("直接说明顺序。", "token", 1)]),
+            node("memory", "BC：最后一次。还是十五格，六个发光格。", minigame=minigame("memory_flip_duel", "记忆翻牌：BC", "token", "lose")),
+            node("token", "BC：缺角点名牌给你。它证明班长线完成，但不会带到下一轮。", rewards=[reward(TOKENS["monitor_bc"])]),
+            node("lose", "BC：这次错了，我不会再让你碰名单。"),
+        ])
     return tree([
-        node("start", "BC：你又迟到了？名单上每个人的位置我都记着。你想问事可以，但别挡着我点名。",
-             jumps=[jump("minecraft:map", "has_route_map"), jump(TOKENS["transfer_wangshaodong"], "has_transfer_token")],
-             choices=[
-                 choice("帮你核对名单。", "help_roster", 1),
-                 choice("我想知道谁的名字不对。", "ask_name"),
-                 choice("放学前我再来找你。", "after_school"),
-                 choice("离开", ""),
-             ]),
-        node("has_route_map", "BC：路线图？王少栋给你的？他刚来，却比班里很多人还清楚空教室在哪。你最好别只盯着他，也看看谁在替他改记录。",
-             choices=[choice("继续查点名册。", "help_roster", 1), choice("追问改记录的人。", "ask_name")]),
-        node("has_transfer_token", "BC：你已经拿到王少栋那边的东西了？那我没必要继续装不知道。点名册确实被动过，动的人不是老师。",
-             choices=[choice("让我看看原来的名单。", "memory_intro", 1), choice("先离开", "")]),
-        node("help_roster", "BC：行，你念名字，我划勾。等等，随小乐这一栏被擦过，王少栋这一栏是后来补的。你看见了吗？",
-             choices=[choice("看见了，继续往下核。", "memory_intro", 1), choice("这是谁补的？", "ask_name")]),
-        node("ask_name", "BC：我不能直接说。你要是能记住我刚才划过的顺序，我就把缺角的点名牌给你。记错了，我就当你只是在捣乱。",
-             choices=[choice("开始记忆翻牌。", "memory_intro", 1), choice("我先去找随小乐。", "hint_suixiaole")]),
-        node("hint_suixiaole", "BC：随小乐怕事，但她不会乱说。别逼她，逼急了她只会躲起来。"),
-        node("memory_intro", "BC：十五个格子里有六个是我刚才点过的人。你只要把那六个找出来，我就承认你能帮上忙。",
-             minigame=minigame("memory_flip_duel", "记忆翻牌：BC", "token", "fail")),
-        node("token", "BC：好，你确实记住了。这个缺角点名牌你拿着。它只能证明我这条线，不会替你解决其他人的麻烦。",
-             rewards=[reward(TOKENS["monitor_bc"])]),
-        node("fail", "BC：错了。你现在问我什么，我都会按普通迟到处理。想单独做我这条线，下一轮从点名开始重来。"),
-        node("after_school", "BC：放学门口我还会清一次名单。那时候如果你什么都没查到，我也只能把你当成普通路过的人。"),
+        node("start", "BC：放学门口我在清最后一遍名单。你之前没拿到信物，现在是最后补救。",
+             jumps=[jump(TOKENS["monitor_bc"], "already")],
+             choices=[choice("最后核对一次。", "token", 1), choice("问全收集顺序。", "hint"), choice("离开", "")]),
+        node("already", "BC：你已经拿过我的点名牌了。放学阶段别在我这里浪费体力，去补没完成的人。"),
+        node("token", "BC：行，最后这次算你跟上了。缺角点名牌拿着。", rewards=[reward(TOKENS["monitor_bc"])]),
+        node("hint", "BC：全收集别先乱花体力。点名、路线、广播、柜子这四件事要连着看。"),
     ])
 
 
-def athlete_goutou():
+def goutou_dialog(phase):
+    if phase == 1:
+        return tree([
+            node("start", "狗头：早上就找我？我还没热完身。想让我认你，先别光说。",
+                 choices=[choice("比一次扳手腕。", "arm", 1), choice("问器材室。", "room"), choice("离开", "")]),
+            node("arm", "狗头：两边一起点，推到头就赢。", minigame=minigame("arm_wrestle", "扳手腕：狗头", "win", "lose")),
+            node("win", "狗头：行，你有劲。护手皮给你，后面找我别再从头解释。", rewards=[reward(VANILLA["athlete_goutou"])]),
+            node("lose", "狗头：手太软。要查我这条线，后面还得再来。"),
+            node("room", "狗头：器材室早上没开，但我看见有人盯着钥匙箱。"),
+        ])
+    if phase == 2:
+        return tree([
+            node("start", "狗头：走廊别挡我。体育课前器材室会开，那时候才是真机会。",
+                 jumps=[jump(VANILLA["athlete_goutou"], "trusted")],
+                 choices=[choice("让你帮我看门。", "guard", 1), choice("再比一次。", "arm", 1), choice("离开", "")]),
+            node("trusted", "狗头：护手皮还在？行，我信你一次。器材室开门时我能替你挡一分钟。", choices=[choice("拜托你看门。", "guard", 1)]),
+            node("guard", "狗头：一分钟。你进去只能拿一个东西，别贪。", rewards=[reward("minecraft:string")]),
+            node("arm", "狗头：赢我，我就不问你为什么要进器材室。", minigame=minigame("arm_wrestle", "扳手腕：器材室", "guard", "lose")),
+            node("lose", "狗头：今天这阶段你别想从我这边进器材室。"),
+        ])
+    if phase == 3:
+        return tree([
+            node("start", "狗头：操场集合了。你现在查我这条线正合适，错过就只能放学补。",
+                 jumps=[jump("minecraft:string", "has_string"), jump(TOKENS["broadcaster_zhaozilong"], "broadcast")],
+                 choices=[choice("安排器材意外。", "setup", 1), choice("问广播为什么支开你。", "broadcast"), choice("离开", "")]),
+            node("has_string", "狗头：你拿到旧绳了？那就能知道器材不是自然断的。"),
+            node("broadcast", "狗头：广播一响，我会去操场另一边。有人知道我的习惯。"),
+            node("setup", "狗头：你要我承认这条线，就再赢我一次。赢了，断裂护腕归你。", minigame=minigame("arm_wrestle", "扳手腕：最终", "token", "lose")),
+            node("token", "狗头：断裂护腕给你。别说是我输给你的。", rewards=[reward(TOKENS["athlete_goutou"])]),
+            node("lose", "狗头：输了就别提护腕。"),
+        ])
+    if phase == 4:
+        return tree([
+            node("start", "狗头：午休我不在柜子区，但器材室的事已经能收尾。你要补，就现在补。",
+                 choices=[choice("最后比一次。", "arm", 1), choice("用旧绳说明问题。", "token", 1), choice("离开", "")]),
+            node("arm", "狗头：来，到头结束。", minigame=minigame("arm_wrestle", "扳手腕：补救", "token", "lose")),
+            node("token", "狗头：行，护腕给你。这条线算你完成。", rewards=[reward(TOKENS["athlete_goutou"])]),
+            node("lose", "狗头：这阶段没了。放学还可以最后问一次。"),
+        ])
     return tree([
-        node("start", "狗头：找我？先说好，别绕弯。操场的事用嘴说没用，谁手稳谁说了算。",
-             jumps=[jump("minecraft:leather", "has_grip"), jump(TOKENS["broadcaster_zhaozilong"], "has_broadcast_token")],
-             choices=[
-                 choice("扳手腕，赢了你让路。", "arm_intro", 1),
-                 choice("我想知道器材室谁动过。", "equipment"),
-                 choice("放学时你会去哪里？", "after_school"),
-                 choice("离开", ""),
-             ]),
-        node("has_grip", "狗头：你还留着那块护手皮？行，说明你不是第一次找我。少废话，直接来。",
-             choices=[choice("开始扳手腕。", "arm_intro", 1), choice("问器材室。", "equipment")]),
-        node("has_broadcast_token", "狗头：赵子龙那边你也碰过？怪不得广播一响就有人把我支开。你想查器材室，就别让广播乱响。",
-             choices=[choice("让你帮我堵住器材室门。", "block_door", 1), choice("还是比一次。", "arm_intro", 1)]),
-        node("equipment", "狗头：器材室少了一截旧绳和一个护腕。我没拿。谁拿的我不敢保证，但那人知道体育课集合前没人看门。",
-             choices=[choice("我需要你帮我拖住集合。", "block_door", 1), choice("用比赛决定。", "arm_intro", 1)]),
-        node("block_door", "狗头：可以。我站门口一分钟，够你进去看一眼。超过一分钟，我不替你背锅。",
-             choices=[choice("拿走断裂护腕。", "token", 1), choice("算了", "")]),
-        node("arm_intro", "狗头：规则简单，两边一起点。进度条推到对面那头就赢。别看字，看手。",
-             minigame=minigame("arm_wrestle", "扳手腕：狗头", "arm_win", "arm_lose")),
-        node("arm_win", "狗头：行，你手比我稳。器材室的门我替你挡一下，断掉的护腕你拿走。",
-             choices=[choice("拿走断裂护腕。", "token")]),
-        node("arm_lose", "狗头：你输了。今天我不会给你让路，但你还能从广播或柜子那边绕。"),
-        node("token", "狗头：这东西算我的。拿了就别到处说是我给的。",
-             rewards=[reward(TOKENS["athlete_goutou"])]),
-        node("after_school", "狗头：放学我走操场侧门。你要那时候找我，也行，但别指望我还陪你耗体力。"),
+        node("start", "狗头：放学了。你还没拿护腕？最后一次，不绕。",
+             jumps=[jump(TOKENS["athlete_goutou"], "already")],
+             choices=[choice("最后扳一次。", "arm", 1), choice("直接要护腕。", "token", 1), choice("离开", "")]),
+        node("already", "狗头：护腕已经给你了，别在我这拖时间。"),
+        node("arm", "狗头：最后一次。", minigame=minigame("arm_wrestle", "扳手腕：放学", "token", "lose")),
+        node("token", "狗头：拿着。今天就到这。", rewards=[reward(TOKENS["athlete_goutou"])]),
+        node("lose", "狗头：到点了，下一轮再来。"),
     ])
 
 
-def scholar_liugu():
+def liugu_dialog(phase):
+    questions = {
+        1: ("六谷：第一题。被补进点名册的名字，说明什么？", "有人改过行动顺序。", "只是笔迹不好。"),
+        2: ("六谷：第二题。广播晚十秒，最容易改变什么？", "某个人在场的时间。", "作业本的数量。"),
+        3: ("六谷：第三题。破损试卷缺的不是答案，而是什么？", "事件顺序。", "老师签名。"),
+        4: ("六谷：第四题。柜子区和广播室同时异常，说明什么？", "有人把人流和物品放在一起设计。", "午休太吵了。"),
+        5: ("六谷：最后一题。单独完成一条线最重要的是什么？", "在每阶段接住本角色给出的证据。", "等所有人都出事再问。"),
+    }
+    q, good, bad = questions[phase]
+    reward_item = TOKENS["scholar_liugu"] if phase >= 4 else VANILLA["scholar_liugu"]
     return tree([
-        node("start", "六谷：你要问线索，可以。先证明你听得懂逻辑。错一次，我就不会继续浪费时间。",
-             jumps=[jump("minecraft:book", "has_book"), jump(TOKENS["monitor_bc"], "has_bc_token")],
-             choices=[
-                 choice("开始知识问答。", "q1", 1),
-                 choice("问满分试卷。", "paper"),
-                 choice("放学前能不能补问？", "after_school"),
-                 choice("离开", ""),
-             ]),
-        node("has_book", "六谷：你带了资料书？那我跳过第一题。第二题开始，别靠猜。",
-             choices=[choice("回答第二题。", "q2", 1), choice("问试卷。", "paper")]),
-        node("has_bc_token", "六谷：BC 的点名牌在你手里？那名单被改这件事就能和试卷顺序连起来了。你问吧。",
-             choices=[choice("问试卷顺序。", "paper"), choice("直接做最后一题。", "q3", 1)]),
-        node("q1", "六谷：第一题。点名册上后来补进去的名字，最可能说明什么？",
-             choices=[choice("有人试图改掉当天的行动顺序。", "q2"), choice("只是老师写错了名字。", "fail")]),
-        node("q2", "六谷：第二题。如果广播让所有人晚到十秒，最容易被伪装的是什么？",
-             choices=[choice("一个人原本不该出现的位置。", "q3"), choice("一张试卷的分数。", "fail")]),
-        node("q3", "六谷：最后一题。破损试卷真正能证明的，不是分数，而是什么？",
-             choices=[choice("有人提前知道还没发生的顺序。", "quiz_win"), choice("六谷故意藏了答案。", "fail")]),
-        node("quiz_win", "六谷：你不是来抄答案的。破掉的试卷给你，它能证明有人提前知道顺序。",
-             rewards=[reward(TOKENS["scholar_liugu"])]),
-        node("paper", "六谷：满分试卷不是重点，重点是它被撕掉的那一角。那一角对应的是今天还没发生的题目顺序。",
-             choices=[choice("继续追问。", "q2", 1), choice("先离开", "")]),
-        node("fail", "六谷：错了。你现在问下去只会制造噪音。想单独完成我这条线，下一轮先准备资料书。"),
-        node("after_school", "六谷：放学我会把错题纸扔掉。那时还能问，但只能问最后一题。"),
+        node("start", f"六谷：第 {phase} 阶段，你还能继续问我。我的线不等别人，但你必须答对逻辑。",
+             jumps=[jump(VANILLA["scholar_liugu"], "prepared"), jump(TOKENS["monitor_bc"], "bc_link")],
+             choices=[choice("开始答题。", "q", 1), choice("问破损试卷。", "paper"), choice("离开", "")]),
+        node("prepared", "六谷：资料书还在，说明你记得前面的题。那就直接问关键题。", choices=[choice("回答关键题。", "q", 1)]),
+        node("bc_link", "六谷：BC 的点名牌能证明顺序被动过，这和我的试卷能接上。"),
+        node("paper", "六谷：试卷被撕掉的一角，对应的是还没发生的顺序。你要拿它，就先答题。", choices=[choice("答题。", "q", 1)]),
+        node("q", q, choices=[choice(good, "win"), choice(bad, "fail")]),
+        node("win", "六谷：答对了。这个证据给你。越到后面，它越能直接指向完整答案。", rewards=[reward(reward_item)]),
+        node("fail", "六谷：错。我的线可以单独完成，但不能靠猜。"),
     ])
 
 
-def timid_suixiaole():
+def suixiaole_dialog(phase):
+    texts = {
+        1: "随小乐：我只看见有人从楼梯那边过去，你别问太快。",
+        2: "随小乐：走廊那次脚步声停了一下，像是在听广播试音。",
+        3: "随小乐：操场集合前，有人从空教室方向跑出来。",
+        4: "随小乐：午休柜子区最乱，我看见纸条被换过地方。",
+        5: "随小乐：放学门口人多，我终于敢把证词交给你。",
+    }
+    reward_item = TOKENS["timid_suixiaole"] if phase >= 4 else VANILLA["timid_suixiaole"]
     return tree([
-        node("start", "随小乐：你别突然靠这么近。我没做什么，我只是刚好看见了几个人经过。",
-             jumps=[jump("minecraft:string", "has_string"), jump(TOKENS["broadcaster_zhaozilong"], "has_broadcast_token")],
-             choices=[
-                 choice("我不逼你，你慢慢说。", "comfort"),
-                 choice("你看见谁进了空教室？", "pressure", 1),
-                 choice("放学我还能找你吗？", "after_school"),
-                 choice("离开", ""),
-             ]),
-        node("has_string", "随小乐：这是楼梯扶手上掉的线？我记得它挂在那里的时候，有人刚从空教室跑出来。",
-             choices=[choice("请她把顺序说完。", "comfort"), choice("直接追问名字。", "pressure", 1)]),
-        node("has_broadcast_token", "随小乐：你已经知道广播那段了？那我可以少说一点。广播响之前，王少栋从楼梯那边下来过。",
-             choices=[choice("让她写下来。", "write_note", 1), choice("先离开", "")]),
-        node("comfort", "随小乐：我只记得顺序。先是脚步声，然后广播试音，然后有人把门关上。你别问我为什么当时没喊。",
-             choices=[choice("请她写一张证词。", "write_note", 1), choice("继续问细节。", "detail")]),
-        node("pressure", "随小乐：我不知道！我只看见衣角从楼梯拐过去。你越这样问，我越想不起来。",
-             choices=[choice("道歉，重新慢慢问。", "comfort"), choice("继续逼问。", "fail", 1)]),
-        node("detail", "随小乐：衣角很干净，不像刚跑过操场的人。那个人停了一下，像是在听广播室那边的声音。",
-             choices=[choice("请她写下证词。", "write_note", 1)]),
-        node("write_note", "随小乐：我写，但你别把我的名字说出去。皱掉也没关系，反正我写字本来就会抖。",
-             rewards=[reward(TOKENS["timid_suixiaole"])]),
-        node("fail", "随小乐：别问了。我不会再说。"),
-        node("after_school", "随小乐：放学门口人多，我会轻松一点。你那时候问，我可能还能把最后一句补上。"),
+        node("start", texts[phase],
+             jumps=[jump(VANILLA["timid_suixiaole"], "gentle"), jump(TOKENS["broadcaster_zhaozilong"], "broadcast_link")],
+             choices=[choice("慢慢说，我不逼你。", "comfort"), choice("直接问你看见谁。", "pressure", 1), choice("离开", "")]),
+        node("gentle", "随小乐：你还留着那根线？那我知道你真的查过楼梯。"),
+        node("broadcast_link", "随小乐：赵子龙也说了广播？那我没记错，声音确实遮住了脚步。"),
+        node("comfort", "随小乐：我可以写下来，但你别把我的名字说出去。", choices=[choice("请她写证词。", "note", 1), choice("继续问细节。", "detail")]),
+        node("pressure", "随小乐：你这样问我会乱。再逼我，我什么都不会说。", choices=[choice("道歉。", "comfort"), choice("继续逼问。", "fail", 1)]),
+        node("detail", "随小乐：顺序是脚步、试音、关门。这个顺序很重要。"),
+        node("note", "随小乐：给你。纸有点皱，但我写的是真的。", rewards=[reward(reward_item)]),
+        node("fail", "随小乐：别问了。"),
     ])
 
 
-def rich_sunwukong():
+def sunwukong_dialog(phase):
+    if phase == 1:
+        line = "孙悟空：早上想打听柜子？可以，先讲交换。"
+    elif phase == 2:
+        line = "孙悟空：走廊人多，消息贵。你要问王少栋，就拿有用的东西换。"
+    elif phase == 3:
+        line = "孙悟空：操场那边一乱，柜子区就会空。你现在问得正是时候。"
+    elif phase == 4:
+        line = "孙悟空：午休柜子区是我的地盘。要东西，就比谁找得快。"
+    else:
+        line = "孙悟空：放学前最后一笔。过了校门，今天的信物就不算了。"
+    reward_item = TOKENS["rich_sunwukong"] if phase >= 4 else VANILLA["rich_sunwukong"]
     return tree([
-        node("start", "孙悟空：想从我这里拿消息？可以，换。别跟我谈公平，学校里最没用的就是公平。",
-             jumps=[jump("minecraft:emerald", "has_emerald"), jump(TOKENS["scholar_liugu"], "has_scholar_token")],
-             choices=[
-                 choice("做一笔柜子交易。", "deal", 1),
-                 choice("抢柜子比一局。", "locker_game", 1),
-                 choice("问王少栋盯着哪个柜子。", "ask_locker"),
-                 choice("离开", ""),
-             ]),
-        node("has_emerald", "孙悟空：绿宝石？你还真懂规矩。行，少废话，柜子区我给你开一次口子。",
-             choices=[choice("直接换消息。", "deal"), choice("还是比抢柜子。", "locker_game", 1)]),
-        node("has_scholar_token", "孙悟空：六谷的试卷都到你手里了？那我知道你不是随便问问。王少栋看的柜子在广播室转角。",
-             choices=[choice("追问柜子里的东西。", "ask_locker"), choice("换信物。", "token", 1)]),
-        node("deal", "孙悟空：我给你一个位置，你给我一个保证。柜子区午休会空一小段，但广播室门口会有人经过。",
-             choices=[choice("接受交易。", "token", 1), choice("不接受", "")]),
-        node("ask_locker", "孙悟空：他盯的不是柜子，是柜子门缝里塞过的纸。那纸后来不在柜子里了。",
-             choices=[choice("继续查柜子。", "locker_game", 1), choice("先离开", "")]),
-        node("locker_game", "孙悟空：一分钟。点对加分，点错不扣。谁抢到的有效柜子多，谁说了算。",
-             minigame=minigame("locker_search_duel", "抢柜子：孙悟空", "token", "locker_fail")),
-        node("locker_fail", "孙悟空：手慢了。你还能用别人的线绕过来，但今天别指望我白送。"),
-        node("token", "孙悟空：手机挂坠裂了，但还能证明你赢过我这边。拿着。",
-             rewards=[reward(TOKENS["rich_sunwukong"])]),
+        node("start", line,
+             jumps=[jump(VANILLA["rich_sunwukong"], "paid"), jump(TOKENS["scholar_liugu"], "paper_link")],
+             choices=[choice("做交易。", "deal", 1), choice("抢柜子比一局。", "game", 1), choice("问王少栋看的柜子。", "locker"), choice("离开", "")]),
+        node("paid", "孙悟空：你带着绿宝石？规矩你懂，那我给你先手机会。", choices=[choice("换消息。", "deal"), choice("比抢柜子。", "game", 1)]),
+        node("paper_link", "孙悟空：六谷的试卷都到你手里了？那我说实话，柜子里藏过半张纸。"),
+        node("deal", "孙悟空：广播室转角那个柜子，有人上午盯过。这个消息值你一点体力。", rewards=[reward(reward_item)]),
+        node("locker", "孙悟空：王少栋看的不是柜子，是门缝里塞过的纸。"),
+        node("game", "孙悟空：一分钟，点对加分，点错不扣。谁分高，谁拿东西。", minigame=minigame("locker_search_duel", "抢柜子：孙悟空", "win", "lose")),
+        node("win", "孙悟空：你赢了。裂纹手机挂坠给你，这条线算你做成。", rewards=[reward(TOKENS["rich_sunwukong"])]),
+        node("lose", "孙悟空：手慢了。还能交易，但别想白拿。"),
     ])
 
 
-def broadcaster_zhaozilong():
+def zhaozilong_dialog(phase):
+    lines = {
+        1: "赵子龙：早上的广播只试音，不通知。试音本身也能让人停一下。",
+        2: "赵子龙：走廊乱，是因为大家都在等广播。等声音的人，会暴露习惯。",
+        3: "赵子龙：操场集合靠广播卡点。十秒，足够让一个人不在原位。",
+        4: "赵子龙：午休广播室最关键。你要让我改一次节奏，就赢我。",
+        5: "赵子龙：放学广播不会再响。现在问，是最后一次补线。",
+    }
+    reward_item = TOKENS["broadcaster_zhaozilong"] if phase >= 4 else VANILLA["broadcaster_zhaozilong"]
     return tree([
-        node("start", "赵子龙：广播不是喊话，是节奏。谁在什么时候听见什么，比内容本身更重要。",
-             jumps=[jump("minecraft:note_block", "has_note_block"), jump(TOKENS["timid_suixiaole"], "has_witness")],
-             choices=[
-                 choice("挑战节奏对抗。", "rhythm_intro", 1),
-                 choice("请你改一次广播。", "broadcast_deal", 1),
-                 choice("问广播前后谁动过。", "ask_timing"),
-                 choice("离开", ""),
-             ]),
-        node("has_note_block", "赵子龙：你带着音符盒？那你至少知道广播室不是摆设。要我插一句话，就跟上我的节奏。",
-             choices=[choice("开始节奏对抗。", "rhythm_intro", 1), choice("问时间点。", "ask_timing")]),
-        node("has_witness", "赵子龙：随小乐肯写证词？那说明她真怕了。广播响前后确实有人借声音遮过去。",
-             choices=[choice("让你帮我改广播。", "broadcast_deal", 1), choice("开始节奏对抗。", "rhythm_intro", 1)]),
-        node("ask_timing", "赵子龙：试音在集合前，正式广播在午休后。中间那段空白，最适合让一个人从空教室变成‘一直在走廊’。",
-             choices=[choice("请你改一次广播。", "broadcast_deal", 1), choice("用比赛决定。", "rhythm_intro", 1)]),
-        node("broadcast_deal", "赵子龙：我可以晚播十秒。十秒不多，但够一个人错过该在的位置。",
-             choices=[choice("收下带颜料痕的画笔。", "token"), choice("先不用", "")]),
-        node("rhythm_intro", "赵子龙：点到有效区就换下一条，位置和宽度都不固定。你要赢我，就别等它慢慢过来。",
-             minigame=minigame("rhythm_duel", "节奏对抗：赵子龙", "rhythm_win", "rhythm_fail")),
-        node("rhythm_win", "赵子龙：跟上了。那支画笔归你，别问为什么在广播室。",
-             choices=[choice("拿走画笔。", "token")]),
-        node("rhythm_fail", "赵子龙：慢了。你听见的是广播，我听见的是节奏。"),
-        node("token", "赵子龙：画笔给你。它能证明我的线，但不能证明是谁把它带进来的。",
-             rewards=[reward(TOKENS["broadcaster_zhaozilong"])]),
+        node("start", lines[phase],
+             jumps=[jump(VANILLA["broadcaster_zhaozilong"], "has_note"), jump(TOKENS["timid_suixiaole"], "witness_link")],
+             choices=[choice("挑战节奏对抗。", "rhythm", 1), choice("请你晚播十秒。", "delay", 1), choice("问广播前后谁动了。", "timing"), choice("离开", "")]),
+        node("has_note", "赵子龙：音符盒在你手上？那你知道节奏比内容重要。"),
+        node("witness_link", "赵子龙：随小乐愿意写证词？那广播遮住脚步这件事就坐实了。"),
+        node("timing", "赵子龙：试音前没人动，试音后有人从楼梯间出来。正式广播只是把怀疑打散。"),
+        node("delay", "赵子龙：我可以晚播十秒。十秒不多，但够一条线接上。", rewards=[reward(reward_item)]),
+        node("rhythm", "赵子龙：点中有效区就换下一条，位置和宽度都随机。", minigame=minigame("rhythm_duel", "节奏对抗：赵子龙", "win", "lose")),
+        node("win", "赵子龙：跟上了。带痕画笔给你，别问它为什么在广播室。", rewards=[reward(TOKENS["broadcaster_zhaozilong"])]),
+        node("lose", "赵子龙：慢了。听见声音和抓住节奏是两回事。"),
     ])
 
 
-def transfer_wangshaodong():
+def wangshaodong_dialog(phase):
+    lines = {
+        1: "王少栋：我刚转来，按理说不该知道近路。可我确实知道。",
+        2: "王少栋：走廊太多人盯着我，我只能把路线画给你。",
+        3: "王少栋：楼梯间那条路能绕到空教室，但不是我第一个发现的。",
+        4: "王少栋：柜子里的纸条被人换过位置。你要拿，就和我比谁找得快。",
+        5: "王少栋：放学校门口，我不会再绕路。你要问，就现在问完。",
+    }
+    reward_item = TOKENS["transfer_wangshaodong"] if phase >= 4 else VANILLA["transfer_wangshaodong"]
     return tree([
-        node("start", "王少栋：我刚转来，很多地方还不熟。你要问路可以，但别问我为什么知道那条近路。",
-             jumps=[jump("minecraft:map", "has_map"), jump(TOKENS["monitor_bc"], "has_bc_token")],
-             choices=[
-                 choice("问空教室的近路。", "route", 1),
-                 choice("问柜子里的纸条。", "note"),
-                 choice("放学你准备从哪走？", "after_school"),
-                 choice("离开", ""),
-             ]),
-        node("has_map", "王少栋：你拿着我画的路线还来问我？那你应该知道，空教室的门不是我第一次推开的。",
-             choices=[choice("追问第一次是谁。", "route", 1), choice("问纸条。", "note")]),
-        node("has_bc_token", "王少栋：BC 给你看过名单？那我也不装了。我的名字被补进去之前，名单上空着一格。",
-             choices=[choice("问空着的一格。", "note"), choice("逼他交出纸条。", "duel", 1)]),
-        node("route", "王少栋：从楼梯间绕到空教室，不会经过正门。可这条路不该只有我知道。",
-             choices=[choice("让他画路线图。", "map_reward", 1), choice("问纸条。", "note")]),
-        node("map_reward", "王少栋：给你。别说是我画的。它只是路线，不是答案。",
-             rewards=[reward("minecraft:map")]),
-        node("note", "王少栋：纸条烧过一角，上面只剩半句话。要拿走可以，先证明你能比我更快找到它。",
-             choices=[choice("开始抢柜子。", "duel", 1), choice("用路线图换。", "token", 1)]),
-        node("duel", "王少栋：一分钟，谁先找到有效格子谁领先。点错不扣分，但浪费时间。",
-             minigame=minigame("locker_search_duel", "空教室对抗：王少栋", "token", "duel_fail")),
-        node("duel_fail", "王少栋：你慢了。纸条我先收着。你还能从 BC 或孙悟空那里绕回来。"),
-        node("token", "王少栋：烧焦纸条给你。你别以为拿到它就懂我了。",
-             rewards=[reward(TOKENS["transfer_wangshaodong"])]),
-        node("after_school", "王少栋：放学我会走校门口，不走侧门。因为那时候所有人都看得见我。"),
+        node("start", lines[phase],
+             jumps=[jump(VANILLA["transfer_wangshaodong"], "has_map"), jump(TOKENS["monitor_bc"], "bc_link")],
+             choices=[choice("问空教室路线。", "route", 1), choice("问烧焦纸条。", "note"), choice("抢柜子比一局。", "game", 1), choice("离开", "")]),
+        node("has_map", "王少栋：你拿着我画的图还来问？那你应该知道，有人比我更早走过这条路。"),
+        node("bc_link", "王少栋：BC 的点名牌在你手里？那我承认，我的名字确实不是一开始就在名单上。"),
+        node("route", "王少栋：从楼梯间绕过去，不经过正门。给你路线图，但别说是我画的。", rewards=[reward(VANILLA["transfer_wangshaodong"])]),
+        node("note", "王少栋：纸条烧过一角，剩下的半句话指向柜子区。", choices=[choice("要走纸条。", "token", 1), choice("比一局。", "game", 1)]),
+        node("game", "王少栋：一分钟，谁先找到更多有效格子，谁拿纸条。", minigame=minigame("locker_search_duel", "空教室对抗：王少栋", "token", "lose")),
+        node("token", "王少栋：烧焦纸条给你。你别以为拿到它就懂我了。", rewards=[reward(reward_item)]),
+        node("lose", "王少栋：这次我先收着。你还能从 BC 或孙悟空那边绕回来。"),
     ])
 
 
-def teacher_yuge():
+def teacher_dialog(phase):
+    if phase < 5:
+        return tree([
+            node("start", f"雨哥：现在是第 {phase} 阶段，地点是{PHASES[phase]}。每个人这阶段都有自己的对话，不要等到后面才找人。",
+                 choices=[choice("问这个阶段怎么推进。", "phase"), choice("问体力。", "stamina"), choice("离开", "")]),
+            node("phase", "雨哥：单独做线，就盯住一个人把本阶段证据拿到；想全收集，就按点名、路线、广播、柜子的顺序少走重复路。"),
+            node("stamina", "雨哥：每阶段五点体力。体力空了不是立刻切，当前对话结束后再进下一阶段。"),
+        ])
     student_tokens = [
         TOKENS["monitor_bc"],
         TOKENS["athlete_goutou"],
@@ -305,49 +360,66 @@ def teacher_yuge():
     checks = []
     for index, item in enumerate(student_tokens):
         next_id = f"check_{index + 1}" if index + 1 < len(student_tokens) else "complete"
-        checks.append(node(f"check_{index}", f"雨哥：第 {index + 1} 个信物，拿出来。少一个都不算你走完这一轮。", "missing", jumps=[jump(item, next_id)]))
+        checks.append(node(f"check_{index}", f"雨哥：第 {index + 1} 个学生信物，拿出来。", "missing", jumps=[jump(item, next_id)]))
     return tree([
-        node("start", "雨哥：今天按五个阶段走：校门、教室、操场、午休、放学。你可以单独查任何一条线，也可以试着一轮全收。",
-             choices=[
-                 choice("询问五个阶段。", "phase_info"),
-                 choice("我已经集齐七个学生信物。", "check_0"),
-                 choice("询问体力安排。", "stamina"),
-                 choice("离开", ""),
-             ]),
-        node("phase_info", "雨哥：最后不是办公室检查，是校门口放学。放学阶段仍然能补线，但信物不会留到下一轮。"),
-        node("stamina", "雨哥：每个阶段五点体力。单独做一条线够用，想全收就要少走重复选择。体力空了，当前对话结束后才进下一阶段。"),
+        node("start", "雨哥：放学了。单独完成的线，到这里可以最后补信物；如果你说自己全收集，那就交七个学生信物。",
+             choices=[choice("提交七个学生信物。", "check_0"), choice("问放学补线。", "hint"), choice("离开", "")]),
+        node("hint", "雨哥：放学是最后阶段。没完成的人现在还能补，但出了校门就进入下一轮。"),
         *checks,
-        node("complete", "雨哥：七个学生信物都在同一轮里集齐了。现在给你老师信物。下一轮开始前，记住哪些普通道具能保留。",
-             rewards=[reward(TOKENS["teacher_yuge"])]),
-        node("missing", "雨哥：还不够。你可以单独完成其中一条学生线，但要拿我的信物，必须这一轮七条线都成。"),
+        node("complete", "雨哥：七个学生信物都在同一轮里集齐了。老师信物给你。", rewards=[reward(TOKENS["teacher_yuge"])]),
+        node("missing", "雨哥：还差。单条线完成不等于全收集，少一个都不能拿老师信物。"),
     ])
 
 
-DIALOGS = [
-    ("BC完整线", "monitor_bc", monitor_bc),
-    ("狗头完整线", "athlete_goutou", athlete_goutou),
-    ("六谷完整线", "scholar_liugu", scholar_liugu),
-    ("随小乐完整线", "timid_suixiaole", timid_suixiaole),
-    ("孙悟空完整线", "rich_sunwukong", rich_sunwukong),
-    ("赵子龙完整线", "broadcaster_zhaozilong", broadcaster_zhaozilong),
-    ("王少栋完整线", "transfer_wangshaodong", transfer_wangshaodong),
-    ("雨哥隐藏结算线", "teacher_yuge", teacher_yuge),
-]
+def build_dialogs():
+    dialogs = {}
+    role_order = [
+        "teacher_yuge",
+        "monitor_bc",
+        "athlete_goutou",
+        "scholar_liugu",
+        "timid_suixiaole",
+        "rich_sunwukong",
+        "broadcaster_zhaozilong",
+        "transfer_wangshaodong",
+    ]
+    for phase, phase_name in PHASES.items():
+        for role_id in role_order:
+            name = ROLES[role_id]
+            file_name = f"阶段{phase}_{name}_{phase_name}.json"
+            dialogs[(file_name, role_id, phase)] = teacher_dialog(phase) if role_id == "teacher_yuge" else student_dialog(role_id, phase)
+    return dialogs
 
 
 def write_json(path, data):
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def write_readme():
+def normalize_minigames():
+    old_path = MINIGAME_DIR / "阶段5_物品_纸张复盘记忆.json"
+    new_path = MINIGAME_DIR / "阶段5_物品_纸张放学记忆.json"
+    if old_path.exists():
+        old_path.replace(new_path)
+    if new_path.exists():
+        data = json.loads(new_path.read_text(encoding="utf-8"))
+        if isinstance(data.get("minigame"), dict):
+            data["minigame"]["title"] = "放学线索记忆"
+        if isinstance(data.get("success"), dict):
+            data["success"]["message"] = "你理清了放学前的正确顺序。"
+        if isinstance(data.get("failure"), dict):
+            data["failure"]["message"] = "你记错了放学前的顺序，本轮只能普通结算。"
+        write_json(new_path, data)
+
+
+def write_readme(dialogs):
     rows = "\n".join(
-        f"| `{file_name}.json` | `{role_id}` | 1-5 |" for file_name, role_id, _ in DIALOGS
+        f"| `{file_name}` | `{role_id}` | {phase} |" for (file_name, role_id, phase) in dialogs.keys()
     )
     README.write_text(f"""# 学校循环 story_v2 JSON 包
 
 ## 目录
 
-- `story_v2_dialogs`：正式剧情对话 JSON。当前版本为 8 条完整人物线，不再使用 48 条阶段样板。
+- `story_v2_dialogs`：正式剧情对话 JSON。当前版本为 5 阶段章节版，共 40 个对话文件。
 - `story_v2_minigames`：可独立绑定物品或被对话触发的小游戏 JSON。
 - `story_v2_npc_guides/NPC角色书.md`：给 NPC 玩家看的背景、控场和行动说明。对话框内只保留玩家能听到的话。
 
@@ -369,11 +441,11 @@ def write_readme():
 
 每个阶段默认 5 点体力。体力耗尽时，当前对话结束后才进入下一阶段。
 
-## 导入方式
+## 使用方式
 
-每个完整线 JSON 都可以导入到对应角色的第 1-5 阶段。这样每个阶段都能继续单独完成该角色线，但文件数量不会膨胀成 48 个。
+每个角色每个阶段都有单独 JSON。导入时按表格选择角色 ID 和阶段。每条学生线都可以从阶段 1 正常推进到阶段 5，也允许在后续阶段补救完成。
 
-| 文件 | 角色ID | 建议导入阶段 |
+| 文件 | 角色ID | 阶段 |
 | --- | --- | --- |
 {rows}
 
@@ -388,20 +460,6 @@ def write_readme():
 - 赵子龙：`broadcaster_zhaozilong`
 - 王少栋：`transfer_wangshaodong`
 - 雨哥：`teacher_yuge`
-
-设置示例：
-
-```mcfunction
-/dialogrole set 玩家名 monitor_bc
-/dialogrole set 玩家名 athlete_goutou
-/dialogrole set 玩家名 scholar_liugu
-/dialogrole set 玩家名 timid_suixiaole
-/dialogrole set 玩家名 rich_sunwukong
-/dialogrole set 玩家名 broadcaster_zhaozilong
-/dialogrole set 玩家名 transfer_wangshaodong
-/dialogrole set 玩家名 teacher_yuge
-/dialogprotagonist set 玩家名
-```
 
 ## 信物
 
@@ -418,74 +476,58 @@ def write_readme():
 
 def write_guide():
     GUIDE_DIR.mkdir(parents=True, exist_ok=True)
-    (GUIDE_DIR / "NPC角色书.md").write_text("""# NPC角色书
+    GUIDE_DIR.joinpath("NPC角色书.md").write_text("""# NPC角色书
 
 ## 总规则
 
-- 对话 JSON 里只放玩家能听见的话。
-- NPC 的心理、行动、控场、什么时候出现，由这份角色书告诉扮演者。
-- 一共有 5 个阶段，最后阶段是校门口放学。
-- 每个学生线都能单独完成；全收集路线要求主角在同一轮里拿到七个学生信物。
-- 信物不跨循环保留，普通道具可以作为下一轮提示或捷径。
+- 一共 5 个阶段，最后阶段是校门口放学。
+- 每个 NPC 每个阶段都有对白，玩家不需要等几个阶段才继续某条线。
+- 对话框里只显示玩家能听到的话；行动、心理和控场说明看这里。
+- 每条学生线都能单独完成，信物不跨循环保留。
+- 普通道具可以作为本轮后续阶段的捷径或特殊分支。
 
 ## 阶段安排
 
-1. 校门与早自习：所有角色露面，给出第一入口。
-2. 教室与走廊：点名、试卷、路线、目击信息开始交叉。
-3. 操场与楼梯间：狗头、随小乐、王少栋的行动线最活跃。
-4. 午休柜子区与广播室：孙悟空和赵子龙控场，适合触发小游戏。
-5. 校门口放学：所有单线都允许补完；雨哥负责隐藏结算。
+1. 校门与早自习：建立入口。BC 给点名纸角，狗头给护手皮，六谷开启答题，随小乐给楼梯线索，孙悟空谈交易，赵子龙讲试音，王少栋给路线入口。
+2. 教室与走廊：第一次实质推进。BC 记忆翻牌，狗头器材室看门，六谷第二题，随小乐补脚步顺序，孙悟空指出柜子，赵子龙说明广播，王少栋画路线。
+3. 操场与楼梯间：中段交叉。狗头和王少栋最活跃，BC 确认空档，随小乐补目击，赵子龙解释十秒错位。
+4. 午休柜子区与广播室：多数学生线可以完成。BC、狗头、六谷、随小乐、孙悟空、赵子龙、王少栋都能拿到各自信物。
+5. 校门口放学：最后补救与雨哥结算。没完成的学生线可以最后补一次；集齐七个学生信物后找雨哥拿老师信物。
 
 ## NPC个人说明
 
 ### BC
 
-你负责点名册和秩序。你知道名单被改过，但不能一开口直接说答案。主角如果认真帮你核对，或者赢记忆翻牌，你才交出缺角点名牌。
+你负责点名册和秩序。每阶段都围绕名单、巡查、空档推进。不要直接说凶手，只承认名单被动过。
 
 ### 狗头
 
-你负责操场和器材室。你不喜欢长篇推理，主角要么用扳手腕赢你，要么拿到相关道具让你相信他。你的信物是断裂护腕。
+你负责操场和器材室。你用扳手腕确认主角是否值得信任。主角赢你或拿到旧绳、广播线索时，你可以交出断裂护腕。
 
 ### 六谷
 
-你负责知识问答和试卷逻辑。题目由作者后续替换。你的重点不是考试分数，而是“有人提前知道顺序”。你的信物是破损试卷。
+你负责知识问答和试卷逻辑。题目已经能直接玩，后续也可以替换。你的核心信息是“顺序被提前知道”。
 
 ### 随小乐
 
-你负责目击信息。你害怕卷入事件，所以不能被强逼。主角温和询问时，你会给出顺序；被逼急时，你会关闭对话。你的信物是皱巴巴证词。
+你负责目击证词。主角温和询问时你会逐步说出脚步、试音、关门顺序；被逼问时关闭对话。
 
 ### 孙悟空
 
-你负责柜子区和交易。你什么都要交换，但不是纯坏人。主角可以通过交易或抢柜子赢你，拿到裂纹手机挂坠。
+你负责柜子区和交易。你可以收普通道具，也可以通过抢柜子决定是否给信物。
 
 ### 赵子龙
 
-你负责广播和节奏。你知道广播能改变所有人的移动时机。主角可以赢节奏对抗，或用证词让你承认广播室的异常。你的信物是带痕画笔。
+你负责广播和节奏。广播不是答案，但能解释为什么时间和位置会错开。
 
 ### 王少栋
 
-你负责转学生和空教室路线。你知道不该知道的近路，但不会直接承认全部。主角可以从路线图、柜子纸条或 BC 的名单切入。你的信物是烧焦纸条。
+你负责转学生和空教室路线。你知道不该知道的路线，但不一开始承认全部。
 
 ### 雨哥
 
-你负责阶段说明和最终结算。普通情况下只解释规则；当主角同一轮拿到七个学生信物时，给出老师信物。
+你负责解释阶段和放学结算。阶段 1-4 只提醒玩法；阶段 5 检查七个学生信物。
 """, encoding="utf-8")
-
-
-def normalize_minigames():
-    old_path = MINIGAME_DIR / "阶段5_物品_纸张复盘记忆.json"
-    new_path = MINIGAME_DIR / "阶段5_物品_纸张放学记忆.json"
-    if old_path.exists():
-        old_path.replace(new_path)
-    if new_path.exists():
-        data = json.loads(new_path.read_text(encoding="utf-8"))
-        if isinstance(data.get("minigame"), dict):
-            data["minigame"]["title"] = "放学线索记忆"
-        if isinstance(data.get("success"), dict):
-            data["success"]["message"] = "你理清了放学前的正确顺序。"
-        if isinstance(data.get("failure"), dict):
-            data["failure"]["message"] = "你记错了放学前的顺序，本轮只能普通结算。"
-        write_json(new_path, data)
 
 
 def rebuild_zip():
@@ -503,13 +545,14 @@ def main():
     if DIALOG_DIR.exists():
         shutil.rmtree(DIALOG_DIR)
     DIALOG_DIR.mkdir(parents=True, exist_ok=True)
-    for file_name, _role_id, factory in DIALOGS:
-        write_json(DIALOG_DIR / f"{file_name}.json", factory())
+    dialogs = build_dialogs()
+    for (file_name, _role_id, _phase), data in dialogs.items():
+        write_json(DIALOG_DIR / file_name, data)
     normalize_minigames()
-    write_readme()
+    write_readme(dialogs)
     write_guide()
     rebuild_zip()
-    print(f"dialogs={len(DIALOGS)}")
+    print(f"dialogs={len(dialogs)}")
     print("phase_count=5")
     print("last_phase=校门口放学")
 

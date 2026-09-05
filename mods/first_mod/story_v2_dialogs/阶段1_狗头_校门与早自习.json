@@ -1,0 +1,73 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：早上就找我？我还没热完身。想让我认你，先别光说。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "比一次扳手腕。",
+          "nextNodeId": "arm",
+          "staminaCost": 1
+        },
+        {
+          "text": "问器材室。",
+          "nextNodeId": "room"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "arm",
+      "text": "狗头：两边一起点，推到头就赢。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [],
+      "minigame": {
+        "type": "arm_wrestle",
+        "title": "扳手腕：狗头",
+        "durationTicks": 1200,
+        "successNodeId": "win",
+        "failureNodeId": "lose",
+        "pushPerClick": 0.06,
+        "winProgress": 1.0
+      }
+    },
+    {
+      "id": "win",
+      "text": "狗头：行，你有劲。护手皮给你，后面找我别再从头解释。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:leather",
+          "count": 1
+        }
+      ],
+      "choices": []
+    },
+    {
+      "id": "lose",
+      "text": "狗头：手太软。要查我这条线，后面还得再来。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "room",
+      "text": "狗头：器材室早上没开，但我看见有人盯着钥匙箱。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    }
+  ]
+}
