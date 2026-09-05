@@ -10,6 +10,16 @@
           "item": "minecraft:leather",
           "count": 1,
           "nextNodeId": "trusted"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "bc_token_shortcut"
+        },
+        {
+          "item": "minecraft:note_block",
+          "count": 1,
+          "nextNodeId": "broadcast_called"
         }
       ],
       "rewards": [],
@@ -22,6 +32,15 @@
         {
           "text": "观察器材室",
           "nextNodeId": "observe"
+        },
+        {
+          "text": "追问谁借走过护腕",
+          "nextNodeId": "ask_wristband"
+        },
+        {
+          "text": "用广播时间逼他离开",
+          "nextNodeId": "use_broadcast",
+          "staminaCost": 1
         },
         {
           "text": "离开",
@@ -82,6 +101,53 @@
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "bc_token_shortcut",
+      "text": "BC 都放你过来了？那你不是随便乱跑。说吧，器材室你想查哪一边？",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "检查护腕架",
+          "nextNodeId": "token",
+          "staminaCost": 1
+        },
+        {
+          "text": "先观察器材室",
+          "nextNodeId": "observe"
+        }
+      ]
+    },
+    {
+      "id": "broadcast_called",
+      "text": "广播室那边开始催人了。我只能给你一点时间，想查就快。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "ask_wristband",
+      "text": "护腕不是自己丢的。有人拿走后又塞回来，位置还放反了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "use_broadcast",
+      "text": "行，我去操场集合。你别把器材室翻得太明显。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:string",
+          "count": 1
+        }
+      ],
       "choices": []
     }
   ]

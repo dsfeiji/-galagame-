@@ -10,6 +10,21 @@
           "item": "minecraft:book",
           "count": 1,
           "nextNodeId": "prepared"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "attendance_logic"
+        },
+        {
+          "item": "first_mod:cracked_phone_charm",
+          "count": 1,
+          "nextNodeId": "rich_exam_hint"
+        },
+        {
+          "item": "minecraft:paper",
+          "count": 1,
+          "nextNodeId": "rough_note"
         }
       ],
       "rewards": [],
@@ -17,6 +32,15 @@
         {
           "text": "进入知识问答",
           "nextNodeId": "q1",
+          "staminaCost": 1
+        },
+        {
+          "text": "问满分试卷为什么重要",
+          "nextNodeId": "exam_reason"
+        },
+        {
+          "text": "请六谷帮你整理顺序",
+          "nextNodeId": "order_help",
           "staminaCost": 1
         },
         {
@@ -96,6 +120,51 @@
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "attendance_logic",
+      "text": "BC 的点名牌能证明时间被人动过。你如果要问答案，就从“谁有时间差”开始想。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "rich_exam_hint",
+      "text": "孙悟空的东西和试卷放在一起？那就不是普通炫耀了，他可能在换什么。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "rough_note",
+      "text": "这张纸不是答案，是草稿。草稿能证明有人提前知道题目顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "exam_reason",
+      "text": "满分试卷重要，不是因为分数，而是因为它能证明谁提前看过题。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "order_help",
+      "text": "我只能帮你排除一个错误顺序：先去广播室再找随小乐，通常会晚。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:book",
+          "count": 1
+        }
+      ],
       "choices": []
     }
   ]

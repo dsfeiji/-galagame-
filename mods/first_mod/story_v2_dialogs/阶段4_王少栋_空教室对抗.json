@@ -10,6 +10,21 @@
           "item": "minecraft:map",
           "count": 1,
           "nextNodeId": "route_known"
+        },
+        {
+          "item": "first_mod:chipped_attendance_tag",
+          "count": 1,
+          "nextNodeId": "roster_exposed"
+        },
+        {
+          "item": "first_mod:crumpled_witness_note",
+          "count": 1,
+          "nextNodeId": "witness_exposed"
+        },
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1,
+          "nextNodeId": "exam_exposed"
         }
       ],
       "rewards": [],
@@ -22,6 +37,15 @@
         {
           "text": "正面谈判",
           "nextNodeId": "talk"
+        },
+        {
+          "text": "问他为什么熟悉空教室",
+          "nextNodeId": "ask_empty_room"
+        },
+        {
+          "text": "把随小乐的证词摆出来",
+          "nextNodeId": "show_witness",
+          "staminaCost": 1
         },
         {
           "text": "离开",
@@ -89,6 +113,56 @@
       "id": "talk",
       "text": "我承认我知道空教室，但原因现在不能告诉你。",
       "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "roster_exposed",
+      "text": "BC 连点名牌都给你了？那我的名字什么时候出现，你应该已经知道了。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "witness_exposed",
+      "text": "随小乐看见我了？她不该看见的。既然这样，我们没必要继续装。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始空教室对抗",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "追问他的目的",
+          "nextNodeId": "ask_empty_room"
+        }
+      ]
+    },
+    {
+      "id": "exam_exposed",
+      "text": "试卷也在你手里？那你应该知道，我找的不是分数，是藏在试卷里的顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "ask_empty_room",
+      "text": "我不是熟悉空教室，我是熟悉没人会检查的地方。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "show_witness",
+      "text": "她说得太多了。既然你已经拼到这里，就用速度决定东西归谁。",
+      "nextNodeId": "locker_game",
       "conditionJumps": [],
       "rewards": [],
       "choices": []

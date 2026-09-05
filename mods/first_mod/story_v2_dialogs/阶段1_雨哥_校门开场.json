@@ -18,6 +18,14 @@
           "staminaCost": 1
         },
         {
+          "text": "问为什么今天管得这么严",
+          "nextNodeId": "strict_reason"
+        },
+        {
+          "text": "问放学前能不能进办公室",
+          "nextNodeId": "office_rule"
+        },
+        {
           "text": "结束对话",
           "nextNodeId": ""
         }
@@ -34,6 +42,22 @@
     {
       "id": "early_classroom",
       "text": "行，你先进去看一眼。记住，只能看，别乱碰教室里的东西。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "strict_reason",
+      "text": "昨天已经有人在空教室和广播室之间乱跑了。今天我不想再看到这种情况。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "office_rule",
+      "text": "办公室不是你想进就进。等到检查阶段，有足够理由再来找我。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

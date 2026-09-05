@@ -5,12 +5,27 @@
       "id": "start",
       "text": "这一轮结束。你可以记住教训，但信物不会跟你去下一轮。",
       "nextNodeId": "",
-      "conditionJumps": [],
+      "conditionJumps": [
+        {
+          "item": "minecraft:nether_star",
+          "count": 1,
+          "nextNodeId": "teacher_complete"
+        },
+        {
+          "item": "first_mod:burnt_note",
+          "count": 1,
+          "nextNodeId": "partial_transfer"
+        }
+      ],
       "rewards": [],
       "choices": [
         {
           "text": "结束本轮",
           "nextNodeId": ""
+        },
+        {
+          "text": "复盘哪些道具能保留",
+          "nextNodeId": "keep_items"
         },
         {
           "text": "询问下一轮建议",
@@ -21,6 +36,30 @@
     {
       "id": "hint",
       "text": "每阶段只有五点体力。想全收集，就先准备能保留的道具，再安排顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "teacher_complete",
+      "text": "老师信物已经在你手里了。下一次循环，你要考虑的是怎么把所有人安排到同一个时间点。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "partial_transfer",
+      "text": "你至少摸到了王少栋这条线。下次可以先从空教室和柜子区切入。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "keep_items",
+      "text": "信物会重置，但纸、书、地图、绿宝石这类普通道具可以作为下一轮的准备。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],

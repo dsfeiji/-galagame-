@@ -10,6 +10,21 @@
           "item": "minecraft:gold_nugget",
           "count": 1,
           "nextNodeId": "has_money"
+        },
+        {
+          "item": "first_mod:broken_exam_paper",
+          "count": 1,
+          "nextNodeId": "scholar_pressure"
+        },
+        {
+          "item": "first_mod:stained_paintbrush",
+          "count": 1,
+          "nextNodeId": "broadcast_deal"
+        },
+        {
+          "item": "minecraft:emerald",
+          "count": 1,
+          "nextNodeId": "emerald_deal"
         }
       ],
       "rewards": [],
@@ -22,6 +37,15 @@
         {
           "text": "继续谈条件",
           "nextNodeId": "deal"
+        },
+        {
+          "text": "问他为什么盯着王少栋",
+          "nextNodeId": "ask_transfer"
+        },
+        {
+          "text": "拿试卷线索压他",
+          "nextNodeId": "press_exam",
+          "staminaCost": 1
         },
         {
           "text": "离开",
@@ -96,6 +120,65 @@
           "count": 1
         }
       ],
+      "choices": []
+    },
+    {
+      "id": "scholar_pressure",
+      "text": "你连六谷那张破试卷都拿到了？那我就不装了，柜子里的东西确实和它有关。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "要求直接开柜",
+          "nextNodeId": "locker_game",
+          "staminaCost": 1
+        },
+        {
+          "text": "继续谈交易",
+          "nextNodeId": "deal"
+        }
+      ]
+    },
+    {
+      "id": "broadcast_deal",
+      "text": "赵子龙那边已经被你说动了？可以，那我的条件也得变。你帮我挡一次广播，我给你柜子机会。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "emerald_deal",
+      "text": "还带着绿宝石？看来你记得交易。柜子区这次我可以让你先手。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "开始抢柜子",
+          "nextNodeId": "locker_game"
+        },
+        {
+          "text": "离开",
+          "nextNodeId": ""
+        }
+      ]
+    },
+    {
+      "id": "ask_transfer",
+      "text": "王少栋不像刚来的。他找柜子的速度，比很多老学生都熟。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "press_exam",
+      "text": "别拿试卷吓我。我可以让你查柜子，但你输了就别再提这件事。",
+      "nextNodeId": "locker_game",
+      "conditionJumps": [],
+      "rewards": [],
       "choices": []
     }
   ]

@@ -511,11 +511,14 @@ def main():
     (ROOT / "mods" / "first_mod" / "story_v2_README.md").write_text(readme(), encoding="utf-8")
 
     from clean_story_v2_player_dialogs import clean_dialogs, update_readme
+    from enrich_story_v2_dialogs import enrich_dialogs, rebuild_zip
     from create_story_v2_npc_books import write_npc_book
 
     clean_dialogs()
     write_npc_book()
+    enrich_dialogs()
     update_readme()
+    rebuild_zip()
 
     print(f"dialogs={len(list(DIALOG_DIR.glob('*.json')))}")
     print(f"minigames={len(list(MINIGAME_DIR.glob('*.json')))}")

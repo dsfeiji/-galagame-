@@ -10,6 +10,21 @@
           "item": "minecraft:note_block",
           "count": 1,
           "nextNodeId": "trusted"
+        },
+        {
+          "item": "first_mod:cracked_phone_charm",
+          "count": 1,
+          "nextNodeId": "rich_contact"
+        },
+        {
+          "item": "first_mod:crumpled_witness_note",
+          "count": 1,
+          "nextNodeId": "witness_broadcast"
+        },
+        {
+          "item": "minecraft:map",
+          "count": 1,
+          "nextNodeId": "route_broadcast"
         }
       ],
       "rewards": [],
@@ -22,6 +37,15 @@
         {
           "text": "请求一次广播帮助",
           "nextNodeId": "request"
+        },
+        {
+          "text": "问广播能调走谁",
+          "nextNodeId": "ask_move"
+        },
+        {
+          "text": "要求广播误导巡查",
+          "nextNodeId": "mislead_patrol",
+          "staminaCost": 1
         },
         {
           "text": "离开",
@@ -91,6 +115,51 @@
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "rich_contact",
+      "text": "孙悟空的东西在你手上？他果然还是把柜子区牵进来了。你想播什么，先说明后果。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "witness_broadcast",
+      "text": "随小乐的证词对得上。广播前后那一分钟，确实有人不在原位。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "route_broadcast",
+      "text": "你有路线图，那就知道广播不是答案，只是让人离开原位的办法。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "ask_move",
+      "text": "狗头会去操场，BC 会往走廊，雨哥会看办公室。你只能利用一次。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "mislead_patrol",
+      "text": "我可以把 BC 调去另一条走廊，但你得保证这次不浪费。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [
+        {
+          "item": "minecraft:redstone",
+          "count": 1
+        }
+      ],
       "choices": []
     }
   ]

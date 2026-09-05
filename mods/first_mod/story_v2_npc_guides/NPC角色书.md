@@ -278,3 +278,34 @@
 - 不要开场承认全部身份。
 - 不要解释最终真相。
 - 不要跳过空教室对抗直接给信物。
+
+## 特殊物品触发对话表
+
+这些内容是给 NPC 玩家提前知道的。主角背包里有对应物品时，对话 JSON 会自动跳到特殊对白，NPC 要顺着这个信息继续演。
+
+| 触发对象 | 特殊物品 | 表演含义 |
+| --- | --- | --- |
+| BC | `minecraft:paper` | 主角已经拿到点名相关纸条，BC 可以承认名单不是今天才乱。 |
+| BC | `first_mod:burnt_note` | 主角已经推进王少栋线，BC 可以透露午休柜子区空档。 |
+| 狗头 | `first_mod:chipped_attendance_tag` | BC 线已推进，狗头认可主角不是乱跑。 |
+| 狗头 | `minecraft:note_block` | 广播已影响操场时间，狗头会短暂离开。 |
+| 六谷 | `first_mod:chipped_attendance_tag` | 点名顺序和时间差可以进入逻辑推理。 |
+| 六谷 | `first_mod:cracked_phone_charm` | 孙悟空线和试卷线产生联系。 |
+| 随小乐 | `first_mod:stained_paintbrush` | 广播前后的目击记忆被唤起。 |
+| 随小乐 | `first_mod:burnt_note` | 王少栋线与空教室门缝线索相连。 |
+| 孙悟空 | `first_mod:broken_exam_paper` | 六谷线已推进，可以用试卷压孙悟空。 |
+| 孙悟空 | `minecraft:emerald` | 主角带着交易道具，可进入先手机会。 |
+| 赵子龙 | `first_mod:crumpled_witness_note` | 随小乐证词证明广播前后有人不在原位。 |
+| 赵子龙 | `minecraft:map` | 主角知道路线图，广播只负责调动人流。 |
+| 王少栋 | `first_mod:crumpled_witness_note` | 随小乐证词指向王少栋，王少栋不再装作完全无辜。 |
+| 王少栋 | `first_mod:broken_exam_paper` | 试卷顺序和王少栋寻找的东西有关。 |
+| 雨哥 | `minecraft:book` | 主角带着整理资料，最终检查更像正式复盘。 |
+| 雨哥 | `minecraft:redstone` | 广播误导证据成立，进入完整检查流程。 |
+| 雨哥阶段6 | `minecraft:nether_star` | 老师信物已获得，进入完成后复盘。 |
+
+## NPC 衔接建议
+
+- 如果主角拿着别人的信物来找你，不要装作什么都没发生；可以承认“你已经找过他了”，但仍然只说本角色知道的部分。
+- 如果主角带着普通道具来找你，比如纸、书、地图、绿宝石，可以把它当成“上一轮或前一阶段的准备”，给出更短路线或更明确暗示。
+- 如果主角没有前置物品，就按普通对白走，不要主动补齐特殊分支的信息。
+

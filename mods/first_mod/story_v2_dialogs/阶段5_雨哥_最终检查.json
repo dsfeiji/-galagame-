@@ -5,7 +5,18 @@
       "id": "start",
       "text": "到这里就别再绕了。把你这一轮拿到的东西给我看。",
       "nextNodeId": "check_monitor",
-      "conditionJumps": [],
+      "conditionJumps": [
+        {
+          "item": "minecraft:book",
+          "count": 1,
+          "nextNodeId": "prepared_review"
+        },
+        {
+          "item": "minecraft:redstone",
+          "count": 1,
+          "nextNodeId": "broadcast_proof"
+        }
+      ],
       "rewards": [],
       "choices": []
     },
@@ -123,6 +134,35 @@
     {
       "id": "missing",
       "text": "还不够。少一个都不算完成，下一轮重新安排顺序。",
+      "nextNodeId": "",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": [
+        {
+          "text": "询问还缺什么方向",
+          "nextNodeId": "missing_hint"
+        }
+      ]
+    },
+    {
+      "id": "prepared_review",
+      "text": "你带着整理好的资料来，说明这一轮不是乱撞。现在开始逐个检查信物。",
+      "nextNodeId": "check_monitor",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "broadcast_proof",
+      "text": "广播误导的证据也在？那我会按完整流程查，不会只听某一个人的说法。",
+      "nextNodeId": "check_monitor",
+      "conditionJumps": [],
+      "rewards": [],
+      "choices": []
+    },
+    {
+      "id": "missing_hint",
+      "text": "你缺的不是一句话，是顺序。回想谁需要前置道具，谁必须在午休前解决。",
       "nextNodeId": "",
       "conditionJumps": [],
       "rewards": [],
