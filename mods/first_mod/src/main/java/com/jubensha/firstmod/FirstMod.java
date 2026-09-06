@@ -20,6 +20,7 @@ import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
 import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.SaveDialogPayload;
 import com.jubensha.firstmod.network.SaveMinigamePayload;
+import com.jubensha.firstmod.network.SpendStaminaPayload;
 import com.jubensha.firstmod.network.StartInteractionMinigamePayload;
 import com.jubensha.firstmod.network.StaminaPayload;
 import com.jubensha.firstmod.network.TransitionPayload;
@@ -111,6 +112,7 @@ public class FirstMod implements ModInitializer {
         });
         registerSaveReceiver();
         registerSaveMinigameReceiver();
+        registerSpendStaminaReceiver();
         registerAdvanceReceiver();
         registerMinigameReceiver();
         registerInteractionMinigameReceiver();
@@ -166,6 +168,30 @@ public class FirstMod implements ModInitializer {
         });
     }
 
+    private static void registerSpendStaminaReceiver() {
+        ServerPlayNetworking.registerGlobalReceiver(SpendStaminaPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            if (isEliminatedPlayer(player)) {
+                player.sendMessage(Text.literal("你已退场，无法消耗体力。"), false);
+                return;
+            }
+            if (!DialogStore.spendStamina(player.getUuid(), 1)) {
+                player.sendMessage(Text.literal("体力不足。"), false);
+                syncStamina(player);
+                return;
+            }
+            syncStamina(player);
+            if (DialogStore.getStamina(player.getUuid()) == 0 && handleStaminaDepleted(player)) {
+                DialogSession session = ACTIVE_DIALOGS.get(player.getUuid());
+                if (session != null) {
+                    session.pendingPhaseAdvance = true;
+                } else if (player.getServer() != null) {
+                    advancePhaseNow(player.getServer(), nextPhaseValue());
+                }
+            }
+        });
+    }
+
     private static void registerAdvanceReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(AdvanceDialogPayload.ID, (payload, context) -> {
             ServerPlayerEntity actor = context.player();
@@ -185,7 +211,7 @@ public class FirstMod implements ModInitializer {
             }
 
             DialogTree tree = DialogStore.getDialogForCurrentPhase(session.roleId);
-            String nextNodeId = resolveRequestedAdvance(actor, tree, session, payload);
+            String nextNodeId = resolveRequestedAdvance(actor, target, tree, session, payload);
             if (nextNodeId.isBlank() || tree == null || !tree.hasNode(nextNodeId)) {
                 closeDialog(actor, target, target.getUuid());
                 return;
@@ -395,6 +421,10 @@ public class FirstMod implements ModInitializer {
         }
         try {
             PayloadTypeRegistry.playC2S().register(SaveMinigamePayload.ID, SaveMinigamePayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(SpendStaminaPayload.ID, SpendStaminaPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
         try {
@@ -649,7 +679,7 @@ public class FirstMod implements ModInitializer {
         }
     }
 
-    private static String resolveRequestedAdvance(ServerPlayerEntity actor, DialogTree tree, DialogSession session, AdvanceDialogPayload payload) {
+    private static String resolveRequestedAdvance(ServerPlayerEntity actor, ServerPlayerEntity target, DialogTree tree, DialogSession session, AdvanceDialogPayload payload) {
         if (tree == null) {
             return "";
         }
@@ -679,6 +709,7 @@ public class FirstMod implements ModInitializer {
             if (choice.staminaCost > 0 && DialogStore.getStamina(actor.getUuid()) == 0 && handleStaminaDepleted(actor)) {
                 session.pendingPhaseAdvance = true;
             }
+            executeChoiceCommands(actor, target, session.roleId, choice);
             return choice.nextNodeId;
         }
 
@@ -686,6 +717,28 @@ public class FirstMod implements ModInitializer {
             return "";
         }
         return currentNode.nextNodeId;
+    }
+
+    private static void executeChoiceCommands(ServerPlayerEntity actor, ServerPlayerEntity target, String roleId, DialogTree.DialogChoice choice) {
+        executeChoiceCommand(actor, target, roleId, choice.command);
+        for (String command : choice.commands) {
+            executeChoiceCommand(actor, target, roleId, command);
+        }
+    }
+
+    private static void executeChoiceCommand(ServerPlayerEntity actor, ServerPlayerEntity target, String roleId, String command) {
+        if (actor.getServer() == null || command == null || command.isBlank()) {
+            return;
+        }
+        String normalized = command.trim();
+        if (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+        normalized = normalized
+                .replace("{player}", actor.getNameForScoreboard())
+                .replace("{target}", target.getNameForScoreboard())
+                .replace("{role}", roleId);
+        actor.getServer().getCommandManager().executeWithPrefix(actor.getCommandSource().withLevel(4).withSilent(), normalized);
     }
 
     private static boolean handleStaminaDepleted(ServerPlayerEntity actor) {

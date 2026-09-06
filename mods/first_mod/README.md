@@ -42,6 +42,39 @@ Choices can spend stamina:
 
 Missing `staminaCost` means `0`.
 
+Players can also press the configured `Spend 1 Stamina` key to spend one stamina directly. The default key is `K`.
+
+Choices can execute datapack or server commands after the answer is clicked and stamina is paid:
+
+```json
+{
+  "text": "Trigger the hallway event",
+  "nextNodeId": "after_event",
+  "command": "function school:hallway/event_start"
+}
+```
+
+Multiple commands are also supported:
+
+```json
+{
+  "text": "Open the hidden route",
+  "nextNodeId": "route_opened",
+  "commands": [
+    "function school:routes/open_hidden",
+    "playsound minecraft:block.note_block.bell master {player}"
+  ]
+}
+```
+
+Commands can use placeholders:
+
+- `{player}`: the player who right-clicked and controls the dialog.
+- `{target}`: the clicked player.
+- `{role}`: the clicked player's role id.
+
+Do not include `/` at the start. If `/` is included, the mod will remove it before executing.
+
 ## Minigame JSON
 
 Put minigame interaction files in the game run directory:

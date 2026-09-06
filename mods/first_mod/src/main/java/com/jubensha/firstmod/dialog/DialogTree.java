@@ -139,6 +139,8 @@ public class DialogTree {
         public String text = "";
         public String nextNodeId = "";
         public int staminaCost = 0;
+        public String command = "";
+        public List<String> commands = new ArrayList<>();
 
         public DialogChoice() {
         }
@@ -158,6 +160,13 @@ public class DialogTree {
             if (staminaCost < 0) {
                 staminaCost = 0;
             }
+            if (command == null) {
+                command = "";
+            }
+            if (commands == null) {
+                commands = new ArrayList<>();
+            }
+            commands.removeIf(value -> value == null || value.isBlank());
         }
     }
 

@@ -1,0 +1,36 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "这是回答执行指令测试。点击不同回答会执行不同命令。",
+      "nextNodeId": "",
+      "choices": [
+        {
+          "text": "执行单条函数命令",
+          "nextNodeId": "single_done",
+          "command": "function school:test/single"
+        },
+        {
+          "text": "消耗 1 点体力并执行多条命令",
+          "nextNodeId": "multi_done",
+          "staminaCost": 1,
+          "commands": [
+            "function school:test/multi",
+            "say {player} clicked {role} on {target}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "single_done",
+      "text": "单条命令已发送给服务端执行。",
+      "nextNodeId": ""
+    },
+    {
+      "id": "multi_done",
+      "text": "多条命令已发送给服务端执行。",
+      "nextNodeId": ""
+    }
+  ]
+}

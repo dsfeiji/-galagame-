@@ -17,6 +17,7 @@ import com.jubensha.firstmod.network.MinigameResultPayload;
 import com.jubensha.firstmod.network.StaminaPayload;
 import com.jubensha.firstmod.network.InteractionMinigameResultPayload;
 import com.jubensha.firstmod.network.SaveMinigamePayload;
+import com.jubensha.firstmod.network.SpendStaminaPayload;
 import com.jubensha.firstmod.network.StartInteractionMinigamePayload;
 import com.jubensha.firstmod.network.TransitionPayload;
 import net.fabricmc.api.ClientModInitializer;
@@ -32,6 +33,7 @@ import org.lwjgl.glfw.GLFW;
 public class FirstModClient implements ClientModInitializer {
     private static final Gson GSON = new GsonBuilder().create();
     private static KeyBinding controlPanelKey;
+    private static KeyBinding spendStaminaKey;
 
     @Override
     public void onInitializeClient() {
@@ -93,6 +95,12 @@ public class FirstModClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_O,
                 "category.first_mod.dialog"
         ));
+        spendStaminaKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.first_mod.spend_stamina",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_K,
+                "category.first_mod.dialog"
+        ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (controlPanelKey.wasPressed()) {
@@ -100,6 +108,11 @@ public class FirstModClient implements ClientModInitializer {
                     client.setScreen(new RoleControlScreen());
                 } else if (client.player != null) {
                     client.player.sendMessage(net.minecraft.text.Text.literal("Only creative players can open the dialog control panel."), false);
+                }
+            }
+            while (spendStaminaKey.wasPressed()) {
+                if (client.player != null) {
+                    ClientPlayNetworking.send(new SpendStaminaPayload());
                 }
             }
         });
@@ -152,6 +165,10 @@ public class FirstModClient implements ClientModInitializer {
         }
         try {
             PayloadTypeRegistry.playS2C().register(EliminationPayload.ID, EliminationPayload.CODEC);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            PayloadTypeRegistry.playC2S().register(SpendStaminaPayload.ID, SpendStaminaPayload.CODEC);
         } catch (IllegalArgumentException ignored) {
         }
     }
