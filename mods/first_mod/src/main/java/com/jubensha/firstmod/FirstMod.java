@@ -720,13 +720,20 @@ public class FirstMod implements ModInitializer {
     }
 
     private static void executeChoiceCommands(ServerPlayerEntity actor, ServerPlayerEntity target, String roleId, DialogTree.DialogChoice choice) {
-        executeChoiceCommand(actor, target, roleId, choice.command);
+        executeDialogCommand(actor, target, roleId, choice.command);
         for (String command : choice.commands) {
-            executeChoiceCommand(actor, target, roleId, command);
+            executeDialogCommand(actor, target, roleId, command);
         }
     }
 
-    private static void executeChoiceCommand(ServerPlayerEntity actor, ServerPlayerEntity target, String roleId, String command) {
+    private static void executeNodeCommands(ServerPlayerEntity actor, ServerPlayerEntity target, String roleId, DialogTree.DialogNode node) {
+        executeDialogCommand(actor, target, roleId, node.command);
+        for (String command : node.commands) {
+            executeDialogCommand(actor, target, roleId, command);
+        }
+    }
+
+    private static void executeDialogCommand(ServerPlayerEntity actor, ServerPlayerEntity target, String roleId, String command) {
         if (actor.getServer() == null || command == null || command.isBlank()) {
             return;
         }
@@ -804,6 +811,7 @@ public class FirstMod implements ModInitializer {
         session.resetArmWrestle();
         session.resetDuel();
         giveRewards(actor, node, session);
+        executeNodeCommands(actor, target, session.roleId, node);
         if (applyDialogNodeElimination(actor, target, node, session)) {
             closeDialog(actor, target, target.getUuid());
             return;

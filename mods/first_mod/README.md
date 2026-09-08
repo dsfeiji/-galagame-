@@ -75,6 +75,19 @@ Commands can use placeholders:
 
 Do not include `/` at the start. If `/` is included, the mod will remove it before executing.
 
+Dialog nodes can also execute commands automatically when the node is shown:
+
+```json
+{
+  "id": "start",
+  "text": "Doghead is ready.",
+  "commands": [
+    "item replace entity {target} armor.head with minecraft:diamond_helmet",
+    "item replace entity {target} weapon.mainhand with minecraft:diamond_sword"
+  ]
+}
+```
+
 ## Minigame JSON
 
 Put minigame interaction files in the game run directory:

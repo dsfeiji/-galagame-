@@ -88,6 +88,8 @@ public class DialogTree {
         public List<ItemReward> rewards = new ArrayList<>();
         public List<DialogChoice> choices = new ArrayList<>();
         public DialogMinigame minigame = null;
+        public String command = "";
+        public List<String> commands = new ArrayList<>();
         public String eliminateRole = "";
         public String eliminateReason = "";
         public boolean eliminateTarget = false;
@@ -111,6 +113,13 @@ public class DialogTree {
             if (choices == null) {
                 choices = new ArrayList<>();
             }
+            if (command == null) {
+                command = "";
+            }
+            if (commands == null) {
+                commands = new ArrayList<>();
+            }
+            commands.removeIf(value -> value == null || value.isBlank());
             if (eliminateRole == null) {
                 eliminateRole = "";
             }
