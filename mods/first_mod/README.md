@@ -88,6 +88,35 @@ Dialog nodes can also execute commands automatically when the node is shown:
 }
 ```
 
+Datapacks can reopen an imported dialog JSON at a specific node after a command-block event or death listener.
+
+Use the clicked player's claimed role and the current phase:
+
+```mcfunction
+/dialogopen current <right_clicking_player> <clicked_player> <node_id>
+```
+
+Use the clicked player's claimed role and a specific phase:
+
+```mcfunction
+/dialogopen phase <right_clicking_player> <clicked_player> <phase> <node_id>
+```
+
+Use an explicit role id and phase:
+
+```mcfunction
+/dialogopen role <right_clicking_player> <clicked_player> <role_id> <phase> <node_id>
+```
+
+Use the most recent right-click dialog pair for either participant:
+
+```mcfunction
+/dialogresume <either_previous_player> <node_id>
+/dialogresume <either_previous_player> <phase> <node_id>
+```
+
+`dialogresume` is useful after a dialog command teleports both players away. The mod remembers the original right-clicking player as the controller and the original clicked player as the dialog target.
+
 ## Minigame JSON
 
 Put minigame interaction files in the game run directory:

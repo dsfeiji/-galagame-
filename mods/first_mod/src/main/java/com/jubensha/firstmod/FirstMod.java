@@ -81,6 +81,7 @@ public class FirstMod implements ModInitializer {
     private static final int PHASE_TRANSITION_BLACKOUT_TICKS = 40;
     private static final Gson GSON = new GsonBuilder().create();
     private static final Map<UUID, DialogSession> ACTIVE_DIALOGS = new HashMap<>();
+    private static final Map<UUID, DialogContext> LAST_DIALOG_CONTEXTS = new HashMap<>();
     private static final Map<UUID, String> ACTIVE_INTERACTION_MINIGAMES = new HashMap<>();
     private static final Map<DoorKey, Long> PENDING_DOOR_CLOSES = new HashMap<>();
     private static final int ROOM_LOCK_CLOSE_TICKS = 40;
@@ -255,6 +256,7 @@ public class FirstMod implements ModInitializer {
 
             DialogSession session = new DialogSession(target.getUuid(), roleId);
             ACTIVE_DIALOGS.put(actor.getUuid(), session);
+            rememberDialogContext(actor, target, roleId);
             showNode(actor, target, tree, tree.startNodeId, session);
             return ActionResult.SUCCESS;
         });
@@ -916,6 +918,49 @@ public class FirstMod implements ModInitializer {
         showNode(actor, target, tree, tree.startNodeId, session);
     }
 
+    private static void rememberDialogContext(ServerPlayerEntity controller, ServerPlayerEntity target, String roleId) {
+        DialogContext context = new DialogContext(controller.getUuid(), target.getUuid(), roleId);
+        LAST_DIALOG_CONTEXTS.put(controller.getUuid(), context);
+        LAST_DIALOG_CONTEXTS.put(target.getUuid(), context);
+    }
+
+    private static int openDialogNode(ServerCommandSource source, ServerPlayerEntity controller, ServerPlayerEntity target, String roleId, int phase, String nodeId) {
+        if (!DialogStore.isValidRoleId(roleId)) {
+            feedback(source, "Invalid role id. Use a-z, 0-9, _, -, . or /, max 64 chars.");
+            return 0;
+        }
+        DialogTree tree = DialogStore.getDialogForPhase(roleId, phase);
+        if (tree == null) {
+            feedback(source, "No dialog JSON for role " + roleId + " phase " + phase + ".");
+            return 0;
+        }
+        if (!tree.hasNode(nodeId)) {
+            feedback(source, "No dialog node " + nodeId + " for role " + roleId + " phase " + phase + ".");
+            return 0;
+        }
+        DialogSession session = new DialogSession(target.getUuid(), roleId);
+        ACTIVE_DIALOGS.put(controller.getUuid(), session);
+        rememberDialogContext(controller, target, roleId);
+        showNode(controller, target, tree, nodeId, session);
+        feedback(source, "Opened dialog node " + nodeId + " for " + controller.getNameForScoreboard() + " -> " + target.getNameForScoreboard() + ".");
+        return 1;
+    }
+
+    private static int resumeDialogNode(ServerCommandSource source, ServerPlayerEntity participant, int phase, String nodeId) {
+        DialogContext context = LAST_DIALOG_CONTEXTS.get(participant.getUuid());
+        if (context == null) {
+            feedback(source, "No recent dialog context for " + participant.getNameForScoreboard() + ".");
+            return 0;
+        }
+        ServerPlayerEntity controller = source.getServer().getPlayerManager().getPlayer(context.controllerPlayerId);
+        ServerPlayerEntity target = source.getServer().getPlayerManager().getPlayer(context.targetPlayerId);
+        if (controller == null || target == null) {
+            feedback(source, "Recent dialog controller or target is offline.");
+            return 0;
+        }
+        return openDialogNode(source, controller, target, context.roleId, phase, nodeId);
+    }
+
     private static String resolveNode(ServerPlayerEntity actor, DialogTree tree, String nodeId, Set<String> visited) {
         DialogTree.DialogNode node = tree.getNode(nodeId);
         if (node == null || !visited.add(nodeId)) {
@@ -1329,6 +1374,73 @@ public class FirstMod implements ModInitializer {
                                         return roleId.isBlank() ? 0 : 1;
                                     }))));
 
+            dispatcher.register(literal("dialogopen")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(literal("current")
+                            .then(argument("controller", EntityArgumentType.player())
+                                    .then(argument("target", EntityArgumentType.player())
+                                            .then(argument("node_id", StringArgumentType.word())
+                                                    .executes(context -> {
+                                                        ServerPlayerEntity controller = EntityArgumentType.getPlayer(context, "controller");
+                                                        ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "target");
+                                                        String roleId = DialogStore.getClaimedRole(target);
+                                                        if (roleId.isBlank()) {
+                                                            feedback(context.getSource(), target.getNameForScoreboard() + " has no dialog role.");
+                                                            return 0;
+                                                        }
+                                                        String nodeId = StringArgumentType.getString(context, "node_id").trim();
+                                                        return openDialogNode(context.getSource(), controller, target, roleId, DialogStore.getCurrentPhase(), nodeId);
+                                                    })))))
+                    .then(literal("phase")
+                            .then(argument("controller", EntityArgumentType.player())
+                                    .then(argument("target", EntityArgumentType.player())
+                                            .then(argument("phase", IntegerArgumentType.integer(1))
+                                                    .then(argument("node_id", StringArgumentType.word())
+                                                            .executes(context -> {
+                                                                ServerPlayerEntity controller = EntityArgumentType.getPlayer(context, "controller");
+                                                                ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "target");
+                                                                String roleId = DialogStore.getClaimedRole(target);
+                                                                if (roleId.isBlank()) {
+                                                                    feedback(context.getSource(), target.getNameForScoreboard() + " has no dialog role.");
+                                                                    return 0;
+                                                                }
+                                                                int phase = IntegerArgumentType.getInteger(context, "phase");
+                                                                String nodeId = StringArgumentType.getString(context, "node_id").trim();
+                                                                return openDialogNode(context.getSource(), controller, target, roleId, phase, nodeId);
+                                                            }))))))
+                    .then(literal("role")
+                            .then(argument("controller", EntityArgumentType.player())
+                                    .then(argument("target", EntityArgumentType.player())
+                                            .then(argument("role_id", StringArgumentType.word())
+                                                    .then(argument("phase", IntegerArgumentType.integer(1))
+                                                            .then(argument("node_id", StringArgumentType.word())
+                                                                    .executes(context -> {
+                                                                        ServerPlayerEntity controller = EntityArgumentType.getPlayer(context, "controller");
+                                                                        ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "target");
+                                                                        String roleId = StringArgumentType.getString(context, "role_id").trim();
+                                                                        int phase = IntegerArgumentType.getInteger(context, "phase");
+                                                                        String nodeId = StringArgumentType.getString(context, "node_id").trim();
+                                                                        return openDialogNode(context.getSource(), controller, target, roleId, phase, nodeId);
+                                                                    }))))))));
+
+            dispatcher.register(literal("dialogresume")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(argument("participant", EntityArgumentType.player())
+                            .then(argument("node_id", StringArgumentType.word())
+                                    .executes(context -> {
+                                        ServerPlayerEntity participant = EntityArgumentType.getPlayer(context, "participant");
+                                        String nodeId = StringArgumentType.getString(context, "node_id").trim();
+                                        return resumeDialogNode(context.getSource(), participant, DialogStore.getCurrentPhase(), nodeId);
+                                    }))
+                            .then(argument("phase", IntegerArgumentType.integer(1))
+                                    .then(argument("node_id", StringArgumentType.word())
+                                            .executes(context -> {
+                                                ServerPlayerEntity participant = EntityArgumentType.getPlayer(context, "participant");
+                                                int phase = IntegerArgumentType.getInteger(context, "phase");
+                                                String nodeId = StringArgumentType.getString(context, "node_id").trim();
+                                                return resumeDialogNode(context.getSource(), participant, phase, nodeId);
+                                            })))));
+
             dispatcher.register(literal("dialogprotagonist")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(literal("set")
@@ -1436,6 +1548,9 @@ public class FirstMod implements ModInitializer {
     }
 
     private record DoorKey(String worldId, BlockPos pos) {
+    }
+
+    private record DialogContext(UUID controllerPlayerId, UUID targetPlayerId, String roleId) {
     }
 
     private static class DialogSession {

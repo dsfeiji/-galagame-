@@ -69,6 +69,10 @@ public final class DialogStore {
         return getDialog(roleId, data.currentPhase);
     }
 
+    public static DialogTree getDialogForPhase(String roleId, int phase) {
+        return getDialog(roleId, phase);
+    }
+
     public static DialogTree getOrCreateDialogForCurrentPhase(String roleId) {
         return data.dialogs
                 .computeIfAbsent(roleId, ignored -> new LinkedHashMap<>())
