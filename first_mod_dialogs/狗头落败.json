@@ -1,0 +1,23 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：行，我认输。刚才那一下我没躲开，也没理由再嘴硬。",
+      "nextNodeId": "token"
+    },
+    {
+      "id": "token",
+      "text": "狗头把断裂护腕丢给你，随后沉默地离开了这片区域。",
+      "nextNodeId": "",
+      "rewards": [
+        {
+          "item": "first_mod:broken_wristband",
+          "count": 1
+        }
+      ],
+      "eliminateTarget": true,
+      "eliminateReason": "狗头在对抗中落败，失去了继续留在学校里的理由。"
+    }
+  ]
+}

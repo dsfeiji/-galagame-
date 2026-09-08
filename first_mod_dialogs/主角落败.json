@@ -1,0 +1,18 @@
+{
+  "startNodeId": "start",
+  "nodes": [
+    {
+      "id": "start",
+      "text": "狗头：你输了。别再硬撑了，这一次到此为止。",
+      "nextNodeId": "exit"
+    },
+    {
+      "id": "exit",
+      "text": "主角在对抗中失手，被迫退出这一次循环的关键行动。",
+      "nextNodeId": "",
+      "commands": [
+        "dialogeliminate role protagonist 主角在与狗头的对抗中落败，被迫退场。"
+      ]
+    }
+  ]
+}
