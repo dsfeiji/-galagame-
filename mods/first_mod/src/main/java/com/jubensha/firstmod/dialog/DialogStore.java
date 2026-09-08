@@ -12,8 +12,11 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -27,7 +30,9 @@ public final class DialogStore {
     }.getType();
     private static final Pattern ROLE_ID_PATTERN = Pattern.compile("[a-z0-9_./-]{1,64}");
     private static final Path CONFIG_STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_dialogs.json");
+    private static final Path GAME_DIALOG_FILES_PATH = FabricLoader.getInstance().getGameDir().resolve("first_mod_dialogs");
     private static Path storePath = CONFIG_STORE_PATH;
+    private static Path worldDialogFilesPath = null;
     private static StoreData data = new StoreData();
 
     private DialogStore() {
@@ -62,7 +67,29 @@ public final class DialogStore {
 
     public static void useWorldDirectory(Path worldDirectory) {
         storePath = worldDirectory.resolve("first_mod").resolve("first_mod_dialogs.json");
+        worldDialogFilesPath = worldDirectory.resolve("first_mod").resolve("dialog_files");
+        ensureDialogFileDirectories();
         load();
+    }
+
+    public static DialogTree readDialogFile(String fileName) {
+        Path filePath = resolveDialogFile(fileName);
+        try {
+            return DialogTree.fromJsonStrict(Files.readString(filePath, StandardCharsets.UTF_8));
+        } catch (IOException exception) {
+            throw new IllegalArgumentException("cannot read dialog file: " + filePath.getFileName(), exception);
+        } catch (RuntimeException exception) {
+            throw new IllegalArgumentException("dialog file JSON invalid: " + exception.getMessage(), exception);
+        }
+    }
+
+    public static String getDialogFileLocations() {
+        List<String> locations = new ArrayList<>();
+        if (worldDialogFilesPath != null) {
+            locations.add(worldDialogFilesPath.toString());
+        }
+        locations.add(GAME_DIALOG_FILES_PATH.toString());
+        return String.join(" ; ", locations);
     }
 
     public static DialogTree getDialogForCurrentPhase(String roleId) {
@@ -302,6 +329,67 @@ public final class DialogStore {
 
     private static String normalizePlayerName(String playerName) {
         return playerName == null ? "" : playerName.trim().toLowerCase();
+    }
+
+    private static Path resolveDialogFile(String fileName) {
+        String relativeName = normalizeDialogFileName(fileName);
+        Path relativePath;
+        try {
+            relativePath = Path.of(relativeName);
+        } catch (InvalidPathException exception) {
+            throw new IllegalArgumentException("invalid dialog file name: " + fileName, exception);
+        }
+        if (relativePath.isAbsolute()) {
+            throw new IllegalArgumentException("dialog file must use a relative path");
+        }
+        for (Path part : relativePath) {
+            if ("..".equals(part.toString())) {
+                throw new IllegalArgumentException("dialog file path cannot contain ..");
+            }
+        }
+
+        ensureDialogFileDirectories();
+        for (Path basePath : getDialogFileBasePaths()) {
+            Path normalizedBase = basePath.toAbsolutePath().normalize();
+            Path resolvedPath = normalizedBase.resolve(relativePath).normalize();
+            if (!resolvedPath.startsWith(normalizedBase)) {
+                continue;
+            }
+            if (Files.isRegularFile(resolvedPath)) {
+                return resolvedPath;
+            }
+        }
+        throw new IllegalArgumentException("dialog file not found: " + relativeName + ". Put it in " + getDialogFileLocations());
+    }
+
+    private static String normalizeDialogFileName(String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            throw new IllegalArgumentException("dialog file name is empty");
+        }
+        String normalized = fileName.trim().replace('\\', '/');
+        if (!normalized.endsWith(".json")) {
+            normalized += ".json";
+        }
+        return normalized;
+    }
+
+    private static List<Path> getDialogFileBasePaths() {
+        List<Path> paths = new ArrayList<>();
+        if (worldDialogFilesPath != null) {
+            paths.add(worldDialogFilesPath);
+        }
+        paths.add(GAME_DIALOG_FILES_PATH);
+        return paths;
+    }
+
+    private static void ensureDialogFileDirectories() {
+        try {
+            if (worldDialogFilesPath != null) {
+                Files.createDirectories(worldDialogFilesPath);
+            }
+            Files.createDirectories(GAME_DIALOG_FILES_PATH);
+        } catch (IOException ignored) {
+        }
     }
 
     private static void saveAll() {

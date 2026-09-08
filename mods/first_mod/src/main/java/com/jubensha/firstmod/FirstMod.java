@@ -961,6 +961,46 @@ public class FirstMod implements ModInitializer {
         return openDialogNode(source, controller, target, context.roleId, phase, nodeId);
     }
 
+    private static int openDialogFileNode(ServerCommandSource source, ServerPlayerEntity controller, ServerPlayerEntity target, String fileName, String nodeId) {
+        String roleId = DialogStore.getClaimedRole(target);
+        if (roleId.isBlank()) {
+            feedback(source, target.getNameForScoreboard() + " has no dialog role.");
+            return 0;
+        }
+        DialogTree tree;
+        try {
+            tree = DialogStore.readDialogFile(fileName);
+        } catch (IllegalArgumentException exception) {
+            feedback(source, exception.getMessage());
+            return 0;
+        }
+        if (!tree.hasNode(nodeId)) {
+            feedback(source, "No dialog node " + nodeId + " in file " + fileName + ".");
+            return 0;
+        }
+        DialogSession session = new DialogSession(target.getUuid(), roleId);
+        ACTIVE_DIALOGS.put(controller.getUuid(), session);
+        rememberDialogContext(controller, target, roleId);
+        showNode(controller, target, tree, nodeId, session);
+        feedback(source, "Opened dialog file " + fileName + " node " + nodeId + " for " + controller.getNameForScoreboard() + " -> " + target.getNameForScoreboard() + ".");
+        return 1;
+    }
+
+    private static int resumeDialogFileNode(ServerCommandSource source, ServerPlayerEntity participant, String fileName, String nodeId) {
+        DialogContext context = LAST_DIALOG_CONTEXTS.get(participant.getUuid());
+        if (context == null) {
+            feedback(source, "No recent dialog context for " + participant.getNameForScoreboard() + ".");
+            return 0;
+        }
+        ServerPlayerEntity controller = source.getServer().getPlayerManager().getPlayer(context.controllerPlayerId);
+        ServerPlayerEntity target = source.getServer().getPlayerManager().getPlayer(context.targetPlayerId);
+        if (controller == null || target == null) {
+            feedback(source, "Recent dialog controller or target is offline.");
+            return 0;
+        }
+        return openDialogFileNode(source, controller, target, fileName, nodeId);
+    }
+
     private static String resolveNode(ServerPlayerEntity actor, DialogTree tree, String nodeId, Set<String> visited) {
         DialogTree.DialogNode node = tree.getNode(nodeId);
         if (node == null || !visited.add(nodeId)) {
@@ -1440,6 +1480,31 @@ public class FirstMod implements ModInitializer {
                                                 String nodeId = StringArgumentType.getString(context, "node_id").trim();
                                                 return resumeDialogNode(context.getSource(), participant, phase, nodeId);
                                             })))));
+
+            dispatcher.register(literal("dialogfile")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(literal("open")
+                            .then(argument("controller", EntityArgumentType.player())
+                                    .then(argument("target", EntityArgumentType.player())
+                                            .then(argument("file", StringArgumentType.string())
+                                                    .then(argument("node_id", StringArgumentType.word())
+                                                            .executes(context -> {
+                                                                ServerPlayerEntity controller = EntityArgumentType.getPlayer(context, "controller");
+                                                                ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "target");
+                                                                String fileName = StringArgumentType.getString(context, "file").trim();
+                                                                String nodeId = StringArgumentType.getString(context, "node_id").trim();
+                                                                return openDialogFileNode(context.getSource(), controller, target, fileName, nodeId);
+                                                            }))))))
+                    .then(literal("resume")
+                            .then(argument("participant", EntityArgumentType.player())
+                                    .then(argument("file", StringArgumentType.string())
+                                            .then(argument("node_id", StringArgumentType.word())
+                                                    .executes(context -> {
+                                                        ServerPlayerEntity participant = EntityArgumentType.getPlayer(context, "participant");
+                                                        String fileName = StringArgumentType.getString(context, "file").trim();
+                                                        String nodeId = StringArgumentType.getString(context, "node_id").trim();
+                                                        return resumeDialogFileNode(context.getSource(), participant, fileName, nodeId);
+                                                    }))))));
 
             dispatcher.register(literal("dialogprotagonist")
                     .requires(source -> source.hasPermissionLevel(2))
