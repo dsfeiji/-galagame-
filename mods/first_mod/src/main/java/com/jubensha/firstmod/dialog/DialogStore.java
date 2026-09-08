@@ -15,8 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,7 +30,6 @@ public final class DialogStore {
     private static final Path CONFIG_STORE_PATH = FabricLoader.getInstance().getConfigDir().resolve("first_mod_dialogs.json");
     private static final Path GAME_DIALOG_FILES_PATH = FabricLoader.getInstance().getGameDir().resolve("first_mod_dialogs");
     private static Path storePath = CONFIG_STORE_PATH;
-    private static Path worldDialogFilesPath = null;
     private static StoreData data = new StoreData();
 
     private DialogStore() {
@@ -67,7 +64,6 @@ public final class DialogStore {
 
     public static void useWorldDirectory(Path worldDirectory) {
         storePath = worldDirectory.resolve("first_mod").resolve("first_mod_dialogs.json");
-        worldDialogFilesPath = worldDirectory.resolve("first_mod").resolve("dialog_files");
         ensureDialogFileDirectories();
         load();
     }
@@ -84,12 +80,7 @@ public final class DialogStore {
     }
 
     public static String getDialogFileLocations() {
-        List<String> locations = new ArrayList<>();
-        if (worldDialogFilesPath != null) {
-            locations.add(worldDialogFilesPath.toString());
-        }
-        locations.add(GAME_DIALOG_FILES_PATH.toString());
-        return String.join(" ; ", locations);
+        return GAME_DIALOG_FILES_PATH.toString();
     }
 
     public static DialogTree getDialogForCurrentPhase(String roleId) {
@@ -349,15 +340,13 @@ public final class DialogStore {
         }
 
         ensureDialogFileDirectories();
-        for (Path basePath : getDialogFileBasePaths()) {
-            Path normalizedBase = basePath.toAbsolutePath().normalize();
-            Path resolvedPath = normalizedBase.resolve(relativePath).normalize();
-            if (!resolvedPath.startsWith(normalizedBase)) {
-                continue;
-            }
-            if (Files.isRegularFile(resolvedPath)) {
-                return resolvedPath;
-            }
+        Path normalizedBase = GAME_DIALOG_FILES_PATH.toAbsolutePath().normalize();
+        Path resolvedPath = normalizedBase.resolve(relativePath).normalize();
+        if (!resolvedPath.startsWith(normalizedBase)) {
+            throw new IllegalArgumentException("dialog file must stay inside first_mod_dialogs");
+        }
+        if (Files.isRegularFile(resolvedPath)) {
+            return resolvedPath;
         }
         throw new IllegalArgumentException("dialog file not found: " + relativeName + ". Put it in " + getDialogFileLocations());
     }
@@ -373,20 +362,8 @@ public final class DialogStore {
         return normalized;
     }
 
-    private static List<Path> getDialogFileBasePaths() {
-        List<Path> paths = new ArrayList<>();
-        if (worldDialogFilesPath != null) {
-            paths.add(worldDialogFilesPath);
-        }
-        paths.add(GAME_DIALOG_FILES_PATH);
-        return paths;
-    }
-
     private static void ensureDialogFileDirectories() {
         try {
-            if (worldDialogFilesPath != null) {
-                Files.createDirectories(worldDialogFilesPath);
-            }
             Files.createDirectories(GAME_DIALOG_FILES_PATH);
         } catch (IOException ignored) {
         }
